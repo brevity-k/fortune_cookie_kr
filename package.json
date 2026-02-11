@@ -11,7 +11,9 @@
     "content:check": "tsx scripts/content-health-check.ts",
     "content:season": "tsx scripts/add-seasonal-fortunes.ts",
     "blog:generate": "tsx scripts/generate-blog-post.ts",
-    "blog:preview": "tsx scripts/generate-blog-post.ts --dry-run"
+    "blog:preview": "tsx scripts/generate-blog-post.ts --dry-run",
+    "fortune:generate": "tsx scripts/generate-fortunes.ts",
+    "fortune:preview": "tsx scripts/generate-fortunes.ts --dry-run"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",

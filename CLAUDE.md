@@ -248,6 +248,35 @@ ANTHROPIC_API_KEY=sk-ant-... npm run blog:generate --topic tarot-card-basics  # 
 - 카테고리: fortune(13), culture(8), lifestyle(12), seasonal(7), psychology(10)
 - 큐가 소진되면 자동 리셋 (순환)
 
+### 자동 운세 메시지 생성 (주간)
+
+Claude API를 사용하여 매주 자동으로 5개의 운세 메시지를 생성합니다.
+카테고리는 love → career → health → study → general → relationship 순서로 순환합니다.
+
+**파일 구조:**
+- `scripts/generate-fortunes.ts` - 운세 생성 스크립트
+- `scripts/fortune-generation-state.json` - 카테고리 순환 상태 추적
+- `.github/workflows/weekly-fortune-update.yml` - 매주 일요일 자동 실행
+
+**수동 실행:**
+```bash
+npm run fortune:preview    # 다음 카테고리 미리보기 (파일 수정 없음)
+npm run fortune:generate   # 다음 카테고리로 5개 운세 생성
+ANTHROPIC_API_KEY=sk-ant-... npm run fortune:generate --category love  # 특정 카테고리
+```
+
+**GitHub Actions 설정:**
+- `ANTHROPIC_API_KEY` 시크릿 필요 (블로그 생성과 동일)
+- 매주 월요일 오전 6시(KST) 자동 실행, PR로 생성되어 리뷰 후 머지
+- 수동 실행 시 카테고리 지정 가능
+
+**생성 프로세스:**
+1. 다음 카테고리 결정 (순환 또는 수동 지정)
+2. 기존 운세 파일에서 최고 ID 번호 + 기존 메시지 추출
+3. Claude API로 5개 Fortune 객체 생성 (기존 스타일 참고, 중복 방지)
+4. 유효성 검증 (필수 필드, ID 형식, rating 범위, 중복 체크)
+5. 카테고리 파일에 추가 + 상태 파일 업데이트
+
 ### 콘텐츠 건강 체크
 
 ```bash

@@ -1,0 +1,85 @@
+name: Weekly Fortune Message Generator
+
+on:
+  schedule:
+    # 매주 일요일 오후 9시 (UTC) = 월요일 오전 6시 (KST)
+    - cron: '0 21 * * 0'
+  workflow_dispatch:
+    inputs:
+      category:
+        description: 'Specific category (love/career/health/study/general/relationship). Leave empty for next in rotation.'
+        required: false
+        type: string
+      dry_run:
+        description: 'Dry run mode (no file changes)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate-fortunes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Generate fortune messages
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="--dry-run"
+          fi
+          if [ -n "${{ github.event.inputs.category }}" ]; then
+            ARGS="$ARGS --category ${{ github.event.inputs.category }}"
+          fi
+          npx tsx scripts/generate-fortunes.ts $ARGS
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'content: add weekly fortune messages'
+          title: '🥠 Weekly Fortune Messages'
+          body: |
+            ## 자동 생성 운세 메시지
+
+            이 PR은 GitHub Actions에 의해 자동으로 생성되었습니다.
+            매주 5개의 새로운 운세 메시지가 카테고리를 순환하며 추가됩니다.
+
+            ### 체크리스트
+            - [ ] 운세 메시지 내용 검토
+            - [ ] 한국어 맞춤법/문법 확인
+            - [ ] rating 분포 적절성 확인
+            - [ ] 기존 메시지와 중복 없음 확인
+            - [ ] `npm run build` 통과 확인
+
+            > 자동 머지를 원하면 `auto-merge` 라벨을 추가하세요.
+          branch: fortune/weekly-update
+          labels: |
+            fortune
+            auto-generated
+          delete-branch: true
