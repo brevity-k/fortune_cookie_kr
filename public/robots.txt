@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://fortunecookie.kr
+Host: https://fortunecookie.ai.kr
 
 # Sitemaps
-Sitemap: https://fortunecookie.kr/sitemap.xml
+Sitemap: https://fortunecookie.ai.kr/sitemap.xml
