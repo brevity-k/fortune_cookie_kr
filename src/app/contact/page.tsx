@@ -29,7 +29,9 @@ export default function ContactPage() {
                   이메일
                 </h3>
                 <p className="text-text-secondary">
-                  contact@fortunecookie.kr
+                  <a href="mailto:brevity1s.wos@gmail.com" className="text-cookie-gold hover:underline">
+                    brevity1s.wos@gmail.com
+                  </a>
                 </p>
               </div>
               <div>
