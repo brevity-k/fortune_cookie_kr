@@ -34,8 +34,11 @@ src/
 │   ├── about/page.tsx            # 소개
 │   ├── privacy/page.tsx          # 개인정보처리방침
 │   ├── terms/page.tsx            # 이용약관
-│   └── contact/page.tsx          # 문의
+│   ├── contact/page.tsx          # 문의 (ContactForm 포함)
+│   └── api/contact/route.ts      # 문의 폼 API (Resend 이메일)
 ├── components/
+│   ├── contact/
+│   │   └── ContactForm.tsx       # 문의 폼 (이름/이메일/메시지, 자동 답장)
 │   ├── cookie/
 │   │   ├── FortuneCookie.tsx     # 메인 쿠키 인터랙션 (핵심 컴포넌트)
 │   │   ├── CookieSVG.tsx         # SVG 쿠키 비주얼 (idle/crack/broken 상태)
@@ -89,6 +92,14 @@ src/
 - **등급**: 1(흉) ~ 5(대길), 한국식 등급명
 - **행운 정보**: 행운의 숫자 (1-99), 행운의 색 (한국어)
 
+### 문의 폼 + 자동 답장 이메일
+- **API**: `/api/contact` (POST) — Resend SDK로 이메일 전송
+- **알림 메일**: 사이트 운영자(brevity1s.wos@gmail.com)에게 문의 내용 전달
+- **자동 답장**: 문의자에게 접수 확인 메일 자동 발송
+- **발신 주소**: `onboarding@resend.dev` (Resend 무료 티어 기본) → 커스텀 도메인 추가 가능
+- **무료 제한**: 하루 100건 (Resend 무료 플랜)
+- **설정**: `RESEND_API_KEY` 환경 변수 필요 (https://resend.com 에서 발급)
+
 ### 디자인 테마
 - **컨셉**: 한국 야시장 포춘쿠키 노점
 - **배경**: 딥 퍼플-블랙 (`#1A0F2E`) + 별 파티클
@@ -115,6 +126,7 @@ NEXT_PUBLIC_ADSENSE_CLIENT=     # Google AdSense 클라이언트 ID (ca-pub-XXXX
 NEXT_PUBLIC_KAKAO_KEY=          # Kakao JavaScript 앱 키
 NEXT_PUBLIC_SITE_URL=           # 사이트 URL (기본값: https://fortunecookie.ai.kr)
 NEXT_PUBLIC_GOOGLE_VERIFICATION= # Google Search Console 인증 코드
+RESEND_API_KEY=                 # Resend API 키 (문의 폼 이메일 전송)
 ```
 
 ## 배포 계획 (Vercel)
