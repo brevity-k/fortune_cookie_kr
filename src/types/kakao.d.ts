@@ -1,22 +1,33 @@
-interface KakaoShareOptions {
+interface KakaoShareLink {
+  mobileWebUrl: string;
+  webUrl: string;
+}
+
+interface KakaoFeedOptions {
   objectType: 'feed';
   content: {
     title: string;
     description: string;
     imageUrl: string;
-    link: {
-      mobileWebUrl: string;
-      webUrl: string;
-    };
+    link: KakaoShareLink;
   };
   buttons?: Array<{
     title: string;
-    link: {
-      mobileWebUrl: string;
-      webUrl: string;
-    };
+    link: KakaoShareLink;
   }>;
 }
+
+interface KakaoTextOptions {
+  objectType: 'text';
+  text: string;
+  link: KakaoShareLink;
+  buttons?: Array<{
+    title: string;
+    link: KakaoShareLink;
+  }>;
+}
+
+type KakaoShareOptions = KakaoFeedOptions | KakaoTextOptions;
 
 interface KakaoLink {
   sendDefault(options: KakaoShareOptions): void;
