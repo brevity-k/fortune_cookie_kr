@@ -27,6 +27,8 @@ export default function FortuneCookie({ onBreak, fortune }: FortuneCookieProps) 
   const longPressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastTapRef = useRef(0);
   const isBreakingRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const dragStartPosRef = useRef({ x: 0, y: 0 });
 
   const x = useMotionValue(0);
   const controls = useAnimation();
@@ -68,6 +70,11 @@ export default function FortuneCookie({ onBreak, fortune }: FortuneCookieProps) 
 
   // Click interaction: 3 clicks to break
   const handleClick = useCallback(() => {
+    // Ignore click if we just finished a drag
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      return;
+    }
     if (cookieState !== 'idle' && cookieState !== 'crack-1' && cookieState !== 'crack-2') return;
 
     // Check for double tap
@@ -93,13 +100,22 @@ export default function FortuneCookie({ onBreak, fortune }: FortuneCookieProps) 
   }, [cookieState, triggerBreak, play]);
 
   // Long press interaction
-  const handlePointerDown = useCallback(() => {
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (cookieState === 'broken' || cookieState === 'revealed' || cookieState === 'breaking') return;
+
+    dragStartPosRef.current = { x: e.clientX, y: e.clientY };
+    isDraggingRef.current = false;
 
     setLongPressProgress(0);
     const startTime = Date.now();
 
     longPressIntervalRef.current = setInterval(() => {
+      // Cancel long press if dragging
+      if (isDraggingRef.current) {
+        if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
+        setLongPressProgress(0);
+        return;
+      }
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / 1500, 1);
       setLongPressProgress(progress);
@@ -149,6 +165,7 @@ export default function FortuneCookie({ onBreak, fortune }: FortuneCookieProps) 
 
   // Reset
   const handleReset = useCallback(() => {
+    confetti.reset();
     setCookieState('idle');
     setBreakMethod(null);
     setCurrentFortune(null);

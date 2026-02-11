@@ -19,9 +19,13 @@ export function useSoundEffects() {
 
   useEffect(() => {
     // Check stored mute preference
-    const stored = localStorage.getItem('fortune_cookie_muted');
-    if (stored === 'true') {
-      setIsMuted(true);
+    try {
+      const stored = localStorage.getItem('fortune_cookie_muted');
+      if (stored === 'true') {
+        setIsMuted(true);
+      }
+    } catch {
+      // localStorage unavailable (e.g. private browsing)
     }
 
     // Preload sounds
@@ -49,7 +53,11 @@ export function useSoundEffects() {
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
       const next = !prev;
-      localStorage.setItem('fortune_cookie_muted', String(next));
+      try {
+        localStorage.setItem('fortune_cookie_muted', String(next));
+      } catch {
+        // localStorage unavailable
+      }
       return next;
     });
   }, []);

@@ -10,6 +10,7 @@ const notoSansKr = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://fortunecookie.kr"),
   title: {
     default: "포춘쿠키 - 오늘의 운세 | 무료 포춘쿠키 운세",
     template: "%s | 포춘쿠키",
@@ -75,7 +76,6 @@ export default function RootLayout({
             async
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}`}
             crossOrigin="anonymous"
-            strategy-hint="lazyOnload"
           />
         )}
         {process.env.NEXT_PUBLIC_GA_ID && (
@@ -95,6 +95,13 @@ export default function RootLayout({
               }}
             />
           </>
+        )}
+        {process.env.NEXT_PUBLIC_KAKAO_KEY && (
+          <script
+            async
+            src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"
+            crossOrigin="anonymous"
+          />
         )}
       </head>
       <body className={`${notoSansKr.variable} antialiased`}>
