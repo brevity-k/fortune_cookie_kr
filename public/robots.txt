@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://fortunecookie.kr
+
+# Sitemaps
+Sitemap: https://fortunecookie.kr/sitemap.xml
