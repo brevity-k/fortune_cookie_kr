@@ -17,6 +17,10 @@ on:
           - health
           - seasonal
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   content-health-check:
     runs-on: ubuntu-latest
