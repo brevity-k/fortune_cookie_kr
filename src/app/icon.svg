@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2D1B4E"/>
+      <stop offset="100%" stop-color="#1A0F2E"/>
+    </linearGradient>
+    <linearGradient id="cookie" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#E8C088"/>
+      <stop offset="50%" stop-color="#D4A574"/>
+      <stop offset="100%" stop-color="#B8834A"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#FFFDF5"/>
+      <stop offset="100%" stop-color="#FFF8E7"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="32" fill="url(#bg)"/>
+  <!-- Stars -->
+  <circle cx="12" cy="12" r="1" fill="#FFD700" opacity="0.7"/>
+  <circle cx="52" cy="10" r="0.8" fill="#FFD700" opacity="0.5"/>
+  <circle cx="8" cy="42" r="0.6" fill="#FFD700" opacity="0.6"/>
+  <circle cx="54" cy="48" r="0.9" fill="#FFD700" opacity="0.4"/>
+  <circle cx="48" cy="24" r="0.5" fill="#FFD700" opacity="0.8"/>
+  <!-- Fortune paper sticking out -->
+  <rect x="24" y="18" width="16" height="6" rx="1" fill="url(#paper)" transform="rotate(-5 32 21)"/>
+  <!-- Cookie left half -->
+  <path d="M16 34 C16 26, 22 20, 32 22 C32 22, 32 34, 32 38 C28 42, 18 42, 16 34Z" fill="url(#cookie)" filter="url(#glow)"/>
+  <!-- Cookie right half -->
+  <path d="M48 34 C48 26, 42 20, 32 22 C32 22, 32 34, 32 38 C36 42, 46 42, 48 34Z" fill="url(#cookie)" filter="url(#glow)" opacity="0.9"/>
+  <!-- Cookie shadow/depth -->
+  <path d="M32 22 L32 38" stroke="#B8834A" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+  <!-- Cookie texture lines -->
+  <path d="M20 30 Q26 28, 30 32" stroke="#C49562" stroke-width="0.6" fill="none" opacity="0.5"/>
+  <path d="M34 32 Q38 28, 44 30" stroke="#C49562" stroke-width="0.6" fill="none" opacity="0.5"/>
+  <!-- Sparkle effect -->
+  <g fill="#FFD700" opacity="0.9">
+    <polygon points="14,20 15,22 17,22 15.5,23.5 16,26 14,24.5 12,26 12.5,23.5 11,22 13,22" transform="scale(0.6) translate(8,2)"/>
+    <polygon points="14,20 15,22 17,22 15.5,23.5 16,26 14,24.5 12,26 12.5,23.5 11,22 13,22" transform="scale(0.5) translate(82,6)"/>
+  </g>
+  <!-- Fortune text hint -->
+  <text x="32" y="50" text-anchor="middle" font-family="serif" font-size="7" fill="#FFD700" font-weight="bold" opacity="0.9">福</text>
+</svg>
