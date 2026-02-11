@@ -10,7 +10,7 @@ const notoSansKr = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://fortunecookie.kr"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://fortunecookie.ai.kr"),
   title: {
     default: "포춘쿠키 - 오늘의 운세 | 무료 포춘쿠키 운세",
     template: "%s | 포춘쿠키",

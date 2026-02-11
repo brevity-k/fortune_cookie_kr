@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.SITE_URL || 'https://fortunecookie.kr',
+  siteUrl: process.env.SITE_URL || 'https://fortunecookie.ai.kr',
   generateRobotsTxt: true,
   generateIndexSitemap: false,
   changefreq: 'daily',
