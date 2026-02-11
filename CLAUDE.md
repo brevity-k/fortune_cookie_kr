@@ -21,6 +21,7 @@
 src/
 ├── app/                          # Next.js App Router 페이지
 │   ├── layout.tsx                # 루트 레이아웃 (폰트, GA, AdSense, Kakao SDK)
+│   ├── icon.svg                  # 커스텀 파비콘 (골드 쿠키 SVG)
 │   ├── page.tsx                  # 메인 포춘쿠키 체험 페이지
 │   ├── globals.css               # Tailwind + 커스텀 CSS 애니메이션
 │   ├── fortune/[category]/       # 카테고리별 운세 페이지 (6개)
@@ -117,48 +118,47 @@ npm run start      # 프로덕션 서버
 npm run lint       # ESLint
 ```
 
-## 환경 변수 (.env.local)
+## 환경 변수
+
+로컬 개발: `.env.local`, 프로덕션: Vercel 대시보드 Environment Variables
 
 ```bash
-# 필수가 아닌 항목 - 비어있으면 해당 기능이 비활성화됨
-NEXT_PUBLIC_GA_ID=              # Google Analytics 4 측정 ID (G-XXXXXXXXXX)
-NEXT_PUBLIC_ADSENSE_CLIENT=     # Google AdSense 클라이언트 ID (ca-pub-XXXXXXXX)
-NEXT_PUBLIC_KAKAO_KEY=          # Kakao JavaScript 앱 키
-NEXT_PUBLIC_SITE_URL=           # 사이트 URL (기본값: https://fortunecookie.ai.kr)
-NEXT_PUBLIC_GOOGLE_VERIFICATION= # Google Search Console 인증 코드
-RESEND_API_KEY=                 # Resend API 키 (문의 폼 이메일 전송)
+NEXT_PUBLIC_GA_ID=G-GCVN75X50X              # Google Analytics 4 측정 ID ✅
+NEXT_PUBLIC_ADSENSE_CLIENT=                  # Google AdSense 클라이언트 ID (미설정)
+NEXT_PUBLIC_KAKAO_KEY=                       # Kakao JavaScript 앱 키 ✅
+NEXT_PUBLIC_SITE_URL=https://fortunecookie.ai.kr  # 사이트 URL ✅
+RESEND_API_KEY=                              # Resend API 키 (문의 폼) ✅
 ```
 
-## 배포 계획 (Vercel)
+> **참고**: Google/Naver 인증 코드는 `layout.tsx`의 `metadata.verification`에 직접 하드코딩되어 환경변수 불필요
 
-### 1단계: Vercel 배포
-1. GitHub 리포지토리 연결: `https://github.com/brevity-k/fortune_cookie_kr`
-2. Vercel에서 프로젝트 Import
-3. 환경 변수 설정 (위 .env.local 항목들)
-4. 빌드 명령: `npm run build` (자동 감지됨)
-5. 출력 디렉토리: `.next` (자동 감지됨)
-6. 배포 리전: `icn1` (서울) 권장
+## 배포 현황 (Vercel) - 완료
 
-### 2단계: 도메인 연결
-1. `.kr` 도메인 구매 (예: fortunecookie.ai.kr)
-   - 추천 등록기관: 가비아, 카페24, 호스팅KR
-2. Vercel 프로젝트 Settings → Domains에서 도메인 추가
-3. DNS 설정:
-   - `A` 레코드: `76.76.21.21`
-   - `CNAME` 레코드: `cname.vercel-dns.com`
-4. SSL 인증서: Vercel에서 자동 발급
+### 1단계: Vercel 배포 ✅
+- GitHub 리포지토리 연결: `https://github.com/brevity-k/fortune_cookie_kr`
+- Vercel 프로젝트: `fortune-cookie-kr`
+- 환경 변수 설정 완료 (Vercel 대시보드)
+- 프로덕션 URL: `https://fortunecookie.ai.kr`
 
-### 3단계: SEO 등록
-1. **Google Search Console**: 소유권 인증 → sitemap.xml 제출
-2. **네이버 서치어드바이저**: 사이트 등록 → sitemap.xml 제출
-3. **Bing Webmaster Tools**: 등록 (선택)
+### 2단계: 도메인 연결 ✅
+- 도메인: `fortunecookie.ai.kr`
+- DNS 설정 완료, SSL 자동 발급됨
+
+### 3단계: SEO 등록 ✅
+- **Google Search Console**: 인증 메타태그 추가 완료 (`0Qs_NRonZJTlJQzm_7gdXWtg4Kgxtwba6UIE71qvgbE`)
+- **네이버 서치어드바이저**: 인증 메타태그 추가 완료 (`a559aa985e044be33ec42400206408dc4327ae22`)
+- sitemap.xml 자동 생성 (25개 URL)
+- robots.txt 자동 생성
 
 ### 4단계: AdSense 신청
 - 아래 "AdSense 승인 체크리스트" 참조
 
-### 5단계: 분석 도구 설정
-1. GA4 속성 생성 → 측정 ID를 `NEXT_PUBLIC_GA_ID`에 설정
-2. 이벤트 추적 확인: cookie_break, fortune_reveal, share
+### 5단계: 분석 도구 설정 ✅
+- GA4 측정 ID: `G-GCVN75X50X` (Vercel 환경변수 설정 완료)
+- 이벤트 추적: cookie_break, fortune_reveal, share
+
+### 6단계: 파비콘 ✅
+- 커스텀 SVG 파비콘: `src/app/icon.svg` (골드 쿠키 + 딥 퍼플 배경)
 
 ## AdSense 승인 체크리스트
 
@@ -238,9 +238,9 @@ npm run blog:generate    # 다음 주제로 포스트 생성
 ANTHROPIC_API_KEY=sk-ant-... npm run blog:generate --topic tarot-card-basics  # 특정 주제
 ```
 
-**GitHub Actions 설정 필요:**
-1. GitHub 리포지토리 Settings → Secrets and variables → Actions
-2. `ANTHROPIC_API_KEY` 시크릿 추가 (Claude API 키)
+**GitHub Actions 설정:**
+1. GitHub 리포지토리 Settings → Secrets and variables → Actions → `ANTHROPIC_API_KEY` 시크릿 추가
+2. Settings → Actions → General → **"Allow GitHub Actions to create and approve pull requests"** 체크 필수
 3. 매일 오전 6시(KST) 자동 실행, PR로 생성되어 리뷰 후 머지
 
 **주제 큐 현황:**
@@ -295,4 +295,5 @@ npm run content:season   # 시즌별 콘텐츠 확인
 - AdSense 정책: 쿠키 인터랙션 영역에 광고 배치 금지
 - 모바일 흔들기 감지: iOS에서는 DeviceMotion 권한 요청 필요
 - localStorage 사용: 일일 운세 저장, 음소거 설정 (개인정보 동의 불필요)
-- Kakao SDK: 카카오 개발자 앱 등록 후 JavaScript 키 필요
+- Kakao SDK: 카카오 개발자 앱에서 JavaScript 키 발급 + **플랫폼키 > JavaScript 키 > JavaScript SDK 도메인**에 웹 도메인 등록 필수 (미등록 시 4019 에러)
+- Kakao 도메인 등록 위치 2곳: ① 제품링크관리 > 웹 도메인, ② 플랫폼키 > JavaScript 키 > JavaScript SDK 도메인
