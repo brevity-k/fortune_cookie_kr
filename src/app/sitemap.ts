@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { CATEGORIES } from "@/types/fortune";
 import { blogPosts } from "@/data/blog-posts";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fortunecookie.kr";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fortunecookie.ai.kr";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const categoryEntries = CATEGORIES.map((cat) => ({

@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { Fortune } from '@/types/fortune';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.kr';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.kr';
 
 export function useShareFortune() {
   const shareViaKakao = useCallback((fortune: Fortune) => {
