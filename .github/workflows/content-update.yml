@@ -1,0 +1,121 @@
+name: Content Update Reminder
+
+on:
+  schedule:
+    # 매주 월요일 오전 9시 (KST) = 일요일 밤 12시 (UTC)
+    - cron: '0 0 * * 1'
+    # 매월 1일 오전 9시 (KST) = 전월 마지막 날 밤 12시 (UTC)
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+    inputs:
+      check_type:
+        description: 'Check type'
+        required: true
+        default: 'health'
+        type: choice
+        options:
+          - health
+          - seasonal
+
+jobs:
+  content-health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run content health check
+        run: npx tsx scripts/content-health-check.ts
+
+      - name: Check seasonal content
+        run: npx tsx scripts/add-seasonal-fortunes.ts check
+
+      - name: Create issue if content needs update
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+
+            // Monthly blog reminder (1st of each month)
+            if (day <= 7) {
+              const existingIssues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: 'content-update',
+                state: 'open',
+              });
+
+              const monthlyExists = existingIssues.data.some(
+                (i) => i.title.includes(`${month}월 콘텐츠`)
+              );
+
+              if (!monthlyExists) {
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `📝 ${month}월 콘텐츠 업데이트 리마인더`,
+                  body: `## ${month}월 콘텐츠 업데이트 체크리스트\n\n` +
+                    `### 블로그\n` +
+                    `- [ ] 새 블로그 포스트 1-2개 작성 (800자 이상)\n` +
+                    `- [ ] 기존 포스트 내용 검토 및 업데이트\n\n` +
+                    `### 운세 메시지\n` +
+                    `- [ ] 새 운세 메시지 10-20개 추가 검토\n` +
+                    `- [ ] 기존 메시지 품질 점검\n\n` +
+                    `### 시즌 체크\n` +
+                    `- [ ] \`npx tsx scripts/add-seasonal-fortunes.ts check\` 실행\n` +
+                    `- [ ] 시즌별 특별 콘텐츠 필요 여부 확인\n\n` +
+                    `### SEO\n` +
+                    `- [ ] Google Search Console 색인 상태 확인\n` +
+                    `- [ ] 네이버 서치어드바이저 상태 확인\n` +
+                    `- [ ] 검색 키워드 순위 모니터링\n`,
+                  labels: ['content-update'],
+                });
+              }
+            }
+
+            // Seasonal reminders
+            const seasonalMonths = {
+              1: '신년 특별 운세',
+              2: '발렌타인 사랑운',
+              10: '수능 시즌 학업운',
+              12: '크리스마스 홀리데이 운세',
+            };
+
+            if (month in seasonalMonths && day <= 7) {
+              const label = seasonalMonths[month];
+              const existingIssues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: 'seasonal',
+                state: 'open',
+              });
+
+              const seasonalExists = existingIssues.data.some(
+                (i) => i.title.includes(label)
+              );
+
+              if (!seasonalExists) {
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `🎉 ${label} 콘텐츠 준비`,
+                  body: `## ${label}\n\n` +
+                    `이번 달은 시즌 이벤트가 예정되어 있습니다.\n\n` +
+                    `### 할 일\n` +
+                    `- [ ] 시즌 운세 메시지 15-20개 추가\n` +
+                    `- [ ] 시즌 블로그 포스트 1개 작성\n` +
+                    `- [ ] 메인 페이지 시즌 테마 적용 (선택)\n` +
+                    `- [ ] SNS 홍보 콘텐츠 준비\n\n` +
+                    `\`npx tsx scripts/add-seasonal-fortunes.ts check\` 로 상세 가이드를 확인하세요.`,
+                  labels: ['seasonal', 'content-update'],
+                });
+              }
+            }
