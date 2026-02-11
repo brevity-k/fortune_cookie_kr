@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 
 interface ShakeOptions {
   threshold?: number;
@@ -19,6 +19,7 @@ export function useShakeDetection({
     y: 0,
     z: 0,
   });
+  const listeningRef = useRef(false);
 
   const handleMotion = useCallback(
     (event: DeviceMotionEvent) => {
@@ -46,32 +47,29 @@ export function useShakeDetection({
     [threshold, timeout, onShake]
   );
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
+  // Must be called from a user gesture (e.g. pointerdown, click) for iOS support
+  const enableShake = useCallback(async () => {
+    if (typeof window === 'undefined' || listeningRef.current) return;
 
-    const requestPermission = async () => {
-      if (
-        typeof DeviceMotionEvent !== 'undefined' &&
-        'requestPermission' in DeviceMotionEvent &&
-        typeof (DeviceMotionEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission === 'function'
-      ) {
-        try {
-          const permission = await (DeviceMotionEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission();
-          if (permission === 'granted') {
-            window.addEventListener('devicemotion', handleMotion);
-          }
-        } catch {
-          // Permission denied
+    if (
+      typeof DeviceMotionEvent !== 'undefined' &&
+      'requestPermission' in DeviceMotionEvent &&
+      typeof (DeviceMotionEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission === 'function'
+    ) {
+      try {
+        const permission = await (DeviceMotionEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission();
+        if (permission === 'granted') {
+          window.addEventListener('devicemotion', handleMotion);
+          listeningRef.current = true;
         }
-      } else {
-        window.addEventListener('devicemotion', handleMotion);
+      } catch {
+        // Permission denied
       }
-    };
-
-    requestPermission();
-
-    return () => {
-      window.removeEventListener('devicemotion', handleMotion);
-    };
+    } else if (typeof DeviceMotionEvent !== 'undefined') {
+      window.addEventListener('devicemotion', handleMotion);
+      listeningRef.current = true;
+    }
   }, [handleMotion]);
+
+  return { enableShake };
 }

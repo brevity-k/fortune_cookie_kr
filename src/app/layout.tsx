@@ -39,20 +39,11 @@ export const metadata: Metadata = {
     title: "포춘쿠키 - 오늘의 운세 | 무료 포춘쿠키 운세",
     description:
       "포춘쿠키를 깨고 오늘의 운세를 확인하세요! 매일 새로운 운세를 무료로 확인하세요.",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "포춘쿠키 - 오늘의 운세",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "포춘쿠키 - 오늘의 운세",
     description: "포춘쿠키를 깨고 오늘의 운세를 확인하세요!",
-    images: ["/og-image.png"],
   },
   robots: {
     index: true,
