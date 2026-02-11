@@ -139,12 +139,22 @@ export default function FortuneCookie({ onBreak, fortune }: FortuneCookieProps) 
   }, []);
 
   // Drag interaction
+  const handleDragStart = useCallback(() => {
+    isDraggingRef.current = true;
+    // Cancel long press when dragging starts
+    if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+    setLongPressProgress(0);
+  }, []);
+
   const handleDragEnd = useCallback(
     (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       if (cookieState === 'broken' || cookieState === 'revealed' || cookieState === 'breaking') return;
 
       const velocity = Math.abs(info.velocity.x) + Math.abs(info.velocity.y);
-      if (velocity > 500) {
+      const distance = Math.abs(info.offset.x) + Math.abs(info.offset.y);
+
+      if (velocity > 300 || distance > 120) {
         triggerBreak('drag');
       } else {
         controls.start({ x: 0, y: 0, transition: { type: 'spring', stiffness: 300 } });
@@ -201,6 +211,7 @@ export default function FortuneCookie({ onBreak, fortune }: FortuneCookieProps) 
           drag={isInteractive}
           dragConstraints={{ left: -150, right: 150, top: -100, bottom: 100 }}
           dragElastic={0.7}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           onClick={isInteractive ? handleClick : undefined}
           onPointerDown={isInteractive ? handlePointerDown : undefined}

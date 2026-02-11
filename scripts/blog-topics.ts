@@ -1,0 +1,428 @@
+/**
+ * 블로그 포스트 주제 큐
+ *
+ * 포춘쿠키/운세/한국 문화 관련 60+ 주제
+ * 각 주제는 SEO 키워드와 함께 정의됩니다.
+ * 사용된 주제는 used-topics.json에 기록됩니다.
+ */
+
+export interface BlogTopic {
+  slug: string;
+  title: string;
+  description: string;
+  keywords: string[];
+  category: 'fortune' | 'culture' | 'lifestyle' | 'seasonal' | 'psychology';
+}
+
+export const BLOG_TOPICS: BlogTopic[] = [
+  // === 운세/점술 ===
+  {
+    slug: 'tarot-card-basics',
+    title: '타로 카드 입문 가이드',
+    description: '타로 카드의 기본 구성과 의미, 초보자를 위한 타로 리딩 방법을 알아봅니다.',
+    keywords: ['타로 카드', '타로 입문', '타로 의미', '타로 리딩'],
+    category: 'fortune',
+  },
+  {
+    slug: 'palm-reading-guide',
+    title: '손금 보는 법 완전 가이드',
+    description: '생명선, 두뇌선, 감정선 등 주요 손금의 의미와 해석 방법을 정리했습니다.',
+    keywords: ['손금', '손금 보는 법', '생명선', '감정선', '손금 의미'],
+    category: 'fortune',
+  },
+  {
+    slug: 'blood-type-personality',
+    title: '혈액형별 성격과 운세',
+    description: 'A형, B형, O형, AB형 혈액형별 성격 특징과 궁합을 알아봅니다.',
+    keywords: ['혈액형 성격', '혈액형 궁합', 'A형 성격', 'B형 성격'],
+    category: 'fortune',
+  },
+  {
+    slug: 'constellation-fortune-basics',
+    title: '별자리 운세의 기초',
+    description: '12별자리의 특성과 운세 보는 법, 별자리 궁합까지 총정리했습니다.',
+    keywords: ['별자리 운세', '12별자리', '별자리 궁합', '별자리 성격'],
+    category: 'fortune',
+  },
+  {
+    slug: 'numerology-life-path',
+    title: '수비학으로 알아보는 인생 경로수',
+    description: '생년월일로 계산하는 인생 경로수의 의미와 각 숫자별 특성을 살펴봅니다.',
+    keywords: ['수비학', '인생 경로수', '운명의 숫자', '생년월일 운세'],
+    category: 'fortune',
+  },
+  {
+    slug: 'i-ching-divination',
+    title: '주역점의 원리와 방법',
+    description: '주역(易經)의 기본 원리와 64괘를 활용한 점술 방법을 소개합니다.',
+    keywords: ['주역', '주역점', '64괘', '역경', '동양 점술'],
+    category: 'fortune',
+  },
+  {
+    slug: 'tea-leaf-reading',
+    title: '찻잎 점(타세오그래피)의 세계',
+    description: '찻잎의 모양으로 미래를 점치는 타세오그래피의 역사와 해석법을 알아봅니다.',
+    keywords: ['찻잎 점', '타세오그래피', '운세', '점술 방법'],
+    category: 'fortune',
+  },
+  {
+    slug: 'fortune-telling-around-world',
+    title: '세계 각국의 독특한 점술 문화',
+    description: '일본, 인도, 유럽 등 세계 각국의 독특한 점술 방법과 문화를 비교합니다.',
+    keywords: ['세계 점술', '점술 문화', '운세 문화', '각국 운세'],
+    category: 'fortune',
+  },
+  {
+    slug: 'yin-yang-five-elements',
+    title: '음양오행의 원리와 일상 활용',
+    description: '동양 철학의 핵심인 음양오행 이론을 쉽게 이해하고 일상에 적용하는 방법입니다.',
+    keywords: ['음양오행', '음양 이론', '오행', '동양 철학'],
+    category: 'fortune',
+  },
+  {
+    slug: 'fortune-cookie-fun-facts',
+    title: '포춘쿠키에 대한 재미있는 사실 10가지',
+    description: '포춘쿠키에 대해 몰랐던 재미있고 놀라운 사실들을 모았습니다.',
+    keywords: ['포춘쿠키', '포춘쿠키 사실', '포춘쿠키 역사'],
+    category: 'fortune',
+  },
+
+  // === 한국 문화 ===
+  {
+    slug: 'korean-new-year-traditions',
+    title: '한국의 설날 전통과 풍습',
+    description: '설날 세배, 떡국, 윷놀이 등 한국 설날의 다양한 전통과 의미를 알아봅니다.',
+    keywords: ['설날', '세배', '한국 설날', '설날 전통', '떡국'],
+    category: 'culture',
+  },
+  {
+    slug: 'korean-superstitions',
+    title: '한국의 재미있는 미신과 금기',
+    description: '빨간 글씨로 이름 쓰지 않기, 선풍기 사망설 등 한국의 독특한 미신을 소개합니다.',
+    keywords: ['한국 미신', '한국 금기', '미신', '빨간 글씨'],
+    category: 'culture',
+  },
+  {
+    slug: 'korean-auspicious-symbols',
+    title: '한국 전통 길상 문양의 의미',
+    description: '십장생, 봉황, 용 등 한국 전통 문양에 담긴 행운과 축복의 의미를 살펴봅니다.',
+    keywords: ['길상 문양', '십장생', '전통 문양', '한국 문양'],
+    category: 'culture',
+  },
+  {
+    slug: 'korean-shamanism-gut',
+    title: '한국의 무속 문화와 굿',
+    description: '무당, 굿, 부적 등 한국 무속 신앙의 역사와 현대적 의미를 알아봅니다.',
+    keywords: ['무속', '굿', '무당', '한국 무속', '부적'],
+    category: 'culture',
+  },
+  {
+    slug: 'korean-wedding-fortune',
+    title: '한국 전통 결혼과 궁합 문화',
+    description: '사주 궁합, 택일, 폐백 등 한국 전통 결혼에 얽힌 운세 문화를 소개합니다.',
+    keywords: ['궁합', '결혼 궁합', '사주 궁합', '택일', '전통 결혼'],
+    category: 'culture',
+  },
+  {
+    slug: 'korean-naming-fortune',
+    title: '한국의 작명 문화와 이름의 운세',
+    description: '한자 획수, 음양오행으로 이름을 짓는 한국의 작명 문화를 알아봅니다.',
+    keywords: ['작명', '이름 짓기', '한자 이름', '이름 운세'],
+    category: 'culture',
+  },
+  {
+    slug: 'korean-talisman-bujeok',
+    title: '한국 전통 부적의 종류와 의미',
+    description: '재물 부적, 건강 부적, 학업 부적 등 한국 전통 부적의 세계를 탐구합니다.',
+    keywords: ['부적', '한국 부적', '전통 부적', '행운 부적'],
+    category: 'culture',
+  },
+  {
+    slug: 'four-pillars-of-destiny',
+    title: '사주명리학 기초 입문',
+    description: '사주명리학의 기본 개념인 천간, 지지, 오행의 관계를 쉽게 설명합니다.',
+    keywords: ['사주명리학', '천간 지지', '사주 기초', '명리학'],
+    category: 'culture',
+  },
+
+  // === 생활/라이프스타일 ===
+  {
+    slug: 'morning-routine-luck',
+    title: '아침 루틴으로 하루 운을 바꾸는 법',
+    description: '성공한 사람들의 아침 루틴과 운을 끌어당기는 모닝 습관을 소개합니다.',
+    keywords: ['아침 루틴', '모닝 루틴', '운을 높이는 습관', '아침 습관'],
+    category: 'lifestyle',
+  },
+  {
+    slug: 'color-psychology-luck',
+    title: '색상 심리학과 행운의 컬러',
+    description: '색상이 기분과 운에 미치는 영향, 상황별 행운의 컬러를 알아봅니다.',
+    keywords: ['색상 심리학', '행운의 색', '컬러 테라피', '색상 운세'],
+    category: 'lifestyle',
+  },
+  {
+    slug: 'lucky-plants-home',
+    title: '집에 두면 좋은 행운의 식물 10가지',
+    description: '금전수, 행운목, 산세베리아 등 재물운과 건강운을 높여주는 식물을 소개합니다.',
+    keywords: ['행운의 식물', '금전수', '풍수 식물', '재물운 식물'],
+    category: 'lifestyle',
+  },
+  {
+    slug: 'wallet-feng-shui',
+    title: '지갑 풍수로 재물운 높이기',
+    description: '지갑 색상, 정리법, 보관 방법 등 재물운을 높이는 지갑 풍수 팁입니다.',
+    keywords: ['지갑 풍수', '재물운', '지갑 색상', '돈 모이는 지갑'],
+    category: 'lifestyle',
+  },
+  {
+    slug: 'bedroom-feng-shui-sleep',
+    title: '잠이 잘 오는 침실 풍수 인테리어',
+    description: '침대 방향, 색상, 조명 등 숙면과 좋은 기운을 위한 침실 풍수 팁입니다.',
+    keywords: ['침실 풍수', '잠이 잘 오는 방', '침대 방향', '풍수 인테리어'],
+    category: 'lifestyle',
+  },
+  {
+    slug: 'lucky-food-korea',
+    title: '한국에서 행운을 가져다주는 음식들',
+    description: '떡국, 미역국, 팥죽 등 한국 전통에서 행운과 복을 상징하는 음식을 소개합니다.',
+    keywords: ['행운의 음식', '한국 음식', '복 음식', '떡국'],
+    category: 'lifestyle',
+  },
+  {
+    slug: 'gratitude-journal-benefits',
+    title: '감사 일기의 놀라운 효과',
+    description: '감사 일기가 행복과 운에 미치는 과학적 효과와 작성법을 알아봅니다.',
+    keywords: ['감사 일기', '감사 일기 효과', '행복 습관', '긍정 심리학'],
+    category: 'lifestyle',
+  },
+  {
+    slug: 'declutter-for-luck',
+    title: '정리 정돈이 운을 바꾼다',
+    description: '미니멀리즘과 풍수의 접점, 공간 정리가 운에 미치는 영향을 살펴봅니다.',
+    keywords: ['정리 정돈', '미니멀리즘', '풍수 정리', '공간 에너지'],
+    category: 'lifestyle',
+  },
+  {
+    slug: 'crystal-healing-guide',
+    title: '크리스탈 힐링 가이드: 보석과 운세',
+    description: '로즈쿼츠, 시트린, 아메시스트 등 보석별 에너지와 활용법을 소개합니다.',
+    keywords: ['크리스탈 힐링', '보석 운세', '로즈쿼츠', '시트린'],
+    category: 'lifestyle',
+  },
+  {
+    slug: 'office-feng-shui-tips',
+    title: '사무실 풍수로 승진운 높이기',
+    description: '책상 배치, 소품 활용 등 직장에서 운을 높이는 풍수 인테리어 팁입니다.',
+    keywords: ['사무실 풍수', '직장운', '책상 풍수', '승진운'],
+    category: 'lifestyle',
+  },
+  {
+    slug: 'meditation-and-intuition',
+    title: '명상으로 직관력 키우기',
+    description: '명상이 직관력과 의사결정에 미치는 영향, 초보자를 위한 명상 방법입니다.',
+    keywords: ['명상', '직관력', '명상 방법', '마음 수련'],
+    category: 'lifestyle',
+  },
+  {
+    slug: 'lucky-direction-2026',
+    title: '2026년 길한 방향과 이사 택일',
+    description: '2026년 병오년의 길한 방향, 이사와 여행에 좋은 시기를 알아봅니다.',
+    keywords: ['2026년 운세', '길한 방향', '이사 택일', '병오년'],
+    category: 'lifestyle',
+  },
+
+  // === 시즌/이벤트 ===
+  {
+    slug: 'valentines-love-fortune',
+    title: '발렌타인데이 사랑운 테스트',
+    description: '발렌타인데이를 맞아 나의 사랑운을 확인하고 연애 운세를 알아봅니다.',
+    keywords: ['발렌타인데이', '사랑운', '연애 운세', '발렌타인 운세'],
+    category: 'seasonal',
+  },
+  {
+    slug: 'chuseok-fortune-traditions',
+    title: '추석과 한가위의 운세 전통',
+    description: '추석의 의미와 보름달 소원 빌기, 한가위 전통 놀이 속 운세 문화를 소개합니다.',
+    keywords: ['추석', '한가위', '보름달 소원', '추석 운세'],
+    category: 'seasonal',
+  },
+  {
+    slug: 'summer-fortune-tips',
+    title: '여름철 건강운과 재물운 올리는 법',
+    description: '여름 풍수 팁, 삼복더위 건강 관리, 여름 행운 아이템을 소개합니다.',
+    keywords: ['여름 운세', '여름 건강', '삼복', '여름 풍수'],
+    category: 'seasonal',
+  },
+  {
+    slug: 'year-end-fortune-review',
+    title: '연말 운세 총정리와 새해 준비',
+    description: '한 해를 돌아보고 새해 운세를 준비하는 방법, 연말 행운 아이템을 소개합니다.',
+    keywords: ['연말 운세', '새해 준비', '연말 정리', '새해 운세'],
+    category: 'seasonal',
+  },
+  {
+    slug: 'spring-new-beginnings-fortune',
+    title: '봄의 시작과 새 출발의 운세',
+    description: '입춘의 의미, 봄에 시작하면 좋은 일들과 봄 행운 팁을 알아봅니다.',
+    keywords: ['봄 운세', '입춘', '새 출발', '봄 풍수'],
+    category: 'seasonal',
+  },
+  {
+    slug: 'exam-season-study-luck',
+    title: '시험 시즌 학업운 올리는 비법',
+    description: '수능, 공무원 시험 등 시험 시즌에 학업운을 높이는 방법과 응원 문화를 소개합니다.',
+    keywords: ['학업운', '수능 운세', '시험 운세', '공부운'],
+    category: 'seasonal',
+  },
+  {
+    slug: 'christmas-fortune-giving',
+    title: '크리스마스에 행운을 선물하는 법',
+    description: '크리스마스 선물과 행운, 연말 포춘쿠키 이벤트 아이디어를 소개합니다.',
+    keywords: ['크리스마스', '크리스마스 운세', '크리스마스 선물', '연말 행운'],
+    category: 'seasonal',
+  },
+
+  // === 심리/자기계발 ===
+  {
+    slug: 'law-of-attraction',
+    title: '끌어당김의 법칙과 행운의 관계',
+    description: '긍정적 사고가 운을 끌어당기는 원리와 일상에서 실천하는 방법을 소개합니다.',
+    keywords: ['끌어당김의 법칙', '긍정 사고', '행운', '시크릿'],
+    category: 'psychology',
+  },
+  {
+    slug: 'luck-psychology-research',
+    title: '행운의 심리학: 운이 좋은 사람들의 비밀',
+    description: '리처드 와이즈먼의 연구로 알아보는 운이 좋은 사람들의 4가지 특징입니다.',
+    keywords: ['행운 심리학', '운이 좋은 사람', '리처드 와이즈먼', '럭 팩터'],
+    category: 'psychology',
+  },
+  {
+    slug: 'positive-affirmation-power',
+    title: '긍정 확언의 힘: 말이 운명을 바꾼다',
+    description: '긍정 확언(어피메이션)의 과학적 근거와 효과적인 실천법을 알아봅니다.',
+    keywords: ['긍정 확언', '어피메이션', '긍정의 힘', '자기 암시'],
+    category: 'psychology',
+  },
+  {
+    slug: 'visualization-success',
+    title: '시각화 기법으로 목표 달성하기',
+    description: '성공을 시각화하는 방법과 비전 보드 만들기, 그 효과를 살펴봅니다.',
+    keywords: ['시각화', '비전 보드', '목표 달성', '성공 시각화'],
+    category: 'psychology',
+  },
+  {
+    slug: 'mindfulness-daily-fortune',
+    title: '마음챙김과 일상의 행운',
+    description: '마인드풀니스가 행운 인식에 미치는 영향과 실천 방법을 소개합니다.',
+    keywords: ['마음챙김', '마인드풀니스', '일상 행운', '현재에 집중'],
+    category: 'psychology',
+  },
+  {
+    slug: 'subconscious-mind-fortune',
+    title: '잠재의식이 운을 결정한다',
+    description: '잠재의식의 힘과 운의 관계, 잠재의식을 긍정적으로 프로그래밍하는 방법입니다.',
+    keywords: ['잠재의식', '잠재의식 활용', '운명', '무의식'],
+    category: 'psychology',
+  },
+  {
+    slug: 'resilience-and-luck',
+    title: '회복 탄력성이 높은 사람이 운도 좋다',
+    description: '역경을 이겨내는 힘과 행운의 상관관계, 회복 탄력성을 키우는 방법입니다.',
+    keywords: ['회복 탄력성', '레질리언스', '역경 극복', '긍정 심리'],
+    category: 'psychology',
+  },
+  {
+    slug: 'serendipity-science',
+    title: '세렌디피티: 우연한 행운의 과학',
+    description: '예상치 못한 행운이 찾아오는 원리와 세렌디피티를 늘리는 생활 습관입니다.',
+    keywords: ['세렌디피티', '우연한 행운', '행운의 과학', '기회 포착'],
+    category: 'psychology',
+  },
+  {
+    slug: 'growth-mindset-fortune',
+    title: '성장 마인드셋이 운을 바꾼다',
+    description: '캐롤 드웩의 성장 마인드셋 이론과 운에 대한 태도의 관계를 알아봅니다.',
+    keywords: ['성장 마인드셋', '캐롤 드웩', '마인드셋', '자기 성장'],
+    category: 'psychology',
+  },
+  {
+    slug: 'self-fulfilling-prophecy',
+    title: '자기 충족적 예언: 믿으면 이루어진다',
+    description: '운세를 믿으면 정말 그렇게 되는 이유, 자기 충족적 예언의 심리학을 탐구합니다.',
+    keywords: ['자기 충족적 예언', '피그말리온 효과', '운세 심리학', '믿음의 힘'],
+    category: 'psychology',
+  },
+
+  // === 추가 운세/문화 ===
+  {
+    slug: 'aura-reading-basics',
+    title: '오라 리딩: 나의 에너지 색상 알아보기',
+    description: '오라의 개념과 각 색상별 의미, 자신의 오라 색상을 확인하는 방법입니다.',
+    keywords: ['오라', '오라 리딩', '에너지 색상', '오라 의미'],
+    category: 'fortune',
+  },
+  {
+    slug: 'chinese-fortune-sticks',
+    title: '중국 제비뽑기 운세(쩜)의 유래',
+    description: '중국 사찰의 제비뽑기 운세(求签)의 역사와 방법, 해석법을 소개합니다.',
+    keywords: ['제비뽑기 운세', '중국 점', '사찰 운세', '구첨'],
+    category: 'fortune',
+  },
+  {
+    slug: 'japanese-omikuji',
+    title: '일본 오미쿠지와 한국 운세 비교',
+    description: '일본 신사의 오미쿠지와 한국 운세 문화의 공통점과 차이점을 비교합니다.',
+    keywords: ['오미쿠지', '일본 운세', '한일 문화 비교', '신사 운세'],
+    category: 'fortune',
+  },
+  {
+    slug: 'mbti-and-fortune',
+    title: 'MBTI 성격유형별 행운 스타일',
+    description: 'MBTI 유형에 따라 행운을 경험하는 방식과 운을 높이는 맞춤 팁을 제공합니다.',
+    keywords: ['MBTI', 'MBTI 운세', 'MBTI 행운', '성격유형 운세'],
+    category: 'psychology',
+  },
+  {
+    slug: 'animal-spirit-guide',
+    title: '나의 수호 동물 찾기',
+    description: '토템 동물, 수호 동물의 개념과 자신의 수호 동물을 찾는 방법을 소개합니다.',
+    keywords: ['수호 동물', '토템 동물', '영적 동물', '파워 애니멀'],
+    category: 'fortune',
+  },
+  {
+    slug: 'full-moon-rituals',
+    title: '보름달 소원 빌기와 달의 운세',
+    description: '보름달이 운세에 미치는 영향과 달의 주기에 맞춘 소원 빌기 방법입니다.',
+    keywords: ['보름달', '달 운세', '보름달 소원', '루나 사이클'],
+    category: 'fortune',
+  },
+  {
+    slug: 'lucky-charm-around-world',
+    title: '세계의 행운 아이템 모음',
+    description: '네잎 클로버, 마네키네코, 나자르 등 세계 각국의 행운 아이템을 소개합니다.',
+    keywords: ['행운 아이템', '럭키 참', '네잎 클로버', '행운 부적'],
+    category: 'culture',
+  },
+  {
+    slug: 'face-reading-modern',
+    title: '현대인을 위한 관상 보는 법',
+    description: '이마, 눈, 코, 입 등 얼굴 부위별 관상의 의미를 쉽게 알아봅니다.',
+    keywords: ['관상', '관상 보는 법', '얼굴 운세', '인상학'],
+    category: 'fortune',
+  },
+  {
+    slug: 'dream-diary-benefits',
+    title: '꿈 일기 쓰기의 효과',
+    description: '꿈 일기를 쓰면 좋은 이유와 올바른 꿈 일기 작성법을 소개합니다.',
+    keywords: ['꿈 일기', '꿈 기록', '꿈 해석', '꿈 일기 효과'],
+    category: 'lifestyle',
+  },
+  {
+    slug: 'feng-shui-front-door',
+    title: '현관 풍수로 좋은 기운 들이기',
+    description: '현관 방향, 색상, 소품 배치 등 현관 풍수의 핵심 포인트를 정리했습니다.',
+    keywords: ['현관 풍수', '현관 인테리어', '좋은 기운', '풍수 현관'],
+    category: 'lifestyle',
+  },
+];
