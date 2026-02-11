@@ -7,35 +7,27 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.k
 
 export function useShareFortune() {
   const shareViaKakao = useCallback((fortune: Fortune) => {
-    if (typeof window === 'undefined' || !window.Kakao) return;
+    if (typeof window === 'undefined' || !window.Kakao) {
+      alert('카카오톡 공유 기능을 사용하려면 카카오 앱 키 설정이 필요합니다.');
+      return;
+    }
 
     if (!window.Kakao.isInitialized()) {
       const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_KEY;
-      if (kakaoKey) {
-        window.Kakao.init(kakaoKey);
+      if (!kakaoKey) {
+        alert('카카오톡 공유 기능을 사용하려면 카카오 앱 키 설정이 필요합니다.');
+        return;
       }
+      window.Kakao.init(kakaoKey);
     }
 
     window.Kakao.Share.sendDefault({
-      objectType: 'feed',
-      content: {
-        title: '🥠 포춘쿠키 운세',
-        description: fortune.shareText,
-        imageUrl: `${SITE_URL}/og-image.png`,
-        link: {
-          mobileWebUrl: SITE_URL,
-          webUrl: SITE_URL,
-        },
+      objectType: 'text',
+      text: `🥠 포춘쿠키 운세\n\n${fortune.shareText}`,
+      link: {
+        mobileWebUrl: SITE_URL,
+        webUrl: SITE_URL,
       },
-      buttons: [
-        {
-          title: '나도 포춘쿠키 열기',
-          link: {
-            mobileWebUrl: SITE_URL,
-            webUrl: SITE_URL,
-          },
-        },
-      ],
     });
   }, []);
 
