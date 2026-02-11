@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import ContactForm from '@/components/contact/ContactForm';
 
 export const metadata: Metadata = {
   title: '문의하기',
@@ -20,29 +21,17 @@ export default function ContactPage() {
           <section className="mb-8">
             <p className="text-text-secondary leading-relaxed mb-6">
               포춘쿠키 서비스에 대한 문의사항, 제안, 버그 리포트 등이 있으시면
-              아래 방법으로 연락해 주시기 바랍니다.
+              아래 양식을 통해 연락해 주시기 바랍니다.
             </p>
 
-            <div className="bg-bg-card/50 rounded-xl p-6 border border-white/5 space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-cookie-gold mb-1">
-                  이메일
-                </h3>
-                <p className="text-text-secondary">
-                  <a href="mailto:brevity1s.wos@gmail.com" className="text-cookie-gold hover:underline">
-                    brevity1s.wos@gmail.com
-                  </a>
-                </p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-cookie-gold mb-1">
-                  응답 시간
-                </h3>
-                <p className="text-text-secondary">
-                  평일 기준 1~2영업일 이내 답변 드리겠습니다.
-                </p>
-              </div>
-            </div>
+            <ContactForm />
+
+            <p className="text-text-muted text-xs mt-3 text-center">
+              이메일로도 문의 가능합니다:{' '}
+              <a href="mailto:brevity1s.wos@gmail.com" className="text-cookie-gold/70 hover:underline">
+                brevity1s.wos@gmail.com
+              </a>
+            </p>
           </section>
 
           <section>
