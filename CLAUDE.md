@@ -113,7 +113,7 @@ npm run lint       # ESLint
 NEXT_PUBLIC_GA_ID=              # Google Analytics 4 측정 ID (G-XXXXXXXXXX)
 NEXT_PUBLIC_ADSENSE_CLIENT=     # Google AdSense 클라이언트 ID (ca-pub-XXXXXXXX)
 NEXT_PUBLIC_KAKAO_KEY=          # Kakao JavaScript 앱 키
-NEXT_PUBLIC_SITE_URL=           # 사이트 URL (기본값: https://fortunecookie.kr)
+NEXT_PUBLIC_SITE_URL=           # 사이트 URL (기본값: https://fortunecookie.ai.kr)
 NEXT_PUBLIC_GOOGLE_VERIFICATION= # Google Search Console 인증 코드
 ```
 
@@ -128,7 +128,7 @@ NEXT_PUBLIC_GOOGLE_VERIFICATION= # Google Search Console 인증 코드
 6. 배포 리전: `icn1` (서울) 권장
 
 ### 2단계: 도메인 연결
-1. `.kr` 도메인 구매 (예: fortunecookie.kr)
+1. `.kr` 도메인 구매 (예: fortunecookie.ai.kr)
    - 추천 등록기관: 가비아, 카페24, 호스팅KR
 2. Vercel 프로젝트 Settings → Domains에서 도메인 추가
 3. DNS 설정:
