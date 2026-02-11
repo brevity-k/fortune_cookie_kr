@@ -99,9 +99,22 @@ export default function FortuneCookie({ onBreak, fortune }: FortuneCookieProps) 
     }
   }, [cookieState, triggerBreak, play]);
 
+  // Shake detection (mobile) — enableShake must be called from a user gesture for iOS
+  const { enableShake } = useShakeDetection({
+    threshold: 15,
+    onShake: useCallback(() => {
+      if (cookieState !== 'broken' && cookieState !== 'revealed' && cookieState !== 'breaking') {
+        triggerBreak('shake');
+      }
+    }, [cookieState, triggerBreak]),
+  });
+
   // Long press interaction
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (cookieState === 'broken' || cookieState === 'revealed' || cookieState === 'breaking') return;
+
+    // Request DeviceMotion permission on first interaction (required by iOS)
+    enableShake();
 
     dragStartPosRef.current = { x: e.clientX, y: e.clientY };
     isDraggingRef.current = false;
@@ -130,7 +143,7 @@ export default function FortuneCookie({ onBreak, fortune }: FortuneCookieProps) 
     longPressTimerRef.current = setTimeout(() => {
       // Handled in interval above
     }, 1500);
-  }, [cookieState, triggerBreak]);
+  }, [cookieState, triggerBreak, enableShake]);
 
   const handlePointerUp = useCallback(() => {
     if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
@@ -162,16 +175,6 @@ export default function FortuneCookie({ onBreak, fortune }: FortuneCookieProps) 
     },
     [cookieState, triggerBreak, controls]
   );
-
-  // Shake detection (mobile)
-  useShakeDetection({
-    threshold: 15,
-    onShake: useCallback(() => {
-      if (cookieState !== 'broken' && cookieState !== 'revealed' && cookieState !== 'breaking') {
-        triggerBreak('shake');
-      }
-    }, [cookieState, triggerBreak]),
-  });
 
   // Reset
   const handleReset = useCallback(() => {
