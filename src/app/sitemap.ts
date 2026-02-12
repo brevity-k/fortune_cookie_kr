@@ -1,6 +1,10 @@
 import type { MetadataRoute } from "next";
 import { CATEGORIES } from "@/types/fortune";
 import { blogPosts } from "@/data/blog-posts";
+import { ZODIAC_ANIMALS } from "@/types/zodiac";
+import { HOROSCOPE_SIGNS } from "@/types/horoscope";
+
+const MBTI_TYPES = ['intj', 'intp', 'entj', 'entp', 'infj', 'infp', 'enfj', 'enfp', 'istj', 'isfj', 'estj', 'esfj', 'istp', 'isfp', 'estp', 'esfp'];
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fortunecookie.ai.kr";
 
@@ -19,6 +23,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
+  const zodiacEntries = ZODIAC_ANIMALS.map((z) => ({
+    url: `${siteUrl}/fortune/zodiac/${z.key}`,
+    lastModified: new Date(),
+    changeFrequency: "daily" as const,
+    priority: 0.8,
+  }));
+
+  const mbtiEntries = MBTI_TYPES.map((type) => ({
+    url: `${siteUrl}/fortune/mbti/${type}`,
+    lastModified: new Date(),
+    changeFrequency: "daily" as const,
+    priority: 0.8,
+  }));
+
+  const horoscopeEntries = HOROSCOPE_SIGNS.map((s) => ({
+    url: `${siteUrl}/fortune/horoscope/${s.key}`,
+    lastModified: new Date(),
+    changeFrequency: "daily" as const,
+    priority: 0.8,
+  }));
+
   return [
     {
       url: siteUrl,
@@ -27,6 +52,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     ...categoryEntries,
+    ...zodiacEntries,
+    ...mbtiEntries,
+    ...horoscopeEntries,
+    {
+      url: `${siteUrl}/compatibility`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/collection`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.6,
+    },
     {
       url: `${siteUrl}/blog`,
       lastModified: new Date(),
