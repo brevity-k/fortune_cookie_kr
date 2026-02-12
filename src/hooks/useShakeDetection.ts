@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 interface ShakeOptions {
   threshold?: number;
@@ -14,38 +14,53 @@ export function useShakeDetection({
   onShake,
 }: ShakeOptions) {
   const lastShakeRef = useRef<number>(0);
-  const lastAccelRef = useRef<{ x: number; y: number; z: number }>({
-    x: 0,
-    y: 0,
-    z: 0,
-  });
+  const lastAccelRef = useRef<{ x: number; y: number; z: number } | null>(null);
   const listeningRef = useRef(false);
+  const onShakeRef = useRef(onShake);
+
+  // Keep callback ref current to avoid stale closures in the event listener
+  useEffect(() => {
+    onShakeRef.current = onShake;
+  }, [onShake]);
 
   const handleMotion = useCallback(
     (event: DeviceMotionEvent) => {
       const accel = event.accelerationIncludingGravity;
       if (!accel || accel.x === null || accel.y === null || accel.z === null) return;
 
-      const deltaX = Math.abs(accel.x - lastAccelRef.current.x);
-      const deltaY = Math.abs(accel.y - lastAccelRef.current.y);
-      const deltaZ = Math.abs(accel.z - lastAccelRef.current.z);
+      const current = { x: accel.x, y: accel.y, z: accel.z };
 
+      // Skip the first reading to avoid false positive from initial {0,0,0}
+      if (lastAccelRef.current === null) {
+        lastAccelRef.current = current;
+        return;
+      }
+
+      const deltaX = Math.abs(current.x - lastAccelRef.current.x);
+      const deltaY = Math.abs(current.y - lastAccelRef.current.y);
+      const deltaZ = Math.abs(current.z - lastAccelRef.current.z);
       const totalDelta = deltaX + deltaY + deltaZ;
 
-      lastAccelRef.current = {
-        x: accel.x,
-        y: accel.y,
-        z: accel.z,
-      };
+      lastAccelRef.current = current;
 
       const now = Date.now();
       if (totalDelta > threshold && now - lastShakeRef.current > timeout) {
         lastShakeRef.current = now;
-        onShake();
+        onShakeRef.current();
       }
     },
-    [threshold, timeout, onShake]
+    [threshold, timeout]
   );
+
+  // Clean up event listener on unmount
+  useEffect(() => {
+    return () => {
+      if (listeningRef.current) {
+        window.removeEventListener('devicemotion', handleMotion);
+        listeningRef.current = false;
+      }
+    };
+  }, [handleMotion]);
 
   // Must be called from a user gesture (e.g. pointerdown, click) for iOS support
   const enableShake = useCallback(async () => {
