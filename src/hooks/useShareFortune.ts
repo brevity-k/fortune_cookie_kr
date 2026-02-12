@@ -7,18 +7,9 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.k
 
 export function useShareFortune() {
   const shareViaKakao = useCallback((fortune: Fortune, giftUrl?: string) => {
-    if (typeof window === 'undefined' || !window.Kakao) {
+    if (typeof window === 'undefined' || !window.Kakao || !window.Kakao.isInitialized()) {
       alert('카카오톡 공유 기능을 사용하려면 카카오 앱 키 설정이 필요합니다.');
       return;
-    }
-
-    if (!window.Kakao.isInitialized()) {
-      const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_KEY;
-      if (!kakaoKey) {
-        alert('카카오톡 공유 기능을 사용하려면 카카오 앱 키 설정이 필요합니다.');
-        return;
-      }
-      window.Kakao.init(kakaoKey);
     }
 
     const labels: Record<number, string> = { 1: '흉', 2: '소흉', 3: '평', 4: '소길', 5: '대길' };
@@ -30,7 +21,7 @@ export function useShareFortune() {
       content: {
         title: `🥠 포춘쿠키: ${ratingLabel}`,
         description: fortune.shareText,
-        imageUrl: `${SITE_URL}/api/fortune-card?message=${encodeURIComponent(fortune.message)}&rating=${fortune.rating}&emoji=${encodeURIComponent(fortune.emoji)}&category=${encodeURIComponent(fortune.category)}`,
+        imageUrl: `${SITE_URL}/api/fortune-card?message=${encodeURIComponent(fortune.message)}&rating=${fortune.rating}&emoji=${encodeURIComponent(fortune.emoji)}&category=${encodeURIComponent(fortune.category)}&w=800&h=400`,
         link: {
           mobileWebUrl: linkUrl,
           webUrl: linkUrl,
