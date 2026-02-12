@@ -419,6 +419,47 @@ npm run content:season     # 시즌별 콘텐츠 확인
 | `getSampleFortunes()` | `fortune-file.ts` | 스타일 참고용 샘플 운세 추출 (빈 결과 시 경고) |
 | `getCategoryFilePath()` | `fortune-file.ts` | 카테고리 → 파일 경로 변환 |
 
+### 검증 엄격도 (`validate-content.ts`)
+
+`npm run content:validate`는 모든 콘텐츠 파이프라인의 프리머지 게이트입니다. ERROR는 빌드를 중단시키고, WARNING은 정보 제공용입니다.
+
+| 필드 | ERROR (빌드 실패) | WARNING (정보) |
+|------|-------------------|----------------|
+| `id` | 형식 불일치, 중복 | - |
+| `category` | 유효하지 않은 카테고리 | - |
+| `message` | 비어있음, 5자 미만 | 200자 초과, 중복 |
+| `interpretation` | 누락 | - |
+| `rating` | 타입 오류, 범위 초과 (1-5) | - |
+| `luckyNumber` | 타입 오류, 범위 이상 (1-99) | - |
+| `luckyColor` | 유효하지 않은 값 | 누락 |
+| `emoji` | 누락 | - |
+| `shareText` | 누락 | - |
+
+### 상태 파일 검증 규칙
+
+각 스크립트는 `readStateFile()`의 `validator` 파라미터로 상태 파일 무결성을 검증합니다. 검증 실패 시 기본값으로 폴백합니다.
+
+| 스크립트 | 상태 파일 | 검증 함수 | 검증 내용 |
+|---------|----------|----------|----------|
+| `generate-fortunes.ts` | `fortune-generation-state.json` | `isGenerationState` | `lastCategoryIndex`가 number 타입 |
+| `generate-seasonal-fortunes.ts` | `seasonal-generation-state.json` | `isSeasonalState` | 키가 4자리 연도, 값이 문자열 배열 |
+| `generate-blog-post.ts` | `used-topics.json` | `isStringArray` | 배열이고 모든 요소가 string |
+| `replenish-blog-topics.ts` | `used-topics.json` | `isStringArray` | 배열이고 모든 요소가 string |
+
+> **규칙**: 새 상태 파일 추가 시 반드시 타입 검증 함수를 함께 작성할 것. `Array.isArray`만으로는 부족 — 요소 타입도 검증해야 합니다.
+
+### 실패 복구 절차
+
+| 실패 유형 | 자동 복구 | 수동 복구 |
+|----------|----------|----------|
+| 콘텐츠 검증 실패 | 빌드 중단, PR 미생성 | 해당 스크립트 재실행 (`--category`/`--topic` 지정) |
+| 상태 파일 손상 | 기본값 폴백, 스크립트 계속 실행 | 상태 파일 삭제 후 재실행 (자동 재생성) |
+| PR 머지 실패 | 이슈 자동 생성 | GitHub PR 수동 확인 후 머지 |
+| 배포 헬스체크 실패 | 3회 재시도 (30초 간격), 실패 시 이슈 생성 | Vercel 대시보드 확인, 이전 배포로 롤백 |
+| API 키 미설정 | `npm ci` 전 조기 종료 | GitHub Secrets에 `ANTHROPIC_API_KEY` 설정 |
+| 주제 큐 소진 | `replenish-topics` 워크플로우 자동 트리거 | `npm run blog:generate -- --topic <slug>` 수동 지정 |
+| 시즌 운세 중복 생성 | 상태 파일에서 연도별 체크, 자동 스킵 | 상태 파일 수정 후 재실행 |
+
 ## 성장 전략 (Traffic & Growth Plan)
 
 ### 구현 현황: 11/13 기능 완료 (85%)
