@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 
@@ -8,6 +8,11 @@ const notoSansKr = Noto_Sans_KR({
   weight: ["300", "400", "500", "700"],
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  themeColor: '#1A0F2E',
+  viewportFit: 'cover',
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://fortunecookie.ai.kr"),
@@ -66,6 +71,8 @@ export default function RootLayout({
     <html lang="ko" translate="no">
       <head>
         <meta name="google" content="notranslate" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         {process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
           <script
             async

@@ -7,7 +7,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-bg-primary/80 backdrop-blur-md border-b border-white/5">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-bg-primary/80 backdrop-blur-md border-b border-white/5 pt-[env(safe-area-inset-top)]">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
           <span className="text-2xl" role="img" aria-label="fortune cookie">
@@ -66,7 +66,7 @@ export default function Header() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 text-text-secondary hover:text-cookie-gold transition-colors"
+          className="md:hidden p-2.5 min-w-[44px] min-h-[44px] text-text-secondary hover:text-cookie-gold transition-colors"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="메뉴 열기"
         >
