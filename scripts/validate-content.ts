@@ -11,6 +11,7 @@ import { allFortunes } from '../src/data/fortunes';
 import { blogPosts } from '../src/data/blog-posts';
 import {
   CATEGORIES,
+  FORTUNE_CATEGORIES,
   VALID_COLORS,
   FORTUNE_ID_PATTERN,
 } from './utils/constants';
@@ -104,29 +105,36 @@ function validateFortunes() {
   }
 
   // 필수 필드 검증
+  const validCategories: readonly string[] = FORTUNE_CATEGORIES;
   for (const f of allFortunes) {
+    if (!validCategories.includes(f.category)) {
+      error(`${f.id}: category 값이 유효하지 않음 ("${f.category}")`);
+    }
     if (!f.message || f.message.length < 5) {
       error(`${f.id}: message 필드가 비어있거나 너무 짧음`);
+    }
+    if (f.message && f.message.length > 200) {
+      warn(`${f.id}: message가 200자 초과 (${f.message.length}자)`);
     }
     if (!f.interpretation) {
       error(`${f.id}: interpretation 필드 누락`);
     }
-    if (f.rating < 1 || f.rating > 5) {
+    if (typeof f.rating !== 'number' || f.rating < 1 || f.rating > 5) {
       error(`${f.id}: rating 범위 초과 (${f.rating})`);
     }
-    if (!f.luckyNumber || f.luckyNumber < 1 || f.luckyNumber > 99) {
-      warn(`${f.id}: luckyNumber 범위 이상 (${f.luckyNumber})`);
+    if (typeof f.luckyNumber !== 'number' || f.luckyNumber < 1 || f.luckyNumber > 99) {
+      error(`${f.id}: luckyNumber 범위 이상 (${f.luckyNumber})`);
     }
     if (!f.luckyColor) {
       warn(`${f.id}: luckyColor 누락`);
     } else if (!VALID_COLORS.includes(f.luckyColor)) {
-      warn(`${f.id}: luckyColor 값이 유효하지 않음 ("${f.luckyColor}")`);
+      error(`${f.id}: luckyColor 값이 유효하지 않음 ("${f.luckyColor}")`);
     }
     if (!f.emoji) {
-      warn(`${f.id}: emoji 누락`);
+      error(`${f.id}: emoji 누락`);
     }
     if (!f.shareText) {
-      warn(`${f.id}: shareText 누락`);
+      error(`${f.id}: shareText 누락`);
     }
   }
 
