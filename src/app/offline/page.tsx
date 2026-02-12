@@ -3,6 +3,8 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "오프라인 - 포춘쿠키",
+  description: "인터넷 연결이 끊겼습니다. 연결 후 다시 시도해주세요.",
+  robots: { index: false, follow: false },
 };
 
 export default function OfflinePage() {

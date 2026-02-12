@@ -5,7 +5,6 @@ import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import FortuneShare from '@/components/fortune/FortuneShare';
 import { Fortune } from '@/types/fortune';
 import { allFortunes } from '@/data/fortunes';
 import { getCompatibilityScore, getCompatibilityFortunes, getRatingStars } from '@/lib/fortune-selector';

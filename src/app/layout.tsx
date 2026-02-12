@@ -74,6 +74,24 @@ export default function RootLayout({
         <meta name="google" content="notranslate" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: '포춘쿠키 - 오늘의 운세',
+              url: process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.kr',
+              description: '포춘쿠키를 깨고 오늘의 운세를 확인하세요! 사랑운, 재물운, 건강운, 학업운, 대인운 등 다양한 카테고리의 무료 운세를 매일 새롭게 만나보세요.',
+              inLanguage: 'ko',
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.kr'}/fortune/{category}`,
+                'query-input': 'required name=category',
+              },
+            }),
+          }}
+        />
         {process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
           <script
             async

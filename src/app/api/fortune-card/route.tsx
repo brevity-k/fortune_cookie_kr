@@ -4,16 +4,22 @@ import { NextRequest } from 'next/server';
 export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
+  try {
   const { searchParams } = req.nextUrl;
-  const message = searchParams.get('message') || '오늘의 운세';
-  const rating = parseInt(searchParams.get('rating') || '3', 10);
-  const emoji = searchParams.get('emoji') || '🥠';
-  const luckyNumber = searchParams.get('luckyNumber') || '7';
-  const luckyColor = searchParams.get('luckyColor') || '금색';
-  const category = searchParams.get('category') || '총운';
+  const message = (searchParams.get('message') || '오늘의 운세').slice(0, 200);
+  const rawRating = parseInt(searchParams.get('rating') || '3', 10);
+  const rating = Math.max(1, Math.min(5, isNaN(rawRating) ? 3 : rawRating));
+  const emoji = (searchParams.get('emoji') || '🥠').slice(0, 4);
+  const luckyNumber = (searchParams.get('luckyNumber') || '7').slice(0, 3);
+  const luckyColor = (searchParams.get('luckyColor') || '금색').slice(0, 10);
+  const category = (searchParams.get('category') || '총운').slice(0, 20);
   const streak = parseInt(searchParams.get('streak') || '0', 10);
-  const width = Math.min(parseInt(searchParams.get('w') || '1080', 10), 1080);
-  const height = Math.min(parseInt(searchParams.get('h') || '1920', 10), 1920);
+  const parseSize = (val: string | null, fallback: number, max: number) => {
+    const n = parseInt(val || String(fallback), 10);
+    return (isNaN(n) || n <= 0) ? fallback : Math.min(n, max);
+  };
+  const width = parseSize(searchParams.get('w'), 1080, 1080);
+  const height = parseSize(searchParams.get('h'), 1920, 1920);
   const isCompact = width <= 800;
 
   const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
@@ -256,4 +262,7 @@ export async function GET(req: NextRequest) {
     ),
     { width, height }
   );
+  } catch {
+    return new Response('이미지 생성 실패', { status: 500 });
+  }
 }

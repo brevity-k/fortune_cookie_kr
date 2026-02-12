@@ -16,27 +16,32 @@ export function useShareFortune() {
     const ratingLabel = labels[fortune.rating] || '평';
     const linkUrl = giftUrl || SITE_URL;
 
-    window.Kakao.Share.sendDefault({
-      objectType: 'feed',
-      content: {
-        title: `🥠 포춘쿠키: ${ratingLabel}`,
-        description: fortune.shareText,
-        imageUrl: `${SITE_URL}/api/fortune-card?message=${encodeURIComponent(fortune.message)}&rating=${fortune.rating}&emoji=${encodeURIComponent(fortune.emoji)}&category=${encodeURIComponent(fortune.category)}&w=800&h=400`,
-        link: {
-          mobileWebUrl: linkUrl,
-          webUrl: linkUrl,
-        },
-      },
-      buttons: [
-        {
-          title: '나도 포춘쿠키 열기',
+    try {
+      window.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: `🥠 포춘쿠키: ${ratingLabel}`,
+          description: fortune.shareText,
+          imageUrl: `${SITE_URL}/api/fortune-card?message=${encodeURIComponent(fortune.message)}&rating=${fortune.rating}&emoji=${encodeURIComponent(fortune.emoji)}&category=${encodeURIComponent(fortune.category)}&w=800&h=400`,
           link: {
-            mobileWebUrl: SITE_URL,
-            webUrl: SITE_URL,
+            mobileWebUrl: linkUrl,
+            webUrl: linkUrl,
           },
         },
-      ],
-    });
+        buttons: [
+          {
+            title: '나도 포춘쿠키 열기',
+            link: {
+              mobileWebUrl: SITE_URL,
+              webUrl: SITE_URL,
+            },
+          },
+        ],
+      });
+    } catch (error) {
+      console.error('[KakaoShare] Failed:', error);
+      alert('카카오톡 공유에 실패했습니다. 다시 시도해주세요.');
+    }
   }, []);
 
   const shareViaWebShare = useCallback(async (fortune: Fortune) => {

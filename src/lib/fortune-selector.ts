@@ -1,4 +1,17 @@
 import { Fortune, FortuneCategory } from '@/types/fortune';
+import { getTodayString } from '@/lib/date-utils';
+
+const fallbackFortune: Fortune = {
+  id: 'general_000',
+  category: 'general',
+  message: '오늘 하루도 행운이 가득하길!',
+  interpretation: '좋은 일이 생길 거예요.',
+  luckyNumber: 7,
+  luckyColor: '금색',
+  rating: 3,
+  emoji: '🥠',
+  shareText: '오늘 하루도 행운이 가득하길! 🥠',
+};
 
 function hashString(str: string): number {
   let hash = 0;
@@ -22,14 +35,19 @@ export function getDailyFortune(
   fortunes: Fortune[],
   category?: FortuneCategory
 ): Fortune {
-  const today = new Date();
-  const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  if (fortunes.length === 0) {
+    return fallbackFortune;
+  }
+
+  const dateStr = getTodayString();
   const seed = hashString(dateStr + (category || 'all'));
   const random = seededRandom(seed);
 
   const filtered = category
     ? fortunes.filter((f) => f.category === category)
     : fortunes;
+
+  if (filtered.length === 0) return fortunes[0];
 
   const index = Math.floor(random() * filtered.length);
   return filtered[index];
@@ -40,13 +58,19 @@ export function getRandomFortune(
   category?: FortuneCategory,
   excludeId?: string
 ): Fortune {
+  if (fortunes.length === 0) return fallbackFortune;
+
   const filtered = category
     ? fortunes.filter((f) => f.category === category)
     : fortunes;
 
+  if (filtered.length === 0) return fortunes[0];
+
   const available = excludeId
     ? filtered.filter((f) => f.id !== excludeId)
     : filtered;
+
+  if (available.length === 0) return filtered[0];
 
   const index = Math.floor(Math.random() * available.length);
   return available[index];
@@ -63,6 +87,7 @@ export function getFortuneFromId(
   fortunes: Fortune[],
   id: string
 ): Fortune {
+  if (fortunes.length === 0) return fallbackFortune;
   const seed = hashString(id);
   const index = seed % fortunes.length;
   return fortunes[index];
@@ -72,8 +97,8 @@ export function getZodiacDailyFortune(
   fortunes: Fortune[],
   animal: string
 ): Fortune {
-  const today = new Date();
-  const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  if (fortunes.length === 0) return fallbackFortune;
+  const dateStr = getTodayString();
   const seed = hashString(dateStr + 'zodiac_' + animal);
   const random = seededRandom(seed);
   const index = Math.floor(random() * fortunes.length);
@@ -84,8 +109,8 @@ export function getHoroscopeDailyFortune(
   fortunes: Fortune[],
   sign: string
 ): Fortune {
-  const today = new Date();
-  const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  if (fortunes.length === 0) return fallbackFortune;
+  const dateStr = getTodayString();
   const seed = hashString(dateStr + 'horoscope_' + sign);
   const random = seededRandom(seed);
   const index = Math.floor(random() * fortunes.length);
@@ -96,8 +121,8 @@ export function getMBTIDailyFortune(
   fortunes: Fortune[],
   mbtiType: string
 ): Fortune {
-  const today = new Date();
-  const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  if (fortunes.length === 0) return fallbackFortune;
+  const dateStr = getTodayString();
   const seed = hashString(dateStr + 'mbti_' + mbtiType.toLowerCase());
   const random = seededRandom(seed);
   const index = Math.floor(random() * fortunes.length);
@@ -122,6 +147,8 @@ export function getCompatibilityFortunes(
   nameB: string,
   yearB: number
 ): [Fortune, Fortune] {
+  if (fortunes.length === 0) return [fallbackFortune, fallbackFortune];
+  if (fortunes.length === 1) return [fortunes[0], fortunes[0]];
   const seed = hashString(nameA + yearA + nameB + yearB + 'fortunes');
   const random = seededRandom(seed);
   const idxA = Math.floor(random() * fortunes.length);

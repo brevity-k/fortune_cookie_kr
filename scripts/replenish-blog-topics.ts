@@ -18,18 +18,19 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { BLOG_TOPICS, BlogTopic } from './blog-topics';
 import { withRetry } from './utils/retry';
+import {
+  extractTextFromResponse,
+  parseClaudeJSONArray,
+  readStateFile,
+  atomicWriteFile,
+} from './utils/json';
 
 const USED_TOPICS_FILE = path.join(__dirname, 'used-topics.json');
 const TOPICS_FILE = path.join(__dirname, 'blog-topics.ts');
 const MIN_REMAINING = 15;
 
 function getUsedTopics(): string[] {
-  try {
-    const data = fs.readFileSync(USED_TOPICS_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
+  return readStateFile<string[]>(USED_TOPICS_FILE, [], Array.isArray);
 }
 
 async function generateNewTopics(count: number): Promise<BlogTopic[]> {
@@ -82,28 +83,8 @@ async function generateNewTopics(count: number): Promise<BlogTopic[]> {
     })
   );
 
-  const textBlock = response.content.find((block) => block.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') {
-    throw new Error('No text response from API');
-  }
-
-  let jsonStr = textBlock.text.trim();
-
-  // Strip markdown code fences if present
-  if (jsonStr.startsWith('```')) {
-    jsonStr = jsonStr
-      .replace(/^```(?:json)?\s*\n?/, '')
-      .replace(/\n?```\s*$/, '');
-  }
-
-  // Fix trailing commas
-  jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
-
-  const parsed = JSON.parse(jsonStr);
-
-  if (!Array.isArray(parsed)) {
-    throw new Error('Response is not an array');
-  }
+  const text = extractTextFromResponse(response);
+  const parsed = parseClaudeJSONArray<Partial<BlogTopic>>(text);
 
   // Validate and filter duplicates
   const existingSlugSet = new Set(BLOG_TOPICS.map((t) => t.slug));
@@ -157,7 +138,7 @@ function appendTopicsToFile(topics: BlogTopic[]): void {
     '\n' +
     fileContent.slice(insertPoint);
 
-  fs.writeFileSync(TOPICS_FILE, updatedContent);
+  atomicWriteFile(TOPICS_FILE, updatedContent);
 }
 
 async function main() {
@@ -166,7 +147,7 @@ async function main() {
   const countIdx = args.indexOf('--count');
   const count = countIdx !== -1 ? parseInt(args[countIdx + 1], 10) : 20;
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!dryRun && !process.env.ANTHROPIC_API_KEY) {
     console.error('ANTHROPIC_API_KEY environment variable is required.');
     process.exit(1);
   }

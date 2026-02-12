@@ -5,6 +5,13 @@ import Footer from '@/components/layout/Footer';
 export const metadata: Metadata = {
   title: '소개',
   description: '포춘쿠키 서비스 소개 - 매일 무료로 즐기는 온라인 포춘쿠키 운세',
+  openGraph: {
+    title: '포춘쿠키 소개',
+    description: '매일 무료로 즐기는 온라인 포춘쿠키 운세 서비스를 소개합니다.',
+  },
+  alternates: {
+    canonical: '/about',
+  },
 };
 
 export default function AboutPage() {

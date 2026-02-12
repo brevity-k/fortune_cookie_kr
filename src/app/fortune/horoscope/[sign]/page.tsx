@@ -26,6 +26,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: `${horoscope.emoji} ${horoscope.label} 오늘의 운세 - 포춘쿠키`,
       description: `${horoscope.label} 오늘의 운세를 확인하세요! 포춘쿠키를 깨고 나의 별자리 운세를 알아보세요.`,
     },
+    alternates: {
+      canonical: `/fortune/horoscope/${sign}`,
+    },
   };
 }
 

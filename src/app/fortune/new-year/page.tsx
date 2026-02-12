@@ -9,6 +9,9 @@ export const metadata: Metadata = {
     title: "🎆 2026 신년운세 포춘쿠키",
     description: "새해 첫 포춘쿠키! 2026년 운세를 무료로 확인하세요.",
   },
+  alternates: {
+    canonical: '/fortune/new-year',
+  },
 };
 
 export default function NewYearPage() {
