@@ -14,9 +14,11 @@ import MuteToggle from '@/components/ui/MuteToggle';
 interface FortuneCookieProps {
   onBreak: (method: CookieBreakMethod) => Fortune;
   fortune: Fortune | null;
+  streak?: number;
+  isNewCollection?: boolean;
 }
 
-export default function FortuneCookie({ onBreak, fortune }: FortuneCookieProps) {
+export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewCollection = false }: FortuneCookieProps) {
   const [cookieState, setCookieState] = useState<CookieState>('idle');
   const [breakMethod, setBreakMethod] = useState<CookieBreakMethod | null>(null);
   const [longPressProgress, setLongPressProgress] = useState(0);
@@ -237,7 +239,7 @@ export default function FortuneCookie({ onBreak, fortune }: FortuneCookieProps) 
 
       {/* Fortune Paper */}
       {cookieState === 'revealed' && currentFortune && (
-        <FortunePaper fortune={currentFortune} breakMethod={breakMethod} />
+        <FortunePaper fortune={currentFortune} breakMethod={breakMethod} streak={streak} isNewCollection={isNewCollection} />
       )}
 
       {/* Interaction hints */}

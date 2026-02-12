@@ -33,6 +33,18 @@ export default function Header() {
             카테고리
           </Link>
           <Link
+            href="/compatibility"
+            className="text-sm text-text-secondary hover:text-cookie-gold transition-colors"
+          >
+            궁합
+          </Link>
+          <Link
+            href="/collection"
+            className="text-sm text-text-secondary hover:text-cookie-gold transition-colors"
+          >
+            도감
+          </Link>
+          <Link
             href="/blog"
             className="text-sm text-text-secondary hover:text-cookie-gold transition-colors"
           >
@@ -86,6 +98,20 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               🔮 카테고리별 운세
+            </Link>
+            <Link
+              href="/compatibility"
+              className="text-text-secondary hover:text-cookie-gold transition-colors py-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              💕 궁합 테스트
+            </Link>
+            <Link
+              href="/collection"
+              className="text-text-secondary hover:text-cookie-gold transition-colors py-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              📖 도감
             </Link>
             <Link
               href="/blog"
