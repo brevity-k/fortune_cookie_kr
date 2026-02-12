@@ -187,8 +187,9 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
     setLongPressProgress(0);
     clickCountRef.current = 0;
     isBreakingRef.current = false;
+    x.set(0);
     controls.start({ x: 0, y: 0 });
-  }, [controls]);
+  }, [controls, x]);
 
   // Sync external fortune
   useEffect(() => {

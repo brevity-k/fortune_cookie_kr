@@ -83,6 +83,14 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  href="/fortune/horoscope/aries"
+                  className="text-sm text-text-muted hover:text-text-secondary transition-colors"
+                >
+                  별자리 운세
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/compatibility"
                   className="text-sm text-text-muted hover:text-text-secondary transition-colors"
                 >

@@ -80,6 +80,18 @@ export function getZodiacDailyFortune(
   return fortunes[index];
 }
 
+export function getHoroscopeDailyFortune(
+  fortunes: Fortune[],
+  sign: string
+): Fortune {
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  const seed = hashString(dateStr + 'horoscope_' + sign);
+  const random = seededRandom(seed);
+  const index = Math.floor(random() * fortunes.length);
+  return fortunes[index];
+}
+
 export function getMBTIDailyFortune(
   fortunes: Fortune[],
   mbtiType: string
