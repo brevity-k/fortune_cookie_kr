@@ -63,8 +63,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" translate="no">
       <head>
+        <meta name="google" content="notranslate" />
         {process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
           <script
             async
