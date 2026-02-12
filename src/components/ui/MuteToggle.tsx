@@ -9,7 +9,7 @@ export default function MuteToggle({ isMuted, onToggle }: MuteToggleProps) {
   return (
     <button
       onClick={onToggle}
-      className="fixed bottom-4 right-4 z-40 w-10 h-10 rounded-full bg-bg-card/80 backdrop-blur-sm border border-white/10 flex items-center justify-center text-text-secondary hover:text-cookie-gold transition-colors"
+      className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] z-40 w-10 h-10 rounded-full bg-bg-card/80 backdrop-blur-sm border border-white/10 flex items-center justify-center text-text-secondary hover:text-cookie-gold transition-colors"
       aria-label={isMuted ? '소리 켜기' : '소리 끄기'}
     >
       {isMuted ? (
