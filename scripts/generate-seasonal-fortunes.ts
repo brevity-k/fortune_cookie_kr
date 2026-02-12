@@ -73,8 +73,17 @@ interface SeasonalState {
 
 const STATE_FILE = path.join(__dirname, 'seasonal-generation-state.json');
 
+function isSeasonalState(data: unknown): data is SeasonalState {
+  if (typeof data !== 'object' || data === null || Array.isArray(data)) return false;
+  for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+    if (!/^\d{4}$/.test(key)) return false;
+    if (!Array.isArray(value) || !value.every((v) => typeof v === 'string')) return false;
+  }
+  return true;
+}
+
 function getState(): SeasonalState {
-  return readStateFile<SeasonalState>(STATE_FILE, {});
+  return readStateFile<SeasonalState>(STATE_FILE, {}, isSeasonalState);
 }
 
 function saveState(state: SeasonalState): void {
@@ -165,6 +174,53 @@ function formatFortuneAsCode(f: Fortune): string {
   },`;
 }
 
+function validateFortunes(
+  fortunes: Fortune[],
+  category: FortuneCategory,
+  existingMessages: string[]
+): string[] {
+  const errors: string[] = [];
+  const validColors: readonly string[] = VALID_COLORS;
+
+  fortunes.forEach((f, i) => {
+    if (f.category !== category) {
+      errors.push(`Fortune ${i}: expected category "${category}", got "${f.category}"`);
+    }
+    if (!f.message || typeof f.message !== 'string') {
+      errors.push(`Fortune ${i}: missing or invalid message`);
+    }
+    if (!f.interpretation || typeof f.interpretation !== 'string') {
+      errors.push(`Fortune ${i}: missing or invalid interpretation`);
+    }
+    if (typeof f.luckyNumber !== 'number' || f.luckyNumber < 1 || f.luckyNumber > 99) {
+      errors.push(`Fortune ${i}: luckyNumber must be 1-99, got ${f.luckyNumber}`);
+    }
+    if (!validColors.includes(f.luckyColor)) {
+      errors.push(`Fortune ${i}: invalid luckyColor "${f.luckyColor}"`);
+    }
+    if (![1, 2, 3, 4, 5].includes(f.rating)) {
+      errors.push(`Fortune ${i}: rating must be 1-5, got ${f.rating}`);
+    }
+    if (!f.emoji || typeof f.emoji !== 'string') {
+      errors.push(`Fortune ${i}: missing or invalid emoji`);
+    }
+    if (!f.shareText || typeof f.shareText !== 'string') {
+      errors.push(`Fortune ${i}: missing or invalid shareText`);
+    }
+    if (f.message && existingMessages.includes(f.message)) {
+      errors.push(`Fortune ${i}: duplicate message "${f.message}"`);
+    }
+    if (f.message && f.message.includes("'")) {
+      errors.push(`Fortune ${i}: message contains single quote which breaks code parsing`);
+    }
+    if (f.interpretation && f.interpretation.includes("'")) {
+      errors.push(`Fortune ${i}: interpretation contains single quote which breaks code parsing`);
+    }
+  });
+
+  return errors;
+}
+
 function appendFortunesToFile(category: FortuneCategory, fortunes: Fortune[]): void {
   const filePath = getCategoryFilePath(category);
   const content = fs.readFileSync(filePath, 'utf-8');
@@ -240,6 +296,17 @@ async function main() {
       highestId + 1,
       existing
     );
+
+    // Validate before writing
+    console.log(`  유효성 검증 중...`);
+    const errors = validateFortunes(fortunes, cat, existing);
+    if (errors.length > 0) {
+      console.error('');
+      console.error('  ❌ 유효성 검증 실패:');
+      errors.forEach((e) => console.error(`    - ${e}`));
+      console.error('');
+      process.exit(1);
+    }
 
     appendFortunesToFile(cat, fortunes);
     totalGenerated += fortunes.length;
