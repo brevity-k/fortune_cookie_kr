@@ -70,6 +70,16 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
     [onBreak, play]
   );
 
+  // Shake detection (mobile) — enableShake must be called from a user gesture for iOS
+  const { enableShake } = useShakeDetection({
+    threshold: 15,
+    onShake: useCallback(() => {
+      if (cookieState !== 'broken' && cookieState !== 'revealed' && cookieState !== 'breaking') {
+        triggerBreak('shake');
+      }
+    }, [cookieState, triggerBreak]),
+  });
+
   // Click interaction: 3 clicks to break
   const handleClick = useCallback(() => {
     // Ignore click if we just finished a drag
@@ -78,6 +88,9 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
       return;
     }
     if (cookieState !== 'idle' && cookieState !== 'crack-1' && cookieState !== 'crack-2') return;
+
+    // Request DeviceMotion permission on first click (iOS requires user gesture from click/touchend)
+    enableShake();
 
     // Check for double tap
     const now = Date.now();
@@ -99,24 +112,11 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
     } else if (clickCountRef.current >= 3) {
       triggerBreak('click');
     }
-  }, [cookieState, triggerBreak, play]);
-
-  // Shake detection (mobile) — enableShake must be called from a user gesture for iOS
-  const { enableShake } = useShakeDetection({
-    threshold: 15,
-    onShake: useCallback(() => {
-      if (cookieState !== 'broken' && cookieState !== 'revealed' && cookieState !== 'breaking') {
-        triggerBreak('shake');
-      }
-    }, [cookieState, triggerBreak]),
-  });
+  }, [cookieState, triggerBreak, play, enableShake]);
 
   // Long press interaction
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (cookieState === 'broken' || cookieState === 'revealed' || cookieState === 'breaking') return;
-
-    // Request DeviceMotion permission on first interaction (required by iOS)
-    enableShake();
 
     dragStartPosRef.current = { x: e.clientX, y: e.clientY };
     isDraggingRef.current = false;
@@ -145,7 +145,7 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
     longPressTimerRef.current = setTimeout(() => {
       // Handled in interval above
     }, 1500);
-  }, [cookieState, triggerBreak, enableShake]);
+  }, [cookieState, triggerBreak]);
 
   const handlePointerUp = useCallback(() => {
     if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
