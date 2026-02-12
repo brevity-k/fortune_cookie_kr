@@ -31,8 +31,12 @@ import {
 const USED_TOPICS_FILE = path.join(__dirname, 'used-topics.json');
 const BLOG_POSTS_FILE = path.join(__dirname, '..', 'src', 'data', 'blog-posts.ts');
 
+function isStringArray(data: unknown): data is string[] {
+  return Array.isArray(data) && data.every((item) => typeof item === 'string');
+}
+
 function getUsedTopics(): string[] {
-  return readStateFile<string[]>(USED_TOPICS_FILE, [], Array.isArray);
+  return readStateFile<string[]>(USED_TOPICS_FILE, [], isStringArray);
 }
 
 function saveUsedTopics(topics: string[]): void {

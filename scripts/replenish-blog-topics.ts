@@ -29,8 +29,12 @@ const USED_TOPICS_FILE = path.join(__dirname, 'used-topics.json');
 const TOPICS_FILE = path.join(__dirname, 'blog-topics.ts');
 const MIN_REMAINING = 15;
 
+function isStringArray(data: unknown): data is string[] {
+  return Array.isArray(data) && data.every((item) => typeof item === 'string');
+}
+
 function getUsedTopics(): string[] {
-  return readStateFile<string[]>(USED_TOPICS_FILE, [], Array.isArray);
+  return readStateFile<string[]>(USED_TOPICS_FILE, [], isStringArray);
 }
 
 async function generateNewTopics(count: number): Promise<BlogTopic[]> {
