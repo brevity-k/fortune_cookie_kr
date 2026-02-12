@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: read
+  actions: write
   issues: write
 
 jobs:
@@ -26,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -37,8 +40,63 @@ jobs:
       - name: Run content health check
         run: npx tsx scripts/content-health-check.ts
 
+      - name: Validate content integrity
+        run: npx tsx scripts/validate-content.ts
+
       - name: Check seasonal content
         run: npx tsx scripts/add-seasonal-fortunes.ts check
+
+      - name: Check blog freshness
+        run: |
+          echo "Checking blog post freshness..."
+          RECENT=$(git log --since="14 days ago" --name-only --pretty=format: -- "src/data/blog-posts.ts" | grep -c "blog-posts.ts" || echo "0")
+          echo "Blog updates in last 14 days: $RECENT"
+          if [ "$RECENT" -lt 1 ]; then
+            echo "::warning::블로그가 14일 이상 업데이트되지 않았습니다."
+            echo "BLOG_STALE=true" >> $GITHUB_ENV
+          else
+            echo "Blog freshness OK"
+            echo "BLOG_STALE=false" >> $GITHUB_ENV
+          fi
+
+      - name: Trigger daily-blog if stale
+        if: env.BLOG_STALE == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'daily-blog-post.yml',
+              ref: 'main'
+            });
+            console.log('Triggered daily-blog-post workflow due to stale content');
+
+      - name: Check fortune freshness
+        run: |
+          echo "Checking fortune freshness..."
+          RECENT=$(git log --since="14 days ago" --name-only --pretty=format: -- "src/data/fortunes/*.ts" | grep -c ".ts" || echo "0")
+          echo "Fortune file changes in last 14 days: $RECENT"
+          if [ "$RECENT" -lt 1 ]; then
+            echo "::warning::운세 메시지가 14일 이상 업데이트되지 않았습니다."
+            echo "FORTUNE_STALE=true" >> $GITHUB_ENV
+          else
+            echo "Fortune freshness OK"
+            echo "FORTUNE_STALE=false" >> $GITHUB_ENV
+          fi
+
+      - name: Trigger weekly-fortune if stale
+        if: env.FORTUNE_STALE == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'weekly-fortune-update.yml',
+              ref: 'main'
+            });
+            console.log('Triggered weekly-fortune-update workflow due to stale content');
 
       - name: Create issue if content needs update
         uses: actions/github-script@v7
@@ -122,4 +180,32 @@ jobs:
                   labels: ['seasonal', 'content-update'],
                 });
               }
+            }
+
+      - name: Auto-close recovered workflow issues
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'workflow-failure',
+              per_page: 20
+            });
+            for (const issue of issues) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+                state_reason: 'completed',
+              });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `✅ 콘텐츠 헬스체크 통과 — 파이프라인 복구됨.\nWorkflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              });
             }
