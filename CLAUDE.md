@@ -12,7 +12,6 @@
 | 파티클 효과 | canvas-confetti | 1.9.x |
 | 사운드 | Howler.js | 2.2.x |
 | 한국어 폰트 | Noto Sans KR (next/font) | - |
-| 사이트맵 | next-sitemap | 4.2.x |
 | 유틸리티 | clsx | 2.x |
 
 ## 프로젝트 구조
@@ -118,7 +117,7 @@ src/
 ```bash
 npm install        # 의존성 설치
 npm run dev        # 개발 서버 (http://localhost:3000)
-npm run build      # 프로덕션 빌드 + 사이트맵 생성
+npm run build      # 프로덕션 빌드
 npm run start      # 프로덕션 서버
 npm run lint       # ESLint
 ```
@@ -152,8 +151,8 @@ RESEND_API_KEY=                              # Resend API 키 (문의 폼) ✅
 ### 3단계: SEO 등록 ✅
 - **Google Search Console**: 인증 메타태그 추가 완료 (`0Qs_NRonZJTlJQzm_7gdXWtg4Kgxtwba6UIE71qvgbE`)
 - **네이버 서치어드바이저**: 인증 메타태그 추가 완료 (`a559aa985e044be33ec42400206408dc4327ae22`)
-- sitemap.xml 자동 생성 (25개 URL)
-- robots.txt 자동 생성
+- sitemap.xml 동적 생성 (`src/app/sitemap.ts` Next.js 라우트)
+- robots.txt 동적 생성 (`src/app/robots.ts` Next.js 라우트)
 
 ### 4단계: AdSense 신청
 - 아래 "AdSense 승인 체크리스트" 참조
@@ -177,8 +176,8 @@ RESEND_API_KEY=                              # Resend API 키 (문의 폼) ✅
 - [x] 15개 이상 콘텐츠 페이지 (현재 19개)
 - [x] 법적 페이지: 개인정보처리방침, 이용약관
 - [x] 소개(about) 및 문의(contact) 페이지
-- [x] 사이트맵(sitemap.xml) 자동 생성
-- [x] robots.txt 자동 생성
+- [x] 사이트맵(sitemap.xml) 동적 생성 (Next.js 라우트)
+- [x] robots.txt 동적 생성 (Next.js 라우트)
 - [x] ads.txt 파일 준비
 - [x] 모바일 반응형 디자인
 - [x] 원본 한국어 콘텐츠 (280개 운세 + 10개 블로그)
@@ -298,7 +297,7 @@ npm run content:season     # 시즌별 콘텐츠 확인
 ```
 
 ### 자동 리마인더 스케줄
-- **매주 월요일 09:00 KST**: 콘텐츠 건강 체크 실행 + 블로그/운세 신선도 확인 + 자동 트리거
+- **매주 월요일 12:00 KST**: 콘텐츠 건강 체크 실행 + 블로그/운세 신선도 확인 + 자동 트리거
 - **매월 1일**: 블로그/운세 업데이트 이슈 자동 생성
 - **시즌 이벤트 (1월/2월/10월/12월)**: 시즌 콘텐츠 이슈 자동 생성
 
@@ -306,20 +305,22 @@ npm run content:season     # 시즌별 콘텐츠 확인
 
 | 스케줄 | 워크플로우 | 기능 | 자체 복구 |
 |--------|-----------|------|----------|
-| 매일 06:00 KST | daily-blog-post | 블로그 포스트 생성 + PR + 자동 머지 | 중복 이슈 + 자동 닫기 |
-| 매주 월요일 06:00 KST | weekly-fortune-update | 운세 5개 생성 + PR + 자동 머지 | 중복 이슈 + 자동 닫기 |
-| 매주 월요일 09:00 KST | seasonal-content | 시즌 운세 자동 생성 | 중복 이슈 + 자동 닫기 |
-| 매주 월요일 09:00 KST | content-update | 콘텐츠 신선도 + 무결성 검증 + 자동 트리거 | 이슈 + 자동 트리거 |
+| 매일 06:00 KST | daily-blog-post | 블로그 포스트 생성 + 검증 + PR + 자동 머지 + 배포 확인 | 중복 이슈 + 자동 닫기 |
+| 매주 월요일 06:00 KST | weekly-fortune-update | 운세 5개 생성 + 검증 + PR + 자동 머지 + 배포 확인 | 중복 이슈 + 자동 닫기 |
+| 매주 월요일 09:00 KST | seasonal-content | 시즌 운세 자동 생성 + 검증 + 배포 확인 | 중복 이슈 + 자동 닫기 |
+| 매주 월요일 12:00 KST | content-update | 콘텐츠 신선도 + 무결성 검증 + 자동 트리거 | 스코프드 이슈 + 자동 트리거 |
 | 6시간마다 | site-health-check | 사이트 URL 핑 | 이슈 + 자동 닫기 |
 | 매월 1일 | replenish-topics | 블로그 주제 큐 보충 | 중복 이슈 + 자동 닫기 |
 
 ### 자체 복구 메커니즘
 
-1. **신선도 감지**: content-update가 블로그/운세 신선도 모니터링 → 14일 이상 미갱신 시 해당 파이프라인 자동 트리거
-2. **이슈 생명주기**: 실패 시 이슈 생성 → 복구 시 자동 닫기 + 복구 코멘트
-3. **중복 방지**: 동일한 실패 이슈가 이미 열려있으면 새로 생성하지 않음
-4. **데이터 검증**: validate-content.ts가 운세/블로그 무결성 검증 (CI 게이트)
-5. **주제 큐 자동 보충**: 블로그 주제 10개 미만 → replenish-topics 자동 트리거
+1. **프리머지 검증**: 모든 생성 워크플로우가 자동 머지 전 `content:validate` 실행 (데이터 무결성 게이트)
+2. **포스트 디플로이 헬스체크**: 자동 머지 후 120초 대기 → 사이트 HTTP 상태 확인 → 실패 시 이슈 생성
+3. **신선도 감지**: content-update가 블로그/운세 신선도 모니터링 → 14일 이상 미갱신 시 해당 파이프라인 자동 트리거
+4. **스코프드 이슈 관리**: 각 워크플로우가 자기 이슈만 닫음 (다른 워크플로우의 실패 이슈를 덮어쓰지 않음)
+5. **중복 방지**: 동일한 실패 이슈가 이미 열려있으면 새로 생성하지 않음
+6. **스케줄 분리**: seasonal-content(00:00 UTC)와 content-update(03:00 UTC) 시간 분리로 동시성 충돌 방지
+7. **주제 큐 자동 보충**: 블로그 주제 10개 미만 → replenish-topics 자동 트리거
 
 ## 성장 전략 (Traffic & Growth Plan)
 
