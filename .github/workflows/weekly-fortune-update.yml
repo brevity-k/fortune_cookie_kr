@@ -66,6 +66,10 @@ jobs:
         if: steps.changes.outputs.has_changes == 'true'
         run: npm run build
 
+      - name: Validate content integrity
+        if: steps.changes.outputs.has_changes == 'true'
+        run: npm run content:validate
+
       - name: Create Pull Request
         id: pr
         if: steps.changes.outputs.has_changes == 'true'
@@ -92,6 +96,18 @@ jobs:
         run: |
           gh pr merge ${{ steps.pr.outputs.pull-request-number }} \
             --squash --delete-branch
+
+      - name: Post-merge deploy check
+        if: steps.pr.outputs.pull-request-number
+        run: |
+          echo "Waiting 120s for Vercel deployment..."
+          sleep 120
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://fortunecookie.ai.kr" || echo "000")
+          echo "Site status: $STATUS"
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 400 ]; then
+            echo "::error::Site returned HTTP $STATUS after auto-merge"
+            exit 1
+          fi
 
       - name: Notify failure
         if: failure()
