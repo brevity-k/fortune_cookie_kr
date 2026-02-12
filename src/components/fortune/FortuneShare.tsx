@@ -6,12 +6,14 @@ import { useShareFortune } from '@/hooks/useShareFortune';
 
 interface FortuneShareProps {
   fortune: Fortune;
+  streak?: number;
 }
 
-export default function FortuneShare({ fortune }: FortuneShareProps) {
-  const { shareViaKakao, shareViaWebShare, copyToClipboard, shareViaTwitter } =
+export default function FortuneShare({ fortune, streak = 0 }: FortuneShareProps) {
+  const { shareViaKakao, shareViaWebShare, copyToClipboard, shareViaTwitter, downloadCard } =
     useShareFortune();
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const handleCopy = async () => {
     const success = await copyToClipboard(fortune);
@@ -58,6 +60,24 @@ export default function FortuneShare({ fortune }: FortuneShareProps) {
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
         </svg>
         트위터
+      </button>
+
+      {/* Image Download */}
+      <button
+        onClick={async () => {
+          setDownloading(true);
+          await downloadCard(fortune, streak);
+          setDownloading(false);
+        }}
+        disabled={downloading}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-bg-card border border-white/10 text-text-secondary text-sm hover:text-cookie-gold transition disabled:opacity-50"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        {downloading ? '저장 중...' : '이미지 저장'}
       </button>
 
       {/* Copy */}
