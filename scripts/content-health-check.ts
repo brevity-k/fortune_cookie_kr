@@ -13,7 +13,7 @@
 
 import { allFortunes } from '../src/data/fortunes';
 import { blogPosts } from '../src/data/blog-posts';
-import { FortuneCategory, CATEGORIES } from '../src/types/fortune';
+import { CATEGORIES, FORTUNE_ID_PATTERN } from './utils/constants';
 
 function checkFortunes() {
   console.log('═══════════════════════════════════════');
@@ -73,7 +73,7 @@ function checkFortunes() {
   // ID format check
   console.log('🔍 ID 형식 검사:');
   let idErrors = 0;
-  const idPattern = /^(love|career|health|study|general|relationship)_\d{3}$/;
+  const idPattern = FORTUNE_ID_PATTERN;
   allFortunes.forEach((f) => {
     if (!idPattern.test(f.id)) {
       idErrors++;
@@ -125,7 +125,13 @@ function checkPages() {
   const pageCount =
     1 +  // main
     6 +  // categories
-    1 +  // gift
+    12 + // zodiac animals
+    16 + // mbti types
+    12 + // horoscope signs
+    1 +  // compatibility
+    1 +  // collection
+    3 +  // seasonal (new-year, valentines, exam-luck)
+    1 +  // gift (dynamic)
     blogPosts.length + // blog posts
     1 +  // blog list
     4;   // about, privacy, terms, contact
@@ -134,7 +140,13 @@ function checkPages() {
   console.log(`   ${pageCount >= 15 ? '✅' : '⚠️'} ${pageCount >= 15 ? '충분함' : '추가 필요'}`);
   console.log(`\n   메인: 1개`);
   console.log(`   카테고리: 6개`);
-  console.log(`   선물: 1개`);
+  console.log(`   띠별: 12개`);
+  console.log(`   MBTI: 16개`);
+  console.log(`   별자리: 12개`);
+  console.log(`   궁합: 1개`);
+  console.log(`   도감: 1개`);
+  console.log(`   시즌: 3개`);
+  console.log(`   선물: 1개 (동적)`);
   console.log(`   블로그: ${blogPosts.length + 1}개 (목록 + ${blogPosts.length} 포스트)`);
   console.log(`   법적/정보: 4개 (소개, 개인정보, 약관, 문의)`);
 }

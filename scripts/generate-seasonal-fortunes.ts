@@ -16,6 +16,15 @@ import Anthropic from '@anthropic-ai/sdk';
 import * as fs from 'fs';
 import * as path from 'path';
 import { withRetry } from './utils/retry';
+import { VALID_COLORS, CATEGORY_LABELS, type Fortune, type FortuneCategory } from './utils/constants';
+import {
+  extractTextFromResponse,
+  parseClaudeJSONArray,
+  readStateFile,
+  writeStateFile,
+  atomicWriteFile,
+} from './utils/json';
+import { readExistingFortunes, getCategoryFilePath } from './utils/fortune-file';
 
 const SEASONAL_CONFIG = {
   'new-year': {
@@ -57,46 +66,19 @@ const SEASONAL_CONFIG = {
 } as const;
 
 type Season = keyof typeof SEASONAL_CONFIG;
-type FortuneCategory = 'love' | 'career' | 'health' | 'study' | 'general' | 'relationship';
-
-interface Fortune {
-  id: string;
-  category: FortuneCategory;
-  message: string;
-  interpretation: string;
-  luckyNumber: number;
-  luckyColor: string;
-  rating: 1 | 2 | 3 | 4 | 5;
-  emoji: string;
-  shareText: string;
-}
 
 interface SeasonalState {
   [year: string]: string[];
 }
 
-const CATEGORY_LABELS: Record<FortuneCategory, string> = {
-  love: '사랑운',
-  career: '재물운',
-  health: '건강운',
-  study: '학업운',
-  general: '총운',
-  relationship: '대인운',
-};
-
 const STATE_FILE = path.join(__dirname, 'seasonal-generation-state.json');
-const FORTUNES_DIR = path.join(__dirname, '..', 'src', 'data', 'fortunes');
 
 function getState(): SeasonalState {
-  try {
-    return JSON.parse(fs.readFileSync(STATE_FILE, 'utf-8'));
-  } catch {
-    return {};
-  }
+  return readStateFile<SeasonalState>(STATE_FILE, {});
 }
 
 function saveState(state: SeasonalState): void {
-  fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2) + '\n');
+  writeStateFile(STATE_FILE, state);
 }
 
 function getUpcomingSeason(): Season | null {
@@ -115,31 +97,6 @@ function getUpcomingSeason(): Season | null {
     }
   }
   return null;
-}
-
-function getHighestIdNum(category: FortuneCategory): number {
-  const filePath = path.join(FORTUNES_DIR, `${category}.ts`);
-  const content = fs.readFileSync(filePath, 'utf-8');
-  const regex = new RegExp(`${category}_(\\d+)`, 'g');
-  let highest = 0;
-  let match;
-  while ((match = regex.exec(content)) !== null) {
-    const num = parseInt(match[1], 10);
-    if (num > highest) highest = num;
-  }
-  return highest;
-}
-
-function getExistingMessages(category: FortuneCategory): string[] {
-  const filePath = path.join(FORTUNES_DIR, `${category}.ts`);
-  const content = fs.readFileSync(filePath, 'utf-8');
-  const regex = /message:\s*'([^']+)'/g;
-  const messages: string[] = [];
-  let match;
-  while ((match = regex.exec(content)) !== null) {
-    messages.push(match[1]);
-  }
-  return messages;
 }
 
 async function generateSeasonalFortunes(
@@ -173,7 +130,7 @@ ${existingMessages.slice(-20).map((m) => `- ${m}`).join('\n')}
 3. **message**: 시즌 테마를 반영한 운세 (20-50자)
 4. **interpretation**: 시즌에 맞는 해석과 조언 (40-80자)
 5. **luckyNumber**: 1-99
-6. **luckyColor**: 빨간색/파란색/초록색/노란색/보라색/분홍색/금색/은색/하늘색/주황색/흰색 중
+6. **luckyColor**: ${VALID_COLORS.join('/')} 중
 7. **rating**: 시즌 특별 운세이므로 3-5 위주 (긍정적)
 8. **emoji**: 시즌 + 메시지와 어울리는 이모지 1개
 9. **shareText**: "🥠 ${config.label}: {message} - 포춘쿠키에서 확인하세요!" 형식
@@ -190,16 +147,8 @@ JSON 배열만 출력. 마크다운 코드 블록 없이.`;
     })
   );
 
-  const textBlock = response.content.find((b) => b.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') throw new Error('No text response');
-
-  let json = textBlock.text.trim();
-  if (json.startsWith('```')) {
-    json = json.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
-  }
-  json = json.replace(/,\s*([}\]])/g, '$1');
-
-  return JSON.parse(json) as Fortune[];
+  const text = extractTextFromResponse(response);
+  return parseClaudeJSONArray<Fortune>(text);
 }
 
 function formatFortuneAsCode(f: Fortune): string {
@@ -217,7 +166,7 @@ function formatFortuneAsCode(f: Fortune): string {
 }
 
 function appendFortunesToFile(category: FortuneCategory, fortunes: Fortune[]): void {
-  const filePath = path.join(FORTUNES_DIR, `${category}.ts`);
+  const filePath = getCategoryFilePath(category);
   const content = fs.readFileSync(filePath, 'utf-8');
   const code = fortunes.map(formatFortuneAsCode).join('\n');
 
@@ -225,7 +174,7 @@ function appendFortunesToFile(category: FortuneCategory, fortunes: Fortune[]): v
   if (insertPoint === -1) throw new Error(`Could not find ]; in ${category}.ts`);
 
   const updated = content.slice(0, insertPoint) + code + '\n' + content.slice(insertPoint);
-  fs.writeFileSync(filePath, updated);
+  atomicWriteFile(filePath, updated);
 }
 
 async function main() {
@@ -281,8 +230,7 @@ async function main() {
     const count = Math.min(perCategory, config.count - totalGenerated);
     if (count <= 0) break;
 
-    const highestId = getHighestIdNum(cat);
-    const existing = getExistingMessages(cat);
+    const { highestIdNum: highestId, messages: existing } = readExistingFortunes(cat);
 
     console.log(`  ${CATEGORY_LABELS[cat]} (${cat}) - ${count}개 생성 중...`);
     const fortunes = await generateSeasonalFortunes(

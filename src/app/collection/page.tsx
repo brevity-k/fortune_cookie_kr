@@ -8,6 +8,9 @@ export const metadata: Metadata = {
     title: "📖 포춘쿠키 도감",
     description: "수집한 포춘쿠키 운세를 도감에서 확인하세요!",
   },
+  alternates: {
+    canonical: '/collection',
+  },
 };
 
 export default function CollectionPage() {

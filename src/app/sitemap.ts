@@ -2,9 +2,8 @@ import type { MetadataRoute } from "next";
 import { CATEGORIES } from "@/types/fortune";
 import { blogPosts } from "@/data/blog-posts";
 import { ZODIAC_ANIMALS } from "@/types/zodiac";
+import { MBTI_TYPES } from "@/types/mbti";
 import { HOROSCOPE_SIGNS } from "@/types/horoscope";
-
-const MBTI_TYPES = ['intj', 'intp', 'entj', 'entp', 'infj', 'infp', 'enfj', 'enfp', 'istj', 'isfj', 'estj', 'esfj', 'istp', 'isfp', 'estp', 'esfp'];
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fortunecookie.ai.kr";
 
@@ -30,8 +29,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  const mbtiEntries = MBTI_TYPES.map((type) => ({
-    url: `${siteUrl}/fortune/mbti/${type}`,
+  const mbtiEntries = MBTI_TYPES.map((m) => ({
+    url: `${siteUrl}/fortune/mbti/${m.key}`,
     lastModified: new Date(),
     changeFrequency: "daily" as const,
     priority: 0.8,

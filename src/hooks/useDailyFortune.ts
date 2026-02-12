@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Fortune } from '@/types/fortune';
 import { getDailyFortune } from '@/lib/fortune-selector';
+import { getTodayString } from '@/lib/date-utils';
+import { STORAGE_KEYS } from '@/lib/storage-keys';
 import { allFortunes } from '@/data/fortunes';
 
-const STORAGE_KEY = 'fortune_cookie_daily';
+const STORAGE_KEY = STORAGE_KEYS.DAILY_FORTUNE;
 
 interface DailyFortuneState {
   fortune: Fortune;
@@ -13,30 +15,25 @@ interface DailyFortuneState {
   opened: boolean;
 }
 
-function getTodayString(): string {
-  const today = new Date();
-  return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-}
-
 export function useDailyFortune() {
   const [dailyState, setDailyState] = useState<DailyFortuneState | null>(null);
   const [hasOpenedToday, setHasOpenedToday] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
     const today = getTodayString();
 
-    if (stored) {
-      try {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
         const parsed: DailyFortuneState = JSON.parse(stored);
         if (parsed.date === today) {
           setDailyState(parsed);
           setHasOpenedToday(parsed.opened);
           return;
         }
-      } catch {
-        // Invalid stored data, continue to create new
       }
+    } catch {
+      // localStorage unavailable (Safari private mode, quota exceeded)
     }
 
     const fortune = getDailyFortune(allFortunes);
@@ -46,7 +43,11 @@ export function useDailyFortune() {
       opened: false,
     };
     setDailyState(newState);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
+    } catch {
+      // Silent fail - state still works in memory
+    }
   }, []);
 
   const markAsOpened = useCallback(() => {
@@ -55,7 +56,11 @@ export function useDailyFortune() {
     const updated = { ...dailyState, opened: true };
     setDailyState(updated);
     setHasOpenedToday(true);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch {
+      // Silent fail - state still works in memory
+    }
   }, [dailyState]);
 
   return {

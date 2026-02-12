@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useEffect, useState } from 'react';
 import { Howl } from 'howler';
+import { STORAGE_KEYS } from '@/lib/storage-keys';
 
 const SOUNDS = {
   crack1: '/sounds/crack-1.mp3',
@@ -20,7 +21,7 @@ export function useSoundEffects() {
   useEffect(() => {
     // Check stored mute preference
     try {
-      const stored = localStorage.getItem('fortune_cookie_muted');
+      const stored = localStorage.getItem(STORAGE_KEYS.MUTED);
       if (stored === 'true') {
         setIsMuted(true);
       }
@@ -54,7 +55,7 @@ export function useSoundEffects() {
     setIsMuted((prev) => {
       const next = !prev;
       try {
-        localStorage.setItem('fortune_cookie_muted', String(next));
+        localStorage.setItem(STORAGE_KEYS.MUTED, String(next));
       } catch {
         // localStorage unavailable
       }

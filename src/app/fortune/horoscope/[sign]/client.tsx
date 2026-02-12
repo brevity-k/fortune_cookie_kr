@@ -10,6 +10,9 @@ import { Fortune, CookieBreakMethod } from '@/types/fortune';
 import { getHoroscopeDailyFortune } from '@/lib/fortune-selector';
 import { allFortunes } from '@/data/fortunes';
 import { HOROSCOPE_SIGNS } from '@/types/horoscope';
+import { useStreak } from '@/hooks/useStreak';
+import { useFortuneCollection } from '@/hooks/useFortuneCollection';
+import { trackStreak } from '@/lib/analytics';
 
 interface HoroscopePageClientProps {
   sign: string;
@@ -18,14 +21,22 @@ interface HoroscopePageClientProps {
 export default function HoroscopePageClient({ sign }: HoroscopePageClientProps) {
   const horoscope = HOROSCOPE_SIGNS.find((s) => s.key === sign);
   const [fortune, setFortune] = useState<Fortune | null>(null);
+  const [isNew, setIsNew] = useState(false);
+  const { streak, recordVisit } = useStreak();
+  const { addToCollection } = useFortuneCollection();
 
   const handleBreak = useCallback(
     (_method: CookieBreakMethod): Fortune => {
       const result = getHoroscopeDailyFortune(allFortunes, sign);
       setFortune(result);
+      const updated = recordVisit();
+      if (updated.currentStreak > 1) {
+        trackStreak(updated.currentStreak);
+      }
+      setIsNew(addToCollection(result.id));
       return result;
     },
-    [sign]
+    [sign, recordVisit, addToCollection]
   );
 
   if (!horoscope) {
@@ -58,12 +69,12 @@ export default function HoroscopePageClient({ sign }: HoroscopePageClientProps) 
         </section>
 
         <section className="px-4 relative z-10">
-          <FortuneCookie onBreak={handleBreak} fortune={fortune} />
+          <FortuneCookie onBreak={handleBreak} fortune={fortune} streak={streak.currentStreak} isNewCollection={isNew} />
         </section>
 
         {fortune && (
           <section className="px-4 py-4 max-w-sm mx-auto animate-fade-in-up">
-            <FortuneShare fortune={fortune} />
+            <FortuneShare fortune={fortune} streak={streak.currentStreak} />
           </section>
         )}
 

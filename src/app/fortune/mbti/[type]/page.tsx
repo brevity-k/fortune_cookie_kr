@@ -26,6 +26,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: `${mbti.emoji} ${mbti.label} 오늘의 운세 - 포춘쿠키`,
       description: `${mbti.label}(${mbti.description})를 위한 오늘의 포춘쿠키!`,
     },
+    alternates: {
+      canonical: `/fortune/mbti/${type.toLowerCase()}`,
+    },
   };
 }
 

@@ -9,6 +9,9 @@ export const metadata: Metadata = {
     title: "🥠💕 궁합 포춘쿠키 - 두 사람의 궁합 확인",
     description: "포춘쿠키로 궁합을 테스트해보세요! 두 사람이 각자 쿠키를 깨면 궁합 결과가 나타납니다.",
   },
+  alternates: {
+    canonical: '/compatibility',
+  },
 };
 
 export default function CompatibilityPage() {

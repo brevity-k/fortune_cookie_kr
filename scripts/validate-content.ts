@@ -9,7 +9,11 @@
 
 import { allFortunes } from '../src/data/fortunes';
 import { blogPosts } from '../src/data/blog-posts';
-import { CATEGORIES } from '../src/types/fortune';
+import {
+  CATEGORIES,
+  VALID_COLORS,
+  FORTUNE_ID_PATTERN,
+} from './utils/constants';
 
 let errors = 0;
 let warnings = 0;
@@ -52,7 +56,7 @@ function validateFortunes() {
   }
 
   // ID 형식 검증
-  const idPattern = /^(love|career|health|study|general|relationship)_\d{3}$/;
+  const idPattern = FORTUNE_ID_PATTERN;
   let idErrors = 0;
   for (const f of allFortunes) {
     if (!idPattern.test(f.id)) {
@@ -115,6 +119,8 @@ function validateFortunes() {
     }
     if (!f.luckyColor) {
       warn(`${f.id}: luckyColor 누락`);
+    } else if (!VALID_COLORS.includes(f.luckyColor)) {
+      warn(`${f.id}: luckyColor 값이 유효하지 않음 ("${f.luckyColor}")`);
     }
     if (!f.emoji) {
       warn(`${f.id}: emoji 누락`);

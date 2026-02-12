@@ -21,74 +21,56 @@ import Anthropic from '@anthropic-ai/sdk';
 import * as fs from 'fs';
 import * as path from 'path';
 import { withRetry } from './utils/retry';
-
-const CATEGORY_ORDER = [
-  'love',
-  'career',
-  'health',
-  'study',
-  'general',
-  'relationship',
-] as const;
-
-type FortuneCategory = (typeof CATEGORY_ORDER)[number];
-
-interface Fortune {
-  id: string;
-  category: FortuneCategory;
-  message: string;
-  interpretation: string;
-  luckyNumber: number;
-  luckyColor: string;
-  rating: 1 | 2 | 3 | 4 | 5;
-  emoji: string;
-  shareText: string;
-}
+import {
+  VALID_COLORS,
+  FORTUNE_CATEGORIES,
+  CATEGORY_LABELS,
+  type Fortune,
+  type FortuneCategory,
+} from './utils/constants';
+import {
+  extractTextFromResponse,
+  parseClaudeJSONArray,
+  readStateFile,
+  writeStateFile,
+  atomicWriteFile,
+} from './utils/json';
+import {
+  readExistingFortunes,
+  getSampleFortunes,
+  getCategoryFilePath,
+} from './utils/fortune-file';
 
 interface GenerationState {
   lastCategoryIndex: number;
 }
 
-const CATEGORY_LABELS: Record<FortuneCategory, string> = {
-  love: '사랑운',
-  career: '재물운',
-  health: '건강운',
-  study: '학업운',
-  general: '총운',
-  relationship: '대인운',
-};
-
-const CATEGORY_EXPORT_NAMES: Record<FortuneCategory, string> = {
-  love: 'loveFortunes',
-  career: 'careerFortunes',
-  health: 'healthFortunes',
-  study: 'studyFortunes',
-  general: 'generalFortunes',
-  relationship: 'relationshipFortunes',
-};
-
 const STATE_FILE = path.join(__dirname, 'fortune-generation-state.json');
-const FORTUNES_DIR = path.join(__dirname, '..', 'src', 'data', 'fortunes');
 const COUNT_TO_GENERATE = 5;
 
+function isGenerationState(data: unknown): data is GenerationState {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof (data as GenerationState).lastCategoryIndex === 'number'
+  );
+}
+
 function getState(): GenerationState {
-  try {
-    const data = fs.readFileSync(STATE_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return { lastCategoryIndex: -1 };
-  }
+  return readStateFile(STATE_FILE, { lastCategoryIndex: -1 }, isGenerationState);
 }
 
 function saveState(state: GenerationState): void {
-  fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2) + '\n');
+  writeStateFile(STATE_FILE, state);
 }
 
 function getNextCategory(override?: string): FortuneCategory {
   if (override) {
-    if (!CATEGORY_ORDER.includes(override as FortuneCategory)) {
+    if (
+      !FORTUNE_CATEGORIES.includes(override as FortuneCategory)
+    ) {
       console.error(
-        `Invalid category: ${override}. Valid: ${CATEGORY_ORDER.join(', ')}`
+        `Invalid category: ${override}. Valid: ${FORTUNE_CATEGORIES.join(', ')}`
       );
       process.exit(1);
     }
@@ -96,79 +78,8 @@ function getNextCategory(override?: string): FortuneCategory {
   }
 
   const state = getState();
-  const nextIndex = (state.lastCategoryIndex + 1) % CATEGORY_ORDER.length;
-  return CATEGORY_ORDER[nextIndex];
-}
-
-function getCategoryFilePath(category: FortuneCategory): string {
-  return path.join(FORTUNES_DIR, `${category}.ts`);
-}
-
-function readExistingFortunes(category: FortuneCategory): {
-  fileContent: string;
-  messages: string[];
-  highestIdNum: number;
-} {
-  const filePath = getCategoryFilePath(category);
-  const fileContent = fs.readFileSync(filePath, 'utf-8');
-
-  // Extract all messages
-  const messageRegex = /message:\s*'([^']+)'/g;
-  const messages: string[] = [];
-  let match;
-  while ((match = messageRegex.exec(fileContent)) !== null) {
-    messages.push(match[1]);
-  }
-
-  // Find highest ID number
-  const idRegex = new RegExp(`${category}_(\\d+)`, 'g');
-  let highestIdNum = 0;
-  while ((match = idRegex.exec(fileContent)) !== null) {
-    const num = parseInt(match[1], 10);
-    if (num > highestIdNum) highestIdNum = num;
-  }
-
-  return { fileContent, messages, highestIdNum };
-}
-
-function getSampleFortunes(fileContent: string): string {
-  // Extract fortune objects by splitting on opening braces with id field
-  const blocks: string[] = [];
-  const lines = fileContent.split('\n');
-  let current = '';
-  let depth = 0;
-  let inBlock = false;
-
-  for (const line of lines) {
-    if (!inBlock && line.includes("id: '") && line.trim().startsWith("id:")) {
-      // Found the start of a fortune's id field - backtrack to opening brace
-      inBlock = true;
-      current = '  {\n' + line + '\n';
-      depth = 1;
-      continue;
-    }
-    if (inBlock) {
-      current += line + '\n';
-      if (line.includes('},')) {
-        blocks.push(current.trim().replace(/,\s*$/, ''));
-        current = '';
-        inBlock = false;
-        depth = 0;
-      }
-    }
-  }
-
-  if (blocks.length === 0) return '';
-
-  // Pick 2-3 samples from different positions
-  const indices: number[] = [0];
-  if (blocks.length > 5) indices.push(Math.floor(blocks.length / 2));
-  if (blocks.length > 2) indices.push(blocks.length - 1);
-
-  return indices
-    .map((i) => blocks[i])
-    .filter(Boolean)
-    .join(',\n  ');
+  const nextIndex = (state.lastCategoryIndex + 1) % FORTUNE_CATEGORIES.length;
+  return FORTUNE_CATEGORIES[nextIndex];
 }
 
 async function generateFortunes(
@@ -201,7 +112,7 @@ ${existingMessages.map((m) => `- ${m}`).join('\n')}
 3. **message**: 한 문장의 운세 메시지 (20-50자). 운세다운 표현, 다양한 톤 (긍정/조언/경고)
 4. **interpretation**: 운세에 대한 해석과 조언 (40-80자). 구체적이고 실용적인 내용
 5. **luckyNumber**: 1-99 사이 숫자 (기존과 겹쳐도 무관)
-6. **luckyColor**: 한국어 색상명 (빨간색, 파란색, 초록색, 노란색, 보라색, 분홍색, 금색, 은색, 하늘색, 주황색, 흰색 중)
+6. **luckyColor**: 한국어 색상명 (${VALID_COLORS.join(', ')} 중)
 7. **rating**: 1(흉) ~ 5(대길). 분포: ${COUNT_TO_GENERATE}개 중 약 0-1개 rating 1-2, 3개 rating 3-4, 1-2개 rating 5
 8. **emoji**: 메시지와 어울리는 이모지 1개
 9. **shareText**: "🥠 오늘의 ${categoryLabel}: {message} - 포춘쿠키에서 확인하세요!" 형식
@@ -238,25 +149,8 @@ ${existingMessages.map((m) => `- ${m}`).join('\n')}
     })
   );
 
-  const textBlock = response.content.find((block) => block.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') {
-    throw new Error('No text response from API');
-  }
-
-  let jsonText = textBlock.text.trim();
-
-  // Strip markdown code fences if present
-  if (jsonText.startsWith('```')) {
-    jsonText = jsonText
-      .replace(/^```(?:json)?\s*\n?/, '')
-      .replace(/\n?```\s*$/, '');
-  }
-
-  // Fix trailing commas before closing brackets
-  jsonText = jsonText.replace(/,\s*([}\]])/g, '$1');
-
-  const fortunes: Fortune[] = JSON.parse(jsonText);
-  return fortunes;
+  const text = extractTextFromResponse(response);
+  return parseClaudeJSONArray<Fortune>(text);
 }
 
 function validateFortunes(
@@ -273,19 +167,7 @@ function validateFortunes(
     );
   }
 
-  const validColors = [
-    '빨간색',
-    '파란색',
-    '초록색',
-    '노란색',
-    '보라색',
-    '분홍색',
-    '금색',
-    '은색',
-    '하늘색',
-    '주황색',
-    '흰색',
-  ];
+  const validColors: readonly string[] = VALID_COLORS;
 
   fortunes.forEach((f, i) => {
     const expectedNum = String(startId + i).padStart(3, '0');
@@ -341,6 +223,11 @@ function validateFortunes(
         `Fortune ${i}: interpretation contains single quote which breaks code parsing`
       );
     }
+    if (f.shareText && f.shareText.includes("'")) {
+      errors.push(
+        `Fortune ${i}: shareText contains single quote which breaks code parsing`
+      );
+    }
   });
 
   return errors;
@@ -385,7 +272,7 @@ function appendFortunesToFile(
     '\n' +
     fileContent.slice(insertPoint);
 
-  fs.writeFileSync(filePath, updatedContent);
+  atomicWriteFile(filePath, updatedContent);
 }
 
 async function main() {
@@ -461,7 +348,7 @@ async function main() {
   appendFortunesToFile(category, fortunes);
 
   // Update state
-  const newIndex = CATEGORY_ORDER.indexOf(category);
+  const newIndex = FORTUNE_CATEGORIES.indexOf(category);
   saveState({ lastCategoryIndex: newIndex });
 
   console.log('');
