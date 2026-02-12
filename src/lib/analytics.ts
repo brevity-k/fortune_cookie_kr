@@ -21,3 +21,7 @@ export function trackFortuneReveal(category: string) {
 export function trackShare(platform: string) {
   trackEvent('share', 'social', platform);
 }
+
+export function trackStreak(streak: number) {
+  trackEvent('streak', 'engagement', `streak_${streak}`);
+}

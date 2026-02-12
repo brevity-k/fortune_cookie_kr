@@ -1,35 +1,28 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import Link from 'next/link';
+import { motion } from 'motion/react';
 import FortuneCookie from '@/components/cookie/FortuneCookie';
 import FortuneShare from '@/components/fortune/FortuneShare';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Fortune, CookieBreakMethod } from '@/types/fortune';
 import { allFortunes } from '@/data/fortunes';
+import { getFortuneFromId } from '@/lib/fortune-selector';
 
-function getFortuneFromId(id: string): Fortune {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    const char = id.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  const index = Math.abs(hash) % allFortunes.length;
-  return allFortunes[index];
+interface GiftPageClientProps {
+  giftId: string;
 }
 
-export default function GiftPageClient() {
-  const params = useParams();
-  const giftId = params.id as string;
+export default function GiftPageClient({ giftId }: GiftPageClientProps) {
   const [fortune, setFortune] = useState<Fortune | null>(null);
 
-  const handleBreak = (_method: CookieBreakMethod): Fortune => {
-    const result = getFortuneFromId(giftId);
+  const handleBreak = useCallback((_method: CookieBreakMethod): Fortune => {
+    const result = getFortuneFromId(allFortunes, giftId);
     setFortune(result);
     return result;
-  };
+  }, [giftId]);
 
   return (
     <div className="star-field min-h-dvh flex flex-col">
@@ -56,6 +49,24 @@ export default function GiftPageClient() {
         {fortune && (
           <section className="px-4 py-4 max-w-sm mx-auto animate-fade-in-up">
             <FortuneShare fortune={fortune} />
+
+            {/* Viral CTA: Send your own cookie */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
+              className="mt-6 text-center"
+            >
+              <p className="text-sm text-text-muted mb-3">
+                나도 친구에게 포춘쿠키를 보내볼까요?
+              </p>
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-cookie-gold/20 border border-cookie-gold/30 text-cookie-gold hover:bg-cookie-gold/30 transition-colors text-sm font-medium"
+              >
+                🥠 나도 포춘쿠키 보내기
+              </Link>
+            </motion.div>
           </section>
         )}
       </main>

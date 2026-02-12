@@ -67,6 +67,38 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
+                  href="/fortune/zodiac/rat"
+                  className="text-sm text-text-muted hover:text-text-secondary transition-colors"
+                >
+                  띠별 운세
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/fortune/mbti/enfp"
+                  className="text-sm text-text-muted hover:text-text-secondary transition-colors"
+                >
+                  MBTI 운세
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/compatibility"
+                  className="text-sm text-text-muted hover:text-text-secondary transition-colors"
+                >
+                  궁합 테스트
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/collection"
+                  className="text-sm text-text-muted hover:text-text-secondary transition-colors"
+                >
+                  도감
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/blog"
                   className="text-sm text-text-muted hover:text-text-secondary transition-colors"
                 >
