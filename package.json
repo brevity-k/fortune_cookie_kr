@@ -17,7 +17,8 @@
     "topics:replenish": "tsx scripts/replenish-blog-topics.ts",
     "topics:preview": "tsx scripts/replenish-blog-topics.ts --dry-run",
     "seasonal:generate": "tsx scripts/generate-seasonal-fortunes.ts",
-    "seasonal:preview": "tsx scripts/generate-seasonal-fortunes.ts --dry-run"
+    "seasonal:preview": "tsx scripts/generate-seasonal-fortunes.ts --dry-run",
+    "content:validate": "tsx scripts/validate-content.ts"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
