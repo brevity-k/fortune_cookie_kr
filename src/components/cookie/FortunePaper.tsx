@@ -8,9 +8,11 @@ import { getRatingStars, getRatingLabel } from '@/lib/fortune-selector';
 interface FortunePaperProps {
   fortune: Fortune;
   breakMethod: CookieBreakMethod | null;
+  streak?: number;
+  isNewCollection?: boolean;
 }
 
-export default function FortunePaper({ fortune, breakMethod }: FortunePaperProps) {
+export default function FortunePaper({ fortune, breakMethod, streak = 0, isNewCollection = false }: FortunePaperProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const category = CATEGORIES.find((c) => c.key === fortune.category);
@@ -104,6 +106,22 @@ export default function FortunePaper({ fortune, breakMethod }: FortunePaperProps
                 </p>
               </div>
             </div>
+
+            {/* Streak & Collection badges */}
+            {(streak > 1 || isNewCollection) && (
+              <div className="flex justify-center gap-2 mt-3">
+                {streak > 1 && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    🔥 연속 {streak}일째
+                  </span>
+                )}
+                {isNewCollection && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    ✨ New!
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Break method badge */}
             {breakMethod && (

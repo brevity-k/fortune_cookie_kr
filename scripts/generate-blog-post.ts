@@ -20,6 +20,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import * as fs from 'fs';
 import * as path from 'path';
 import { BLOG_TOPICS, BlogTopic } from './blog-topics';
+import { withRetry } from './utils/retry';
 
 const USED_TOPICS_FILE = path.join(__dirname, 'used-topics.json');
 const BLOG_POSTS_FILE = path.join(__dirname, '..', 'src', 'data', 'blog-posts.ts');
@@ -95,11 +96,13 @@ HTML 태그만 출력하세요. 다른 설명이나 마크다운은 사용하지
 <h2>소제목 2</h2>
 <p>본문...</p>`;
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-5-20250929',
-    max_tokens: 2000,
-    messages: [{ role: 'user', content: prompt }],
-  });
+  const response = await withRetry(() =>
+    client.messages.create({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 2000,
+      messages: [{ role: 'user', content: prompt }],
+    })
+  );
 
   const textBlock = response.content.find((block) => block.type === 'text');
   if (!textBlock || textBlock.type !== 'text') {

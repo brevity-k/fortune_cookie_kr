@@ -20,6 +20,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import * as fs from 'fs';
 import * as path from 'path';
+import { withRetry } from './utils/retry';
 
 const CATEGORY_ORDER = [
   'love',
@@ -229,11 +230,13 @@ ${existingMessages.map((m) => `- ${m}`).join('\n')}
   }
 ]`;
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-5-20250929',
-    max_tokens: 4000,
-    messages: [{ role: 'user', content: prompt }],
-  });
+  const response = await withRetry(() =>
+    client.messages.create({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 4000,
+      messages: [{ role: 'user', content: prompt }],
+    })
+  );
 
   const textBlock = response.content.find((block) => block.type === 'text');
   if (!textBlock || textBlock.type !== 'text') {
@@ -248,6 +251,9 @@ ${existingMessages.map((m) => `- ${m}`).join('\n')}
       .replace(/^```(?:json)?\s*\n?/, '')
       .replace(/\n?```\s*$/, '');
   }
+
+  // Fix trailing commas before closing brackets
+  jsonText = jsonText.replace(/,\s*([}\]])/g, '$1');
 
   const fortunes: Fortune[] = JSON.parse(jsonText);
   return fortunes;
