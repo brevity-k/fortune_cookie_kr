@@ -45,12 +45,6 @@ export default function Header() {
             도감
           </Link>
           <Link
-            href="/horoscope"
-            className="text-sm text-text-secondary hover:text-cookie-gold transition-colors"
-          >
-            Horoscopes
-          </Link>
-          <Link
             href="/blog"
             className="text-sm text-text-secondary hover:text-cookie-gold transition-colors"
           >
@@ -118,13 +112,6 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               📖 도감
-            </Link>
-            <Link
-              href="/horoscope"
-              className="text-text-secondary hover:text-cookie-gold transition-colors py-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              ⭐ Horoscopes
             </Link>
             <Link
               href="/blog"
