@@ -18,6 +18,7 @@ module.exports = {
     const categories = ['general', 'love', 'career', 'health', 'study', 'relationship'];
     const zodiacAnimals = ['rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'sheep', 'monkey', 'rooster', 'dog', 'pig'];
     const mbtiTypes = ['intj', 'intp', 'entj', 'entp', 'infj', 'infp', 'enfj', 'enfp', 'istj', 'isfj', 'estj', 'esfj', 'istp', 'isfp', 'estp', 'esfp'];
+    const horoscopeSigns = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
 
     return [
       ...categories.map((cat) => ({
@@ -32,6 +33,11 @@ module.exports = {
       })),
       ...mbtiTypes.map((type) => ({
         loc: `/fortune/mbti/${type}`,
+        changefreq: 'daily',
+        priority: 0.8,
+      })),
+      ...horoscopeSigns.map((sign) => ({
+        loc: `/fortune/horoscope/${sign}`,
         changefreq: 'daily',
         priority: 0.8,
       })),
