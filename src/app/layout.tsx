@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_KR } from "next/font/google";
+import KakaoScript from "@/components/KakaoScript";
 import "./globals.css";
 
 const notoSansKr = Noto_Sans_KR({
@@ -98,16 +99,10 @@ export default function RootLayout({
             />
           </>
         )}
-        {process.env.NEXT_PUBLIC_KAKAO_KEY && (
-          <script
-            async
-            src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"
-            crossOrigin="anonymous"
-          />
-        )}
       </head>
       <body className={`${notoSansKr.variable} antialiased`}>
         {children}
+        <KakaoScript />
         <script
           dangerouslySetInnerHTML={{
             __html: `
