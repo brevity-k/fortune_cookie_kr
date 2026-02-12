@@ -1,10 +1,35 @@
-export type FortuneCategory =
-  | 'love'
-  | 'career'
-  | 'health'
-  | 'study'
-  | 'general'
-  | 'relationship';
+export const FORTUNE_CATEGORIES = [
+  'love',
+  'career',
+  'health',
+  'study',
+  'general',
+  'relationship',
+] as const;
+
+export type FortuneCategory = (typeof FORTUNE_CATEGORIES)[number];
+
+export const VALID_COLORS = [
+  '빨간색',
+  '파란색',
+  '초록색',
+  '노란색',
+  '보라색',
+  '분홍색',
+  '금색',
+  '은색',
+  '하늘색',
+  '주황색',
+  '흰색',
+  '검정색',
+  '검은색',
+  '남색',
+  '연두색',
+  '갈색',
+  '회색',
+] as const;
+
+export type ValidColor = (typeof VALID_COLORS)[number];
 
 export interface Fortune {
   id: string;
@@ -12,7 +37,7 @@ export interface Fortune {
   message: string;
   interpretation: string;
   luckyNumber: number;
-  luckyColor: string;
+  luckyColor: ValidColor;
   rating: 1 | 2 | 3 | 4 | 5;
   emoji: string;
   shareText: string;
@@ -70,6 +95,17 @@ export const CATEGORIES: CategoryInfo[] = [
     color: '#1ABC9C',
   },
 ];
+
+export const CATEGORY_LABELS: Record<FortuneCategory, string> =
+  Object.fromEntries(CATEGORIES.map((c) => [c.key, c.label])) as Record<
+    FortuneCategory,
+    string
+  >;
+
+// NOTE: Category names here must match FORTUNE_CATEGORIES above.
+// Using a literal regex (vs dynamic RegExp) for better static analysis and zero runtime cost.
+export const FORTUNE_ID_PATTERN =
+  /^(love|career|health|study|general|relationship)_\d{3}$/;
 
 export type CookieBreakMethod =
   | 'click'

@@ -28,6 +28,7 @@ permissions:
 jobs:
   generate-fortunes:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,6 +38,15 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+
+      - name: Validate API key
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY not set"
+            exit 1
+          fi
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - run: npm ci
 
@@ -62,13 +72,14 @@ jobs:
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Verify build
-        if: steps.changes.outputs.has_changes == 'true'
-        run: npm run build
-
       - name: Validate content integrity
         if: steps.changes.outputs.has_changes == 'true'
         run: npm run content:validate
+
+      - name: Verify build
+        if: steps.changes.outputs.has_changes == 'true'
+        timeout-minutes: 10
+        run: npm run build
 
       - name: Create Pull Request
         id: pr
@@ -90,15 +101,22 @@ jobs:
           delete-branch: true
 
       - name: Auto-merge PR
+        id: merge
         if: steps.pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr merge ${{ steps.pr.outputs.pull-request-number }} \
-            --squash --delete-branch
+          if gh pr merge ${{ steps.pr.outputs.pull-request-number }} \
+            --squash --delete-branch; then
+            echo "merged=true" >> $GITHUB_OUTPUT
+          else
+            echo "::error::PR merge failed"
+            echo "merged=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
 
       - name: Post-merge deploy check
-        if: steps.pr.outputs.pull-request-number
+        if: steps.merge.outputs.merged == 'true'
         run: |
           echo "Waiting 120s for Vercel deployment..."
           sleep 120

@@ -9,6 +9,9 @@ import Footer from '@/components/layout/Footer';
 import { Fortune, FortuneCategory, CookieBreakMethod, CATEGORIES } from '@/types/fortune';
 import { getRandomFortune } from '@/lib/fortune-selector';
 import { allFortunes } from '@/data/fortunes';
+import { useStreak } from '@/hooks/useStreak';
+import { useFortuneCollection } from '@/hooks/useFortuneCollection';
+import { trackStreak } from '@/lib/analytics';
 
 interface CategoryPageClientProps {
   category: FortuneCategory;
@@ -17,14 +20,22 @@ interface CategoryPageClientProps {
 export default function CategoryPageClient({ category }: CategoryPageClientProps) {
   const categoryInfo = CATEGORIES.find((c) => c.key === category);
   const [fortune, setFortune] = useState<Fortune | null>(null);
+  const [isNew, setIsNew] = useState(false);
+  const { streak, recordVisit } = useStreak();
+  const { addToCollection } = useFortuneCollection();
 
   const handleBreak = useCallback(
     (_method: CookieBreakMethod): Fortune => {
       const result = getRandomFortune(allFortunes, category);
       setFortune(result);
+      const updated = recordVisit();
+      if (updated.currentStreak > 1) {
+        trackStreak(updated.currentStreak);
+      }
+      setIsNew(addToCollection(result.id));
       return result;
     },
-    [category]
+    [category, recordVisit, addToCollection]
   );
 
   if (!categoryInfo) {
@@ -58,12 +69,12 @@ export default function CategoryPageClient({ category }: CategoryPageClientProps
         </section>
 
         <section className="px-4 relative z-10">
-          <FortuneCookie onBreak={handleBreak} fortune={fortune} />
+          <FortuneCookie onBreak={handleBreak} fortune={fortune} streak={streak.currentStreak} isNewCollection={isNew} />
         </section>
 
         {fortune && (
           <section className="px-4 py-4 max-w-sm mx-auto animate-fade-in-up">
-            <FortuneShare fortune={fortune} />
+            <FortuneShare fortune={fortune} streak={streak.currentStreak} />
           </section>
         )}
 

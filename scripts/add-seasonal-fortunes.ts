@@ -83,11 +83,7 @@ function main() {
       }
     }
 
-    // Content stats
-    console.log(`\n📊 현재 콘텐츠 현황:`);
-    console.log(`   운세 메시지: 280개 (6개 카테고리)`);
-    console.log(`   블로그 포스트: 10개`);
-    console.log(`   총 페이지: 19개`);
+    console.log(`\n💡 자동 시즌 운세 생성: npx tsx scripts/generate-seasonal-fortunes.ts`);
     return;
   }
 
