@@ -99,14 +99,6 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/horoscope"
-                  className="text-sm text-text-muted hover:text-text-secondary transition-colors"
-                >
-                  Daily Horoscopes
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/blog"
                   className="text-sm text-text-muted hover:text-text-secondary transition-colors"
                 >
