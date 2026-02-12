@@ -24,6 +24,7 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
   const [longPressProgress, setLongPressProgress] = useState(0);
   const [currentFortune, setCurrentFortune] = useState<Fortune | null>(fortune);
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const clickCountRef = useRef(0);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -191,6 +192,16 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
     controls.start({ x: 0, y: 0 });
   }, [controls, x]);
 
+  // Auto-scroll to fortune result on reveal
+  useEffect(() => {
+    if (cookieState === 'revealed') {
+      const timer = setTimeout(() => {
+        containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [cookieState]);
+
   // Sync external fortune
   useEffect(() => {
     if (fortune !== null && fortune !== currentFortune) {
@@ -201,7 +212,7 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
   const isInteractive = cookieState !== 'broken' && cookieState !== 'revealed' && cookieState !== 'breaking';
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] relative">
+    <div ref={containerRef} className="flex flex-col items-center justify-center min-h-[60vh] relative">
       {/* Cookie Container */}
       {cookieState !== 'revealed' && (
         <motion.div
