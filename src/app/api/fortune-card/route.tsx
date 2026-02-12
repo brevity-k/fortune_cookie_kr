@@ -12,11 +12,111 @@ export async function GET(req: NextRequest) {
   const luckyColor = searchParams.get('luckyColor') || '금색';
   const category = searchParams.get('category') || '총운';
   const streak = parseInt(searchParams.get('streak') || '0', 10);
+  const width = Math.min(parseInt(searchParams.get('w') || '1080', 10), 1080);
+  const height = Math.min(parseInt(searchParams.get('h') || '1920', 10), 1920);
+  const isCompact = width <= 800;
 
   const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
   const labels: Record<number, string> = { 1: '흉', 2: '소흉', 3: '평', 4: '소길', 5: '대길' };
   const ratingLabel = labels[rating] || '평';
 
+  if (isCompact) {
+    // Compact landscape layout for Kakao/OG share cards
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            background: 'linear-gradient(135deg, #1A0F2E 0%, #2D1B4E 50%, #1A0F2E 100%)',
+            position: 'relative',
+            overflow: 'hidden',
+            padding: '30px 40px',
+          }}
+        >
+          {/* Decorative border */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 12,
+              border: '1px solid rgba(255, 215, 0, 0.2)',
+              borderRadius: 16,
+              display: 'flex',
+            }}
+          />
+
+          {/* Left: emoji + rating */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: 36 }}>
+            <div style={{ fontSize: 64, marginBottom: 12, display: 'flex' }}>{emoji}</div>
+            <div style={{ fontSize: 20, color: '#FFD700', display: 'flex' }}>{stars}</div>
+            <div style={{ fontSize: 18, color: '#FFD700', fontWeight: 700, marginTop: 4, display: 'flex' }}>{ratingLabel}</div>
+          </div>
+
+          {/* Right: message + info */}
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                display: 'flex',
+                padding: '4px 14px',
+                borderRadius: 12,
+                background: 'rgba(255, 215, 0, 0.1)',
+                border: '1px solid rgba(255, 215, 0, 0.2)',
+                fontSize: 14,
+                color: 'rgba(255, 255, 255, 0.7)',
+                marginBottom: 12,
+                alignSelf: 'flex-start',
+              }}
+            >
+              {category}
+            </div>
+            <div
+              style={{
+                fontSize: 24,
+                fontWeight: 700,
+                color: '#FFF8E7',
+                lineHeight: 1.4,
+                marginBottom: 16,
+                display: 'flex',
+              }}
+            >
+              {message}
+            </div>
+            <div style={{ display: 'flex', gap: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.5)', display: 'flex' }}>행운의 숫자</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: '#FFD700', display: 'flex' }}>{luckyNumber}</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.5)', display: 'flex' }}>행운의 색</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: '#FFD700', display: 'flex' }}>{luckyColor}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Watermark */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 20,
+              right: 24,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              fontSize: 12,
+              color: 'rgba(255, 215, 0, 0.4)',
+            }}
+          >
+            🥠 fortunecookie.ai.kr
+          </div>
+        </div>
+      ),
+      { width, height }
+    );
+  }
+
+  // Full portrait layout for image download / Instagram stories
   return new ImageResponse(
     (
       <div
@@ -154,6 +254,6 @@ export async function GET(req: NextRequest) {
         </div>
       </div>
     ),
-    { width: 1080, height: 1920 }
+    { width, height }
   );
 }
