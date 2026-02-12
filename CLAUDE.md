@@ -27,6 +27,9 @@ src/
 │   ├── fortune/[category]/       # 카테고리별 운세 페이지 (6개)
 │   │   ├── page.tsx              # 서버 컴포넌트 (메타데이터, SSG)
 │   │   └── client.tsx            # 클라이언트 컴포넌트
+│   ├── fortune/horoscope/[sign]/  # 별자리 운세 페이지 (12개)
+│   │   ├── page.tsx              # 서버 컴포넌트 (메타데이터, SSG)
+│   │   └── client.tsx            # 클라이언트 컴포넌트
 │   ├── gift/[id]/                # 선물 포춘쿠키
 │   │   ├── page.tsx              # 서버 컴포넌트
 │   │   └── client.tsx            # 클라이언트 컴포넌트
@@ -47,7 +50,8 @@ src/
 │   │   └── InteractionHint.tsx   # 인터랙션 힌트 칩
 │   ├── fortune/
 │   │   ├── FortuneShare.tsx      # 공유 버튼 (카카오/트위터/웹공유/복사)
-│   │   └── CategorySelector.tsx  # 카테고리 선택 칩
+│   │   ├── CategorySelector.tsx  # 카테고리 선택 칩
+│   │   └── HoroscopeSelector.tsx # 별자리 선택 칩 (12개)
 │   ├── layout/
 │   │   ├── Header.tsx            # 네비게이션 헤더 (모바일 햄버거 메뉴)
 │   │   └── Footer.tsx            # 푸터 (카테고리/콘텐츠/법적 링크)
@@ -70,11 +74,12 @@ src/
 │   ├── useSoundEffects.ts        # Howler.js 사운드 관리 + 음소거
 │   └── useShareFortune.ts        # 공유 (카카오/웹공유/트위터/클립보드)
 ├── lib/
-│   ├── fortune-selector.ts       # 운세 선택 로직 (시드 해싱, 랜덤)
+│   ├── fortune-selector.ts       # 운세 선택 로직 (시드 해싱, 랜덤, 띠별/MBTI/별자리 일일운세)
 │   ├── analytics.ts              # GA4 이벤트 추적 헬퍼
 │   └── utils.ts                  # cn() 유틸리티
 └── types/
     ├── fortune.ts                # Fortune, FortuneCategory, CookieState 등 타입
+    ├── horoscope.ts              # HoroscopeSign 타입, HOROSCOPE_SIGNS (12별자리 데이터)
     └── kakao.d.ts                # Kakao JS SDK 타입 선언
 ```
 
@@ -362,9 +367,10 @@ npm run content:season     # 시즌별 콘텐츠 확인
 
 | 우선순위 | 기능 | 노력 | 기대 효과 |
 |---------|------|------|----------|
-| 5 | **궁합 포춘쿠키** | 중간 | 매우 높음 |
-| 6 | **MBTI별 포춘쿠키** | 중간 | 높음 |
-| 7 | **띠별 오늘의 포춘쿠키** | 중간 | 높음 |
+| 5 | **궁합 포춘쿠키** ✅ | 중간 | 매우 높음 |
+| 6 | **MBTI별 포춘쿠키** ✅ | 중간 | 높음 |
+| 7 | **띠별 오늘의 포춘쿠키** ✅ | 중간 | 높음 |
+| 7.5 | **별자리 운세** ✅ | 중간 | 높음 |
 | 8 | **연속 방문 스트릭 카운터** | 낮음 | 중간 |
 
 **궁합 포춘쿠키** (`/compatibility`):
@@ -377,10 +383,16 @@ npm run content:season     # 시즌별 콘텐츠 확인
 - "ENFP를 위한 오늘의 포춘쿠키"
 - 한국의 MBTI 열풍 활용 → SEO 트래픽
 
-**띠별 포춘쿠키** (`/fortune/zodiac/[animal]`):
+**띠별 포춘쿠키** (`/fortune/zodiac/[animal]`) ✅:
 - 12띠 동물별 일일 운세 페이지
 - 날짜+띠 시드 기반 일일 변경
 - SEO 타겟: "쥐띠 오늘의 운세", "띠별운세"
+
+**별자리 운세** (`/fortune/horoscope/[sign]`) ✅:
+- 12별자리(양자리~물고기자리) 일일 운세 페이지
+- 날짜+별자리 시드 기반 일일 변경, 원소(불/흙/바람/물) 표시
+- SEO 타겟: "양자리 운세", "별자리운세", "오늘의 별자리 운세"
+- HoroscopeSelector 컴포넌트로 별자리 간 네비게이션
 
 ### Phase 3: 리텐션 (2-4주)
 
@@ -416,6 +428,7 @@ npm run content:season     # 시즌별 콘텐츠 확인
 | 오늘의 운세 무료 | 매우 높음 | 매우 높음 |
 | 띠별운세 2026 | 높음 | 높음 |
 | MBTI 운세 | 중간 | 높음 |
+| 별자리 운세 | 중간 | 높음 |
 | 궁합 테스트 | 높음 | 매우 높음 |
 | 수능 운세 | 낮음 (시즌) | 높음 (11월) |
 
