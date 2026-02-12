@@ -37,6 +37,9 @@ export async function generateMetadata({
       publishedTime: post.date,
       locale: 'ko_KR',
     },
+    alternates: {
+      canonical: `/blog/${slug}`,
+    },
   };
 }
 
@@ -48,9 +51,38 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.kr';
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    author: {
+      '@type': 'Organization',
+      name: '포춘쿠키',
+      url: siteUrl,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: '포춘쿠키',
+      url: siteUrl,
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${siteUrl}/blog/${slug}`,
+    },
+    inLanguage: 'ko',
+  };
+
   return (
     <div className="star-field min-h-dvh flex flex-col">
       <Header />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <main className="flex-1 pt-14 px-4 py-12">
         <article className="max-w-2xl mx-auto">
           <Link

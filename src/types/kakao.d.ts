@@ -17,17 +17,7 @@ interface KakaoFeedOptions {
   }>;
 }
 
-interface KakaoTextOptions {
-  objectType: 'text';
-  text: string;
-  link: KakaoShareLink;
-  buttons?: Array<{
-    title: string;
-    link: KakaoShareLink;
-  }>;
-}
-
-type KakaoShareOptions = KakaoFeedOptions | KakaoTextOptions;
+type KakaoShareOptions = KakaoFeedOptions;
 
 interface KakaoLink {
   sendDefault(options: KakaoShareOptions): void;
@@ -39,6 +29,10 @@ interface KakaoInstance {
   Share: KakaoLink;
 }
 
-interface Window {
-  Kakao?: KakaoInstance;
+declare global {
+  interface Window {
+    Kakao?: KakaoInstance;
+  }
 }
+
+export {};

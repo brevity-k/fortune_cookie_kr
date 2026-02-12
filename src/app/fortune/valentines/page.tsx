@@ -9,6 +9,9 @@ export const metadata: Metadata = {
     title: "💕 발렌타인 사랑운 포춘쿠키",
     description: "발렌타인데이 특별 사랑운을 포춘쿠키로 확인하세요!",
   },
+  alternates: {
+    canonical: '/fortune/valentines',
+  },
 };
 
 export default function ValentinesPage() {

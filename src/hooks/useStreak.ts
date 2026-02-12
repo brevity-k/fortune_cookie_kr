@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { getTodayString, getYesterdayString } from '@/lib/date-utils';
+import { STORAGE_KEYS } from '@/lib/storage-keys';
 
 interface StreakData {
   lastVisitDate: string;
@@ -8,18 +10,7 @@ interface StreakData {
   maxStreak: number;
 }
 
-const STORAGE_KEY = 'fortune_cookie_streak';
-
-function getToday(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-}
-
-function getYesterday(): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-}
+const STORAGE_KEY = STORAGE_KEYS.STREAK;
 
 function loadStreak(): StreakData {
   if (typeof window === 'undefined') {
@@ -46,8 +37,8 @@ export function useStreak() {
   }, []);
 
   const recordVisit = useCallback(() => {
-    const today = getToday();
-    const yesterday = getYesterday();
+    const today = getTodayString();
+    const yesterday = getYesterdayString();
     const current = loadStreak();
 
     if (current.lastVisitDate === today) return current;

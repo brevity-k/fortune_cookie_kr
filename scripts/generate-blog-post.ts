@@ -21,21 +21,22 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { BLOG_TOPICS, BlogTopic } from './blog-topics';
 import { withRetry } from './utils/retry';
+import {
+  extractTextFromResponse,
+  readStateFile,
+  writeStateFile,
+  atomicWriteFile,
+} from './utils/json';
 
 const USED_TOPICS_FILE = path.join(__dirname, 'used-topics.json');
 const BLOG_POSTS_FILE = path.join(__dirname, '..', 'src', 'data', 'blog-posts.ts');
 
 function getUsedTopics(): string[] {
-  try {
-    const data = fs.readFileSync(USED_TOPICS_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
+  return readStateFile<string[]>(USED_TOPICS_FILE, [], Array.isArray);
 }
 
 function saveUsedTopics(topics: string[]): void {
-  fs.writeFileSync(USED_TOPICS_FILE, JSON.stringify(topics, null, 2));
+  writeStateFile(USED_TOPICS_FILE, topics);
 }
 
 function getNextTopic(specificSlug?: string): BlogTopic | null {
@@ -104,12 +105,7 @@ HTML 태그만 출력하세요. 다른 설명이나 마크다운은 사용하지
     })
   );
 
-  const textBlock = response.content.find((block) => block.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') {
-    throw new Error('No text response from API');
-  }
-
-  return textBlock.text.trim();
+  return extractTextFromResponse(response);
 }
 
 function getTodayDate(): string {
@@ -151,7 +147,7 @@ function appendBlogPost(
   const updatedContent =
     fileContent.slice(0, insertPoint) + newPost + '\n' + fileContent.slice(insertPoint);
 
-  fs.writeFileSync(BLOG_POSTS_FILE, updatedContent);
+  atomicWriteFile(BLOG_POSTS_FILE, updatedContent);
 }
 
 async function main() {
@@ -160,8 +156,8 @@ async function main() {
   const topicIndex = args.indexOf('--topic');
   const specificSlug = topicIndex !== -1 ? args[topicIndex + 1] : undefined;
 
-  // Check API key
-  if (!process.env.ANTHROPIC_API_KEY) {
+  // Check API key (not needed for dry-run)
+  if (!dryRun && !process.env.ANTHROPIC_API_KEY) {
     console.error('ANTHROPIC_API_KEY environment variable is required.');
     console.error('Set it in .env.local or export it before running this script.');
     process.exit(1);

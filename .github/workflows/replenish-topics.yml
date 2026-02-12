@@ -2,7 +2,7 @@ name: Replenish Blog Topics
 
 on:
   schedule:
-    # 매월 1일 오전 7시 (KST) = 전월 마지막날 오후 10시 (UTC)
+    # 매월 2일 오전 7시 (KST) = 1일 오후 10시 (UTC)
     - cron: '0 22 1 * *'
   workflow_dispatch:
     inputs:
@@ -29,6 +29,7 @@ permissions:
 jobs:
   replenish:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,6 +39,15 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+
+      - name: Validate API key
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY not set"
+            exit 1
+          fi
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - run: npm ci
 
@@ -54,14 +64,19 @@ jobs:
       - name: Check for changes
         id: changes
         run: |
-          if git diff --quiet; then
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: Validate content integrity
+        if: steps.changes.outputs.has_changes == 'true'
+        run: npm run content:validate
+
       - name: Verify build
         if: steps.changes.outputs.has_changes == 'true'
+        timeout-minutes: 10
         run: npm run build
 
       - name: Create Pull Request
@@ -84,12 +99,31 @@ jobs:
           delete-branch: true
 
       - name: Auto-merge PR
+        id: merge
         if: steps.pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr merge ${{ steps.pr.outputs.pull-request-number }} \
-            --squash --delete-branch
+          if gh pr merge ${{ steps.pr.outputs.pull-request-number }} \
+            --squash --delete-branch; then
+            echo "merged=true" >> $GITHUB_OUTPUT
+          else
+            echo "::error::PR merge failed"
+            echo "merged=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Post-merge deploy check
+        if: steps.merge.outputs.merged == 'true'
+        run: |
+          echo "Waiting 120s for Vercel deployment..."
+          sleep 120
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://fortunecookie.ai.kr" || echo "000")
+          echo "Site status: $STATUS"
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 400 ]; then
+            echo "::error::Site returned HTTP $STATUS after auto-merge"
+            exit 1
+          fi
 
       - name: Notify failure
         if: failure()

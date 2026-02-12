@@ -6,6 +6,13 @@ import ContactForm from '@/components/contact/ContactForm';
 export const metadata: Metadata = {
   title: '문의하기',
   description: '포춘쿠키에 대한 문의사항을 남겨주세요',
+  openGraph: {
+    title: '문의하기 | 포춘쿠키',
+    description: '포춘쿠키에 대한 문의사항을 남겨주세요.',
+  },
+  alternates: {
+    canonical: '/contact',
+  },
 };
 
 export default function ContactPage() {

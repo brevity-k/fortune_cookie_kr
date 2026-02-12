@@ -12,8 +12,15 @@ export default function KakaoScript() {
       strategy="afterInteractive"
       onLoad={() => {
         if (window.Kakao && !window.Kakao.isInitialized()) {
-          window.Kakao.init(kakaoKey);
+          try {
+            window.Kakao.init(kakaoKey);
+          } catch (error) {
+            console.error('[KakaoScript] Initialization failed:', error);
+          }
         }
+      }}
+      onError={(e) => {
+        console.error('[KakaoScript] SDK failed to load:', e);
       }}
     />
   );

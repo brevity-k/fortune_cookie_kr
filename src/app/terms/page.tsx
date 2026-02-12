@@ -5,6 +5,13 @@ import Footer from '@/components/layout/Footer';
 export const metadata: Metadata = {
   title: '이용약관',
   description: '포춘쿠키 이용약관',
+  openGraph: {
+    title: '이용약관 | 포춘쿠키',
+    description: '포춘쿠키 이용약관',
+  },
+  alternates: {
+    canonical: '/terms',
+  },
 };
 
 export default function TermsPage() {

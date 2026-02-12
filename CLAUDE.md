@@ -19,9 +19,12 @@
 ```
 src/
 ├── app/                          # Next.js App Router 페이지
-│   ├── layout.tsx                # 루트 레이아웃 (폰트, GA, AdSense, PWA 메타태그)
+│   ├── layout.tsx                # 루트 레이아웃 (폰트, GA, AdSense, PWA 메타태그, WebSite JSON-LD)
 │   ├── icon.svg                  # 커스텀 파비콘 (골드 쿠키 SVG)
-│   ├── page.tsx                  # 메인 포춘쿠키 체험 페이지
+│   ├── page.tsx                  # 메인 페이지 서버 컴포넌트 (메타데이터 export)
+│   ├── client.tsx                # 메인 페이지 클라이언트 컴포넌트 (쿠키 인터랙션)
+│   ├── error.tsx                 # 글로벌 에러 바운더리 (쿠키 테마 에러 페이지)
+│   ├── not-found.tsx             # 커스텀 404 페이지 (쿠키 테마)
 │   ├── globals.css               # Tailwind + 커스텀 CSS 애니메이션 + prefers-reduced-motion
 │   ├── fortune/[category]/       # 카테고리별 운세 페이지 (6개)
 │   │   ├── page.tsx              # 서버 컴포넌트 (메타데이터, SSG)
@@ -33,7 +36,7 @@ src/
 │   │   ├── page.tsx              # 서버 컴포넌트
 │   │   └── client.tsx            # 클라이언트 컴포넌트
 │   ├── blog/                     # 블로그 목록
-│   │   └── [slug]/page.tsx       # 블로그 상세 (SSG, generateStaticParams)
+│   │   └── [slug]/page.tsx       # 블로그 상세 (SSG, generateStaticParams, BlogPosting JSON-LD)
 │   ├── about/page.tsx            # 소개
 │   ├── privacy/page.tsx          # 개인정보처리방침
 │   ├── terms/page.tsx            # 이용약관
@@ -57,8 +60,14 @@ src/
 │   ├── ads/AdSense.tsx           # Google AdSense 광고 컴포넌트
 │   ├── ui/MuteToggle.tsx         # 사운드 음소거 토글 (safe-area 대응)
 │   └── KakaoScript.tsx           # Kakao SDK 로드 + 즉시 초기화 (next/script)
+├── scripts/
+│   └── utils/
+│       ├── retry.ts              # API 호출 재시도 유틸리티 (지수 백오프)
+│       ├── json.ts               # Claude 응답 파싱, 상태 파일 I/O, 원자적 파일 쓰기
+│       ├── fortune-file.ts       # 운세 파일 읽기/파싱 공유 유틸리티
+│       └── constants.ts          # src/types/fortune.ts에서 재export (단일 소스)
 ├── data/
-│   ├── fortunes/                 # 운세 데이터 (총 280개)
+│   ├── fortunes/                 # 운세 데이터 (총 291개+, 자동 증가)
 │   │   ├── index.ts              # 통합 export
 │   │   ├── love.ts               # 사랑운 50개
 │   │   ├── career.ts             # 재물운 50개
@@ -68,17 +77,18 @@ src/
 │   │   └── relationship.ts       # 대인운 40개
 │   └── blog-posts.ts             # 블로그 포스트 10개 (한국어 HTML)
 ├── hooks/
-│   ├── useFortune.ts             # 운세 뽑기 (랜덤/카테고리)
 │   ├── useDailyFortune.ts        # 일일 운세 (날짜 기반 시드, localStorage)
 │   ├── useShakeDetection.ts      # 모바일 흔들기 감지 (DeviceMotion API)
 │   ├── useSoundEffects.ts        # Howler.js 사운드 관리 + 음소거
 │   └── useShareFortune.ts        # 공유 (카카오/웹공유/트위터/클립보드)
 ├── lib/
-│   ├── fortune-selector.ts       # 운세 선택 로직 (시드 해싱, 랜덤, 띠별/MBTI/별자리 일일운세)
+│   ├── fortune-selector.ts       # 운세 선택 로직 (시드 해싱, 랜덤, 빈 배열 안전, 띠별/MBTI/별자리 일일운세)
+│   ├── date-utils.ts             # 공유 날짜 포맷 (getTodayString, getYesterdayString)
+│   ├── storage-keys.ts           # 중앙화된 localStorage 키 상수 (STORAGE_KEYS)
 │   ├── analytics.ts              # GA4 이벤트 추적 헬퍼
 │   └── utils.ts                  # cn() 유틸리티
 └── types/
-    ├── fortune.ts                # Fortune, FortuneCategory, CookieState 등 타입
+    ├── fortune.ts                # Fortune, FortuneCategory, CookieState, VALID_COLORS, CATEGORY_LABELS (단일 소스)
     ├── horoscope.ts              # HoroscopeSign 타입, HOROSCOPE_SIGNS (12별자리 데이터)
     └── kakao.d.ts                # Kakao JS SDK 타입 선언
 ```
@@ -99,7 +109,8 @@ src/
 - **행운 정보**: 행운의 숫자 (1-99), 행운의 색 (한국어)
 
 ### 문의 폼 + 자동 답장 이메일
-- **API**: `/api/contact` (POST) — Resend SDK로 이메일 전송
+- **API**: `/api/contact` (POST) — Resend SDK로 이메일 전송 (`Promise.all`로 병렬 발송)
+- **입력 검증**: 이름 100자, 이메일 254자, 메시지 5000자 제한 + 이메일 형식 검증
 - **알림 메일**: 사이트 운영자(brevity1s.wos@gmail.com)에게 문의 내용 전달
 - **자동 답장**: 문의자에게 접수 확인 메일 자동 발송
 - **발신 주소**: `onboarding@resend.dev` (Resend 무료 티어 기본) → 커스텀 도메인 추가 가능
@@ -131,7 +142,7 @@ src/
 ```bash
 npm install        # 의존성 설치
 npm run dev        # 개발 서버 (http://localhost:3000)
-npm run build      # 프로덕션 빌드
+npm run build      # 프로덕션 빌드 (content:validate 자동 실행 후 next build)
 npm run start      # 프로덕션 서버
 npm run lint       # ESLint
 ```
@@ -167,13 +178,15 @@ RESEND_API_KEY=                              # Resend API 키 (문의 폼) ✅
 - **네이버 서치어드바이저**: 인증 메타태그 추가 완료 (`a559aa985e044be33ec42400206408dc4327ae22`)
 - sitemap.xml 동적 생성 (`src/app/sitemap.ts` Next.js 라우트)
 - robots.txt 동적 생성 (`src/app/robots.ts` Next.js 라우트)
+- **JSON-LD 구조화 데이터**: WebSite 스키마 (`layout.tsx`), BlogPosting 스키마 (`blog/[slug]/page.tsx`)
+- **홈페이지 메타데이터**: 서버/클라이언트 분리로 `page.tsx`에서 metadata export 지원
 
 ### 4단계: AdSense 신청
 - 아래 "AdSense 승인 체크리스트" 참조
 
 ### 5단계: 분석 도구 설정 ✅
 - GA4 측정 ID: `G-GCVN75X50X` (Vercel 환경변수 설정 완료)
-- 이벤트 추적: cookie_break, fortune_reveal, share
+- 이벤트 추적: cookie_break (FortuneCookie), fortune_reveal (FortuneCookie), share (FortuneShare), streak (모든 fortune 페이지)
 
 ### 6단계: 파비콘 ✅
 - 커스텀 SVG 파비콘: `src/app/icon.svg` (골드 쿠키 + 딥 퍼플 배경)
@@ -194,7 +207,7 @@ RESEND_API_KEY=                              # Resend API 키 (문의 폼) ✅
 - [x] robots.txt 동적 생성 (Next.js 라우트)
 - [x] ads.txt 파일 준비
 - [x] 모바일 반응형 디자인
-- [x] 원본 한국어 콘텐츠 (280개 운세 + 10개 블로그)
+- [x] 원본 한국어 콘텐츠 (291개+ 운세 + 10개+ 블로그, 자동 증가)
 - [x] 사이트 속도 최적화 (Next.js SSG)
 
 ### AdSense 승인 후 작업
@@ -324,17 +337,87 @@ npm run content:season     # 시즌별 콘텐츠 확인
 | 매주 월요일 09:00 KST | seasonal-content | 시즌 운세 자동 생성 + 검증 + 배포 확인 | 중복 이슈 + 자동 닫기 |
 | 매주 월요일 12:00 KST | content-update | 콘텐츠 신선도 + 무결성 검증 + 자동 트리거 | 스코프드 이슈 + 자동 트리거 |
 | 6시간마다 | site-health-check | 사이트 URL 핑 | 이슈 + 자동 닫기 |
-| 매월 1일 | replenish-topics | 블로그 주제 큐 보충 | 중복 이슈 + 자동 닫기 |
+| 매월 2일 07:00 KST | replenish-topics | 블로그 주제 큐 보충 | 중복 이슈 + 자동 닫기 |
 
 ### 자체 복구 메커니즘
 
-1. **프리머지 검증**: 모든 생성 워크플로우가 자동 머지 전 `content:validate` 실행 (데이터 무결성 게이트)
-2. **포스트 디플로이 헬스체크**: 자동 머지 후 120초 대기 → 사이트 HTTP 상태 확인 → 실패 시 이슈 생성
-3. **신선도 감지**: content-update가 블로그/운세 신선도 모니터링 → 14일 이상 미갱신 시 해당 파이프라인 자동 트리거
-4. **스코프드 이슈 관리**: 각 워크플로우가 자기 이슈만 닫음 (다른 워크플로우의 실패 이슈를 덮어쓰지 않음)
-5. **중복 방지**: 동일한 실패 이슈가 이미 열려있으면 새로 생성하지 않음
-6. **스케줄 분리**: seasonal-content(00:00 UTC)와 content-update(03:00 UTC) 시간 분리로 동시성 충돌 방지
-7. **주제 큐 자동 보충**: 블로그 주제 10개 미만 → replenish-topics 자동 트리거
+1. **프리머지 검증**: validate-first 순서 — `content:validate` → `next build` → PR 생성 (빠른 실패)
+2. **머지 결과 검증**: `gh pr merge` 실패 시 즉시 에러 + 디플로이 체크 스킵
+3. **포스트 디플로이 헬스체크**: 자동 머지 성공 후 120초 대기 → 사이트 HTTP 상태 확인 → 실패 시 이슈 생성
+4. **신선도 감지**: content-update가 블로그/운세 신선도 모니터링 → 14일 이상 미갱신 시 해당 파이프라인 자동 트리거
+5. **스코프드 이슈 관리**: 각 워크플로우가 자기 이슈만 닫음 (타이틀 기반 매칭으로 일관성 보장)
+6. **중복 방지**: 동일한 실패 이슈가 이미 열려있으면 새로 생성하지 않음 (모든 워크플로우 동일 패턴)
+7. **스케줄 분리**: seasonal-content(00:00 UTC)와 content-update(03:00 UTC) 시간 분리로 동시성 충돌 방지
+8. **주제 큐 자동 보충**: 블로그 주제 10개 미만 → replenish-topics 자동 트리거
+9. **잡 타임아웃**: 모든 워크플로우에 `timeout-minutes` 설정 (생성: 20분, 모니터링: 5-15분)
+10. **빌드 타임아웃**: 빌드 스텝에 `timeout-minutes: 10` 추가 설정 (기본 6시간 행 방지)
+11. **사전 API 키 검증**: `npm ci` 전에 `ANTHROPIC_API_KEY` 존재 확인 (불필요한 의존성 설치 방지)
+12. **동시성 그룹 통합**: replenish-topics는 `content-generation` 그룹 공유 (daily-blog 트리거 시 레이스 컨디션 방지)
+13. **워크플로우 트리거 에러 핸들링**: content-update의 자동 트리거에 try-catch 적용 (트리거 실패가 전체 워크플로우를 중단시키지 않음)
+14. **원자적 파일 쓰기**: `atomicWriteFile()`이 실패 시 임시 파일 자동 정리 (디스크 오염 방지)
+15. **글로벌 에러 바운더리**: `src/app/error.tsx`가 미처리 에러를 쿠키 테마 에러 페이지로 표시 (백지 화면 방지)
+16. **빈 배열 안전 가드**: `fortune-selector.ts`의 모든 선택 함수에 빈 배열 체크 + `fallbackFortune` 반환 (런타임 크래시 방지)
+
+## 코드 아키텍처 원칙
+
+### 단일 소스 원칙 (Single Source of Truth)
+
+모든 공유 상수와 타입은 `src/types/fortune.ts`에 정의하고, 스크립트는 `scripts/utils/constants.ts`를 통해 재export하여 사용합니다.
+
+**변경 시 수정할 파일**: `src/types/fortune.ts` (하나만)
+
+| 상수/타입 | 정의 위치 | 사용처 |
+|-----------|----------|--------|
+| `FortuneCategory` | `src/types/fortune.ts` | src/ 전체 + scripts/ 전체 |
+| `Fortune` (interface) | `src/types/fortune.ts` | scripts/ 전체 (생성/검증) |
+| `FORTUNE_CATEGORIES` | `src/types/fortune.ts` | scripts/generate-fortunes.ts |
+| `VALID_COLORS` | `src/types/fortune.ts` | scripts/ 전체 (검증/생성) |
+| `CATEGORIES` | `src/types/fortune.ts` | scripts/validate-content.ts, content-health-check.ts |
+| `CATEGORY_LABELS` | `src/types/fortune.ts` (CATEGORIES에서 파생) | scripts/ 전체 |
+| `FORTUNE_ID_PATTERN` | `src/types/fortune.ts` | scripts/validate-content.ts, content-health-check.ts |
+
+> **중요**: 스크립트에서 `src/types/fortune.ts`를 직접 import하지 말 것. 반드시 `scripts/utils/constants.ts`를 통해 사용.
+
+### 공유 날짜 포맷 (`src/lib/date-utils.ts`)
+
+날짜 문자열 형식 `YYYY-M-D` (제로패딩 없음)는 localStorage 키와 일일 운세 시드에 사용됩니다. 이 형식을 변경하면 기존 사용자의 상태가 깨집니다.
+
+- `getTodayString()`: 오늘 날짜 → `"2026-2-12"` 형식
+- `getYesterdayString()`: 어제 날짜
+
+사용처: `useDailyFortune.ts`, `useStreak.ts`, `fortune-selector.ts` (5개 함수)
+
+### 중앙화된 localStorage 키 (`src/lib/storage-keys.ts`)
+
+| 키 | 상수 | 사용 훅 |
+|----|------|---------|
+| `fortune_cookie_daily` | `STORAGE_KEYS.DAILY_FORTUNE` | `useDailyFortune` |
+| `fortune_cookie_streak` | `STORAGE_KEYS.STREAK` | `useStreak` |
+| `fortune_cookie_collection` | `STORAGE_KEYS.COLLECTION` | `useFortuneCollection` |
+| `fortune_cookie_muted` | `STORAGE_KEYS.MUTED` | `useSoundEffects` |
+
+> **중요**: 새 localStorage 키 추가 시 반드시 `STORAGE_KEYS`에 먼저 등록. 모든 localStorage 접근은 try-catch로 감싸야 함 (Safari 비공개 모드 호환).
+
+### SEO 메타데이터 규칙
+
+- **OpenGraph type/locale**: 루트 `layout.tsx`에서 `type: 'website'`, `locale: 'ko_KR'` 설정 → 자식 페이지에 자동 상속
+- **Canonical URL**: 모든 인덱싱 가능한 페이지에 `alternates.canonical` 필수 (상대 경로, `metadataBase`에서 자동 해석)
+- **robots.ts**: `/api/`와 `/gift/` 경로 크롤링 차단 (선물 쿠키는 개인 링크)
+
+### 스크립트 유틸리티 (`scripts/utils/`)
+
+| 유틸리티 | 파일 | 용도 |
+|---------|------|------|
+| `withRetry()` | `retry.ts` | Claude API 호출 시 지수 백오프 재시도 (3회) |
+| `extractTextFromResponse()` | `json.ts` | Claude 응답에서 텍스트 블록 추출 |
+| `parseClaudeJSON<T>()` | `json.ts` | 코드 펜스 제거 + 트레일링 콤마 수정 + JSON 파싱 |
+| `parseClaudeJSONArray<T>()` | `json.ts` | 위 + 배열 타입 검증 |
+| `readStateFile<T>()` | `json.ts` | 상태 파일 읽기 (파일 부재/손상 시 기본값 반환, 선택적 구조 검증) |
+| `writeStateFile()` | `json.ts` | 상태 파일 원자적 쓰기 (JSON pretty print) |
+| `atomicWriteFile()` | `json.ts` | 임시 파일 → rename 패턴으로 원자적 쓰기 (실패 시 임시 파일 자동 정리) |
+| `readExistingFortunes()` | `fortune-file.ts` | 카테고리 파일에서 기존 메시지/최고 ID 추출 |
+| `getSampleFortunes()` | `fortune-file.ts` | 스타일 참고용 샘플 운세 추출 (빈 결과 시 경고) |
+| `getCategoryFilePath()` | `fortune-file.ts` | 카테고리 → 파일 경로 변환 |
 
 ## 성장 전략 (Traffic & Growth Plan)
 

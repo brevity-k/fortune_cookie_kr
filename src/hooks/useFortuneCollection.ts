@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { STORAGE_KEYS } from '@/lib/storage-keys';
 
-const STORAGE_KEY = 'fortune_cookie_collection';
+const STORAGE_KEY = STORAGE_KEYS.COLLECTION;
 
 function loadCollection(): string[] {
   if (typeof window === 'undefined') return [];

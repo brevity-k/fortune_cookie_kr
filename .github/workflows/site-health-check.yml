@@ -12,6 +12,7 @@ permissions:
 jobs:
   health-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Check site health
         id: health
@@ -50,7 +51,8 @@ jobs:
               state: 'open',
               labels: 'site-down',
             });
-            if (issues.length === 0) {
+            const existing = issues.find(i => i.title.includes('Health check failed'));
+            if (!existing) {
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -83,6 +85,6 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                body: 'Site has recovered. All health checks passing.',
+                body: `✅ 사이트 복구됨. 모든 헬스체크 통과.\nWorkflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
               });
             }

@@ -9,6 +9,9 @@ export const metadata: Metadata = {
     title: "📚 수능 합격 운세 포춘쿠키",
     description: "포춘쿠키로 시험 행운을 확인하세요! 합격 기원 운세를 무료로 제공합니다.",
   },
+  alternates: {
+    canonical: '/fortune/exam-luck',
+  },
 };
 
 export default function ExamLuckPage() {

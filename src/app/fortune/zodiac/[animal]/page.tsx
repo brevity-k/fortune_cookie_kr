@@ -28,6 +28,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: `${zodiac.emoji} ${zodiac.label} 오늘의 운세 - 포춘쿠키`,
       description: `${zodiac.label} 오늘의 운세를 확인하세요! 포춘쿠키를 깨고 나의 띠별 운세를 알아보세요.`,
     },
+    alternates: {
+      canonical: `/fortune/zodiac/${animal}`,
+    },
   };
 }
 

@@ -17,6 +17,9 @@ export const metadata: Metadata = {
     '사주팔자',
     '행운의 숫자',
   ],
+  alternates: {
+    canonical: '/blog',
+  },
 };
 
 export default function BlogPage() {

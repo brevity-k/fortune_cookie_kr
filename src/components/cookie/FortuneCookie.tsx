@@ -9,6 +9,7 @@ import FortunePaper from './FortunePaper';
 import { CookieState, CookieBreakMethod, Fortune } from '@/types/fortune';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useShakeDetection } from '@/hooks/useShakeDetection';
+import { trackCookieBreak, trackFortuneReveal } from '@/lib/analytics';
 import MuteToggle from '@/components/ui/MuteToggle';
 
 interface FortuneCookieProps {
@@ -45,6 +46,7 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
 
       setCookieState('breaking');
       play('break');
+      trackCookieBreak(method);
 
       setTimeout(() => {
         setCookieState('broken');
@@ -61,6 +63,7 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
 
         const result = onBreak(method);
         setCurrentFortune(result);
+        trackFortuneReveal(result.category);
 
         setTimeout(() => {
           setCookieState('revealed');
@@ -197,7 +200,7 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
     if (cookieState === 'revealed') {
       const timer = setTimeout(() => {
         containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 300);
+      }, 900);
       return () => clearTimeout(timer);
     }
   }, [cookieState]);

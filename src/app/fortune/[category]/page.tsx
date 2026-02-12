@@ -25,6 +25,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: `${categoryInfo.emoji} ${categoryInfo.label} - 포춘쿠키 운세`,
       description: `${categoryInfo.description}. 매일 새로운 ${categoryInfo.label}을 무료로 확인하세요.`,
     },
+    alternates: {
+      canonical: `/fortune/${category}`,
+    },
   };
 }
 
