@@ -189,3 +189,24 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-cookie-float,
+  .animate-cookie-glow,
+  .animate-pulse-ring,
+  .animate-sparkle,
+  .animate-paper-unfold,
+  .animate-shake,
+  .animate-fade-in-up,
+  .animate-crack-spread {
+    animation: none !important;
+  }
+
+  .star-field::before {
+    animation: none !important;
+  }
+
+  .long-press-progress {
+    transition: none !important;
+  }
+}
