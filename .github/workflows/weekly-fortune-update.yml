@@ -53,13 +53,15 @@ jobs:
       - name: Generate fortune messages
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
+          INPUT_CATEGORY: ${{ github.event.inputs.category }}
         run: |
           ARGS=""
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+          if [ "$INPUT_DRY_RUN" = "true" ]; then
             ARGS="--dry-run"
           fi
-          if [ -n "${{ github.event.inputs.category }}" ]; then
-            ARGS="$ARGS --category ${{ github.event.inputs.category }}"
+          if [ -n "$INPUT_CATEGORY" ]; then
+            ARGS="$ARGS --category $INPUT_CATEGORY"
           fi
           npx tsx scripts/generate-fortunes.ts $ARGS
 
