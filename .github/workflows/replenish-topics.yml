@@ -54,9 +54,11 @@ jobs:
       - name: Replenish blog topics
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          INPUT_COUNT: ${{ github.event.inputs.count || '20' }}
+          INPUT_FORCE: ${{ github.event.inputs.force }}
         run: |
-          ARGS="--count ${{ github.event.inputs.count || '20' }}"
-          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+          ARGS="--count $INPUT_COUNT"
+          if [ "$INPUT_FORCE" = "true" ]; then
             ARGS="$ARGS --force"
           fi
           npx tsx scripts/replenish-blog-topics.ts $ARGS
