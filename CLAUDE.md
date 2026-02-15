@@ -346,8 +346,13 @@ npm run twitter:post -- --type fortune  # 운세 트윗 강제
 - 운세: 카테고리 + 메시지 + 행운 정보 + 링크 + 해시태그
 - 280자 제한 자동 처리 (설명/메시지 자동 절삭)
 
+**중복 방지:**
+- 일일 중복 체크: `lastPostDate`가 오늘이면 게시 스킵 (`--force`로 강제 가능)
+- 블로그 중복: `postedSlugs[]`로 이미 트윗한 블로그 슬러그 추적
+- 운세 중복: `postedFortuneIds[]`로 이미 트윗한 운세 ID 추적 (전체 소진 시 자동 리셋)
+
 **상태 파일 검증:**
-- `isTwitterPostState`: `lastPostDate`가 string, `postedSlugs`가 string 배열
+- `isTwitterPostState`: `lastPostDate`가 string, `postedSlugs`가 string 배열, `postedFortuneIds`가 string 배열 (선택적, 하위 호환)
 
 ### 콘텐츠 건강 체크
 
@@ -487,7 +492,7 @@ npm run content:season     # 시즌별 콘텐츠 확인
 | `generate-seasonal-fortunes.ts` | `seasonal-generation-state.json` | `isSeasonalState` | 키가 4자리 연도, 값이 문자열 배열 |
 | `generate-blog-post.ts` | `used-topics.json` | `isStringArray` | 배열이고 모든 요소가 string |
 | `replenish-blog-topics.ts` | `used-topics.json` | `isStringArray` | 배열이고 모든 요소가 string |
-| `post-to-twitter.ts` | `twitter-post-state.json` | `isTwitterPostState` | `lastPostDate`가 string, `postedSlugs`가 string 배열 |
+| `post-to-twitter.ts` | `twitter-post-state.json` | `isTwitterPostState` | `lastPostDate`가 string, `postedSlugs`가 string 배열, `postedFortuneIds`가 string 배열 (선택적) |
 
 > **규칙**: 새 상태 파일 추가 시 반드시 타입 검증 함수를 함께 작성할 것. `Array.isArray`만으로는 부족 — 요소 타입도 검증해야 합니다.
 
