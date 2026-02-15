@@ -35,8 +35,8 @@ export default function ContactPage() {
 
             <p className="text-text-muted text-xs mt-3 text-center">
               이메일로도 문의 가능합니다:{' '}
-              <a href="mailto:brevity1s.wos@gmail.com" className="text-cookie-gold/70 hover:underline">
-                brevity1s.wos@gmail.com
+              <a href="mailto:fortune0.kr@gmail.com" className="text-cookie-gold/70 hover:underline">
+                fortune0.kr@gmail.com
               </a>
             </p>
           </section>
