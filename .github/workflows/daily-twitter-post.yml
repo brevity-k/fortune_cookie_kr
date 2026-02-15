@@ -1,0 +1,146 @@
+name: Daily Twitter Post
+
+on:
+  schedule:
+    # 매일 오전 8시 (KST) = 전날 오후 11시 (UTC)
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+    inputs:
+      type:
+        description: 'Content type to tweet (leave empty for auto)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - blog
+          - fortune
+      dry_run:
+        description: 'Dry run mode (no tweet posted)'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: twitter-posting
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  post-tweet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Validate X API keys
+        run: |
+          MISSING=""
+          for KEY in X_CONSUMER_KEY X_SECRET_KEY X_ACCESS_TOKEN X_ACCESS_TOKEN_SECRET; do
+            eval "VAL=\$$KEY"
+            if [ -z "$VAL" ]; then
+              MISSING="$MISSING $KEY"
+            fi
+          done
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing secrets:$MISSING"
+            exit 1
+          fi
+        env:
+          X_CONSUMER_KEY: ${{ secrets.X_CONSUMER_KEY }}
+          X_SECRET_KEY: ${{ secrets.X_SECRET_KEY }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+
+      - run: npm ci
+
+      - name: Post to Twitter
+        env:
+          X_CONSUMER_KEY: ${{ secrets.X_CONSUMER_KEY }}
+          X_SECRET_KEY: ${{ secrets.X_SECRET_KEY }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
+          INPUT_TYPE: ${{ github.event.inputs.type }}
+        run: |
+          ARGS=""
+          if [ "$INPUT_DRY_RUN" = "true" ]; then
+            ARGS="--dry-run"
+          fi
+          if [ -n "$INPUT_TYPE" ]; then
+            ARGS="$ARGS --type $INPUT_TYPE"
+          fi
+          npx tsx scripts/post-to-twitter.ts $ARGS
+
+      - name: Commit state changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet scripts/twitter-post-state.json; then
+            git add scripts/twitter-post-state.json
+            git commit -m "chore: update twitter post state"
+            git push
+          else
+            echo "No state changes to commit"
+          fi
+
+      - name: Notify failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `[Workflow Failure] Daily Twitter Post - ${new Date().toISOString().split('T')[0]}`;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'workflow-failure',
+            });
+            const existing = issues.find(i => i.title.includes('Daily Twitter Post'));
+            if (!existing) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body: `Workflow run failed: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                labels: ['workflow-failure'],
+              });
+            }
+
+      - name: Auto-close failure issues on success
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'workflow-failure',
+            });
+            for (const issue of issues) {
+              if (issue.title.includes('Daily Twitter Post')) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                  state_reason: 'completed',
+                });
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `✅ 파이프라인 복구됨.\nWorkflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                });
+              }
+            }
