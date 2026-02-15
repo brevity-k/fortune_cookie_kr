@@ -13,6 +13,7 @@
 | 사운드 | Howler.js | 2.2.x |
 | 한국어 폰트 | Noto Sans KR (next/font) | - |
 | 유틸리티 | clsx | 2.x |
+| X/Twitter API | twitter-api-v2 | 1.29.x |
 
 ## 프로젝트 구조
 
@@ -111,7 +112,7 @@ src/
 ### 문의 폼 + 자동 답장 이메일
 - **API**: `/api/contact` (POST) — Resend SDK로 이메일 전송 (`Promise.all`로 병렬 발송)
 - **입력 검증**: 이름 100자, 이메일 254자, 메시지 5000자 제한 + 이메일 형식 검증
-- **알림 메일**: 사이트 운영자(brevity1s.wos@gmail.com)에게 문의 내용 전달
+- **알림 메일**: 사이트 운영자(fortune0.kr@gmail.com)에게 문의 내용 전달
 - **자동 답장**: 문의자에게 접수 확인 메일 자동 발송
 - **발신 주소**: `onboarding@resend.dev` (Resend 무료 티어 기본) → 커스텀 도메인 추가 가능
 - **무료 제한**: 하루 100건 (Resend 무료 플랜)
@@ -157,6 +158,10 @@ NEXT_PUBLIC_ADSENSE_CLIENT=                  # Google AdSense 클라이언트 ID
 NEXT_PUBLIC_KAKAO_KEY=                       # Kakao JavaScript 앱 키 ✅
 NEXT_PUBLIC_SITE_URL=https://fortunecookie.ai.kr  # 사이트 URL ✅
 RESEND_API_KEY=                              # Resend API 키 (문의 폼) ✅
+X_CONSUMER_KEY=                              # X API Consumer Key ✅
+X_SECRET_KEY=                                # X API Consumer Secret ✅
+X_ACCESS_TOKEN=                              # X API Access Token ✅
+X_ACCESS_TOKEN_SECRET=                       # X API Access Token Secret ✅
 ```
 
 > **참고**: Google/Naver 인증 코드는 `layout.tsx`의 `metadata.verification`에 직접 하드코딩되어 환경변수 불필요
@@ -308,6 +313,42 @@ ANTHROPIC_API_KEY=sk-ant-... npm run fortune:generate --category love  # 특정 
 4. 유효성 검증 (필수 필드, ID 형식, rating 범위, 중복 체크)
 5. 카테고리 파일에 추가 + 상태 파일 업데이트
 
+### Twitter/X 자동 포스팅 (일일)
+
+X API (twitter-api-v2)를 사용하여 매일 자동으로 트윗을 게시합니다.
+오늘 생성된 블로그 포스트가 있으면 블로그 트윗, 없으면 랜덤 운세 트윗을 게시합니다.
+
+**X 계정**: KR 전용 계정 (fortune0.kr@gmail.com)
+- 2개 언어별 계정 전략: KR 계정 (fortune_cookie_kr + lottery_kr), EN 계정 (별도)
+- X API 과금: pay-per-use 모델 ($0.01/tweet, $30 충전 = ~3,000 tweets)
+
+**파일 구조:**
+- `scripts/post-to-twitter.ts` - 트윗 게시 스크립트
+- `scripts/twitter-post-state.json` - 게시 상태 추적 (lastPostDate, postedSlugs)
+- `.github/workflows/daily-twitter-post.yml` - 매일 자동 실행
+
+**수동 실행:**
+```bash
+npm run twitter:preview   # 미리보기 (트윗 게시 안 함)
+npm run twitter:post      # 트윗 게시
+npm run twitter:post -- --type blog     # 블로그 트윗 강제
+npm run twitter:post -- --type fortune  # 운세 트윗 강제
+```
+
+**GitHub Actions 설정:**
+- GitHub Secrets 필요: `X_CONSUMER_KEY`, `X_SECRET_KEY`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET`
+- 매일 오전 8시(KST) 자동 실행 (블로그 생성 2시간 후)
+- 상태 파일 변경은 main에 직접 커밋 (PR 불필요)
+- 동시성 그룹: `twitter-posting` (content-generation과 별도)
+
+**트윗 템플릿:**
+- 블로그: 제목 + 설명 + 링크 + 해시태그
+- 운세: 카테고리 + 메시지 + 행운 정보 + 링크 + 해시태그
+- 280자 제한 자동 처리 (설명/메시지 자동 절삭)
+
+**상태 파일 검증:**
+- `isTwitterPostState`: `lastPostDate`가 string, `postedSlugs`가 string 배열
+
 ### 콘텐츠 건강 체크
 
 ```bash
@@ -337,6 +378,7 @@ npm run content:season     # 시즌별 콘텐츠 확인
 | 매주 월요일 09:00 KST | seasonal-content | 시즌 운세 자동 생성 + 검증 + 배포 확인 | 중복 이슈 + 자동 닫기 |
 | 매주 월요일 12:00 KST | content-update | 콘텐츠 신선도 + 무결성 검증 + 자동 트리거 | 스코프드 이슈 + 자동 트리거 |
 | 6시간마다 | site-health-check | 사이트 URL 핑 | 이슈 + 자동 닫기 |
+| 매일 08:00 KST | daily-twitter-post | 블로그/운세 트윗 자동 게시 + 상태 커밋 | 중복 이슈 + 자동 닫기 |
 | 매월 2일 07:00 KST | replenish-topics | 블로그 주제 큐 보충 | 중복 이슈 + 자동 닫기 |
 
 ### 자체 복구 메커니즘
@@ -445,6 +487,7 @@ npm run content:season     # 시즌별 콘텐츠 확인
 | `generate-seasonal-fortunes.ts` | `seasonal-generation-state.json` | `isSeasonalState` | 키가 4자리 연도, 값이 문자열 배열 |
 | `generate-blog-post.ts` | `used-topics.json` | `isStringArray` | 배열이고 모든 요소가 string |
 | `replenish-blog-topics.ts` | `used-topics.json` | `isStringArray` | 배열이고 모든 요소가 string |
+| `post-to-twitter.ts` | `twitter-post-state.json` | `isTwitterPostState` | `lastPostDate`가 string, `postedSlugs`가 string 배열 |
 
 > **규칙**: 새 상태 파일 추가 시 반드시 타입 검증 함수를 함께 작성할 것. `Array.isArray`만으로는 부족 — 요소 타입도 검증해야 합니다.
 
@@ -459,14 +502,16 @@ npm run content:season     # 시즌별 콘텐츠 확인
 | API 키 미설정 | `npm ci` 전 조기 종료 | GitHub Secrets에 `ANTHROPIC_API_KEY` 설정 |
 | 주제 큐 소진 | `replenish-topics` 워크플로우 자동 트리거 | `npm run blog:generate -- --topic <slug>` 수동 지정 |
 | 시즌 운세 중복 생성 | 상태 파일에서 연도별 체크, 자동 스킵 | 상태 파일 수정 후 재실행 |
+| X API 크레딧 소진 | 402 에러 + 이슈 생성 | developer.x.com에서 크레딧 충전 |
+| X API 키 미설정 | 4개 키 사전 검증 → 조기 종료 | GitHub Secrets에 X_* 키 4개 설정 |
 
 ## 성장 전략 (Traffic & Growth Plan)
 
-### 구현 현황: 11/13 기능 완료 (85%)
+### 구현 현황: 12/13 기능 완료 (92%)
 
 | Phase | 진행률 | 남은 작업 |
 |-------|--------|----------|
-| Phase 1: 바이럴 최적화 | 3/4 (75%) | 크리스마스 시즌 페이지, 네이버 블로그 |
+| Phase 1: 바이럴 최적화 | 3/4 (75%) | 네이버 블로그 |
 | Phase 2: 새 기능 | 5/5 (100%) | - |
 | Phase 3: 리텐션 | 2/4 (50%) | 행운 퍼센타일, 타로 스타일 선택 |
 
@@ -484,13 +529,13 @@ npm run content:season     # 시즌별 콘텐츠 확인
 - 사주/타로 깊이가 아닌 **인터랙티브 체험 + 공유성**으로 차별화
 - 쿠키 깨기 인터랙션 (5가지)은 경쟁사에 없는 고유한 UX
 
-### Phase 1: 바이럴 최적화 (3/4 완료)
+### Phase 1: 바이럴 최적화 (3/4 완료, 시즌 페이지 4/4)
 
 | 우선순위 | 기능 | 상태 | 기대 효과 |
 |---------|------|------|----------|
 | 1 | **선물 포춘쿠키 바이럴 루프 강화** | ✅ 완료 | 매우 높음 |
 | 2 | **공유 결과 카드 디자인 개선** | ✅ 완료 | 매우 높음 |
-| 3 | **시즌 랜딩 페이지** | ⚠️ 3/4 | 높음 |
+| 3 | **시즌 랜딩 페이지** | ✅ 완료 | 높음 |
 | 4 | **네이버 블로그 개설 + 크로스포스팅** | ❌ 미구현 | 높음 |
 
 **선물 바이럴 루프** (`/gift/[id]`) ✅:
@@ -505,11 +550,11 @@ npm run content:season     # 시즌별 콘텐츠 확인
 - `/api/fortune-card` 엣지 함수로 동적 생성 (`w`/`h` 파라미터 지원)
 - 카카오 공유 메시지: "나는 '대길' 나왔는데 너는? 🥠"
 
-**시즌 랜딩 페이지** ⚠️ (3/4):
+**시즌 랜딩 페이지** ✅ (4/4):
 - `/fortune/new-year` — 신년운세 포춘쿠키 ✅
 - `/fortune/valentines` — 발렌타인 사랑운 ✅
 - `/fortune/exam-luck` — 수능 합격 운세 ✅
-- `/fortune/christmas` — 크리스마스 운세 ❌ 미구현
+- `/fortune/christmas` — 크리스마스 운세 ✅
 
 ### Phase 2: 새 기능 (5/5 완료)
 
