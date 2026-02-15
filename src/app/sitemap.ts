@@ -85,6 +85,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
+      url: `${siteUrl}/fortune/christmas`,
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.7,
+    },
+    {
       url: `${siteUrl}/blog`,
       lastModified: new Date(),
       changeFrequency: "weekly",
