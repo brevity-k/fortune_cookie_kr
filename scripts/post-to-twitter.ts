@@ -6,6 +6,7 @@
  *   npx tsx scripts/post-to-twitter.ts --dry-run     # 미리보기 (게시 안 함)
  *   npx tsx scripts/post-to-twitter.ts --type blog   # 블로그 포스트 트윗 강제
  *   npx tsx scripts/post-to-twitter.ts --type fortune # 운세 트윗 강제
+ *   npx tsx scripts/post-to-twitter.ts --force        # 오늘 이미 게시했어도 강제 실행
  *
  * 환경 변수:
  *   X_CONSUMER_KEY        - X API Consumer Key (필수)
@@ -33,21 +34,25 @@ const SITE_URL = 'https://fortunecookie.ai.kr';
 interface TwitterPostState {
   lastPostDate: string;
   postedSlugs: string[];
+  postedFortuneIds: string[];
 }
 
 function isTwitterPostState(data: unknown): data is TwitterPostState {
   if (typeof data !== 'object' || data === null) return false;
   const obj = data as Record<string, unknown>;
-  return (
-    typeof obj.lastPostDate === 'string' &&
-    Array.isArray(obj.postedSlugs) &&
-    obj.postedSlugs.every((s) => typeof s === 'string')
-  );
+  if (typeof obj.lastPostDate !== 'string') return false;
+  if (!Array.isArray(obj.postedSlugs) || !obj.postedSlugs.every((s) => typeof s === 'string')) return false;
+  // postedFortuneIds is optional for backward compatibility
+  if (obj.postedFortuneIds !== undefined) {
+    if (!Array.isArray(obj.postedFortuneIds) || !obj.postedFortuneIds.every((s) => typeof s === 'string')) return false;
+  }
+  return true;
 }
 
 const DEFAULT_STATE: TwitterPostState = {
   lastPostDate: '',
   postedSlugs: [],
+  postedFortuneIds: [],
 };
 
 function getState(): TwitterPostState {
@@ -88,9 +93,13 @@ function findTodayBlogPost(state: TwitterPostState): BlogPost | null {
   return candidates.length > 0 ? candidates[0] : null;
 }
 
-function pickRandomFortune(): Fortune {
-  const categoryIndex = Math.floor(Math.random() * allFortunes.length);
-  return allFortunes[categoryIndex];
+function pickRandomFortune(postedIds: string[]): Fortune {
+  const posted = new Set(postedIds);
+  const available = allFortunes.filter((f) => !posted.has(f.id));
+  // If all fortunes have been posted, reset and pick from all
+  const pool = available.length > 0 ? available : allFortunes;
+  const index = Math.floor(Math.random() * pool.length);
+  return pool[index];
 }
 
 function buildBlogTweet(post: BlogPost): string {
@@ -140,6 +149,7 @@ async function postTweet(text: string): Promise<string> {
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
+  const force = args.includes('--force');
   const typeIndex = args.indexOf('--type');
   const forceType = typeIndex !== -1 ? args[typeIndex + 1] : undefined;
 
@@ -164,6 +174,10 @@ async function main() {
   }
 
   const state = getState();
+  // Ensure postedFortuneIds exists (backward compatibility)
+  if (!state.postedFortuneIds) {
+    state.postedFortuneIds = [];
+  }
   const today = getTodayDate();
 
   console.log('');
@@ -171,9 +185,18 @@ async function main() {
   console.log('  🐦 Twitter/X 자동 포스팅');
   console.log('========================================');
 
+  // Duplicate check: skip if already posted today
+  if (state.lastPostDate === today && !force && !dryRun) {
+    console.log(`  ⚠️ 오늘(${today}) 이미 트윗을 게시했습니다.`);
+    console.log('  --force 플래그로 강제 실행할 수 있습니다.');
+    console.log('');
+    return;
+  }
+
   let tweetText: string;
   let tweetType: string;
   let blogSlug: string | null = null;
+  let fortuneId: string | null = null;
 
   if (forceType === 'blog' || (!forceType && forceType !== 'fortune')) {
     const blogPost = findTodayBlogPost(state);
@@ -187,20 +210,23 @@ async function main() {
     } else if (forceType === 'blog') {
       console.log('  ⚠️ 오늘 게시된 새 블로그 포스트가 없습니다.');
       console.log('  운세 트윗으로 대체합니다.');
-      const fortune = pickRandomFortune();
+      const fortune = pickRandomFortune(state.postedFortuneIds);
       tweetText = buildFortuneTweet(fortune);
       tweetType = '운세';
+      fortuneId = fortune.id;
       console.log(`  타입: 운세 (${getCategoryLabel(fortune.category)})`);
     } else {
-      const fortune = pickRandomFortune();
+      const fortune = pickRandomFortune(state.postedFortuneIds);
       tweetText = buildFortuneTweet(fortune);
       tweetType = '운세';
+      fortuneId = fortune.id;
       console.log(`  타입: 운세 (${getCategoryLabel(fortune.category)})`);
     }
   } else {
-    const fortune = pickRandomFortune();
+    const fortune = pickRandomFortune(state.postedFortuneIds);
     tweetText = buildFortuneTweet(fortune);
     tweetType = '운세';
+    fortuneId = fortune.id;
     console.log(`  타입: 운세 (${getCategoryLabel(fortune.category)})`);
   }
 
@@ -230,6 +256,9 @@ async function main() {
   state.lastPostDate = today;
   if (blogSlug) {
     state.postedSlugs.push(blogSlug);
+  }
+  if (fortuneId) {
+    state.postedFortuneIds.push(fortuneId);
   }
   saveState(state);
 
