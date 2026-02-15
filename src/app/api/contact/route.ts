@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const OWNER_EMAIL = 'brevity1s.wos@gmail.com';
+const OWNER_EMAIL = 'fortune0.kr@gmail.com';
 const FROM_EMAIL = 'Fortune Cookie <onboarding@resend.dev>';
 
 function isValidEmail(email: string): boolean {

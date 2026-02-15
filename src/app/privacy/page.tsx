@@ -102,8 +102,8 @@ export default function PrivacyPage() {
             </h2>
             <p className="text-text-secondary leading-relaxed">
               개인정보 관련 문의사항이 있으시면{' '}
-              <a href="mailto:brevity1s.wos@gmail.com" className="text-cookie-gold hover:underline">
-                brevity1s.wos@gmail.com
+              <a href="mailto:fortune0.kr@gmail.com" className="text-cookie-gold hover:underline">
+                fortune0.kr@gmail.com
               </a>
               으로 연락해 주시기 바랍니다.
             </p>
