@@ -17,7 +17,9 @@
     "topics:preview": "tsx scripts/replenish-blog-topics.ts --dry-run",
     "seasonal:generate": "tsx scripts/generate-seasonal-fortunes.ts",
     "seasonal:preview": "tsx scripts/generate-seasonal-fortunes.ts --dry-run",
-    "content:validate": "tsx scripts/validate-content.ts"
+    "content:validate": "tsx scripts/validate-content.ts",
+    "twitter:post": "tsx scripts/post-to-twitter.ts",
+    "twitter:preview": "tsx scripts/post-to-twitter.ts --dry-run"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
@@ -27,7 +29,8 @@
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "resend": "^6.9.2"
+    "resend": "^6.9.2",
+    "twitter-api-v2": "^1.29.0"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
