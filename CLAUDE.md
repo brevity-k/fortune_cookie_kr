@@ -313,6 +313,11 @@ ANTHROPIC_API_KEY=sk-ant-... npm run fortune:generate --category love  # 특정 
 4. 유효성 검증 (필수 필드, ID 형식, rating 범위, 중복 체크)
 5. 카테고리 파일에 추가 + 상태 파일 업데이트
 
+**블로그/운세 생성 프롬프트 품질 규칙:**
+- `max_tokens`는 8192 이상 사용 (한국어는 토큰 밀도가 높아 낮은 값에서 잘림 발생)
+- 포춘쿠키/사이트 언급은 "자연스러운 경우에만" 지시 — 강제 삽입 지시 금지 (AI 품질 리뷰에서 스팸으로 감지됨)
+- 결론 단락을 반드시 포함하도록 명시 (문장 중간 잘림 방지)
+
 ### Twitter/X 자동 포스팅 (일일)
 
 X API (twitter-api-v2)를 사용하여 매일 자동으로 트윗을 게시합니다.
@@ -349,7 +354,7 @@ npm run twitter:post -- --type fortune  # 운세 트윗 강제
 **중복 방지:**
 - 일일 중복 체크: `lastPostDate`가 오늘이면 게시 스킵 (`--force`로 강제 가능)
 - 블로그 중복: `postedSlugs[]`로 이미 트윗한 블로그 슬러그 추적
-- 운세 중복: `postedFortuneIds[]`로 이미 트윗한 운세 ID 추적 (전체 소진 시 자동 리셋)
+- 운세 중복: `postedFortuneIds[]`로 이미 트윗한 운세 ID 추적 (전체 소진 시 자동 리셋 + 상태 파일 초기화)
 
 **상태 파일 검증:**
 - `isTwitterPostState`: `lastPostDate`가 string, `postedSlugs`가 string 배열, `postedFortuneIds`가 string 배열 (선택적, 하위 호환)
@@ -404,6 +409,8 @@ npm run content:season     # 시즌별 콘텐츠 확인
 14. **원자적 파일 쓰기**: `atomicWriteFile()`이 실패 시 임시 파일 자동 정리 (디스크 오염 방지)
 15. **글로벌 에러 바운더리**: `src/app/error.tsx`가 미처리 에러를 쿠키 테마 에러 페이지로 표시 (백지 화면 방지)
 16. **빈 배열 안전 가드**: `fortune-selector.ts`의 모든 선택 함수에 빈 배열 체크 + `fallbackFortune` 반환 (런타임 크래시 방지)
+17. **운세 트윗 큐 리셋**: `postedFortuneIds` 전체 소진 시 상태 배열 초기화 (무한 증식 방지)
+18. **블로그 생성 토큰 여유**: `max_tokens: 8192`로 한국어 콘텐츠 잘림 방지 + 결론 단락 필수 지시
 
 ## 코드 아키텍처 원칙
 
