@@ -93,13 +93,17 @@ function findTodayBlogPost(state: TwitterPostState): BlogPost | null {
   return candidates.length > 0 ? candidates[0] : null;
 }
 
-function pickRandomFortune(postedIds: string[]): Fortune {
+function pickRandomFortune(postedIds: string[]): { fortune: Fortune; resetted: boolean } {
   const posted = new Set(postedIds);
   const available = allFortunes.filter((f) => !posted.has(f.id));
   // If all fortunes have been posted, reset and pick from all
-  const pool = available.length > 0 ? available : allFortunes;
+  const resetted = available.length === 0;
+  if (resetted) {
+    console.log('  🔄 모든 운세를 게시했습니다. 큐를 리셋합니다.');
+  }
+  const pool = resetted ? allFortunes : available;
   const index = Math.floor(Math.random() * pool.length);
-  return pool[index];
+  return { fortune: pool[index], resetted };
 }
 
 function buildBlogTweet(post: BlogPost): string {
@@ -197,6 +201,7 @@ async function main() {
   let tweetType: string;
   let blogSlug: string | null = null;
   let fortuneId: string | null = null;
+  let fortuneQueueResetted = false;
 
   if (forceType === 'blog' || (!forceType && forceType !== 'fortune')) {
     const blogPost = findTodayBlogPost(state);
@@ -210,20 +215,23 @@ async function main() {
     } else if (forceType === 'blog') {
       console.log('  ⚠️ 오늘 게시된 새 블로그 포스트가 없습니다.');
       console.log('  운세 트윗으로 대체합니다.');
-      const fortune = pickRandomFortune(state.postedFortuneIds);
+      const { fortune, resetted } = pickRandomFortune(state.postedFortuneIds);
+      fortuneQueueResetted = resetted;
       tweetText = buildFortuneTweet(fortune);
       tweetType = '운세';
       fortuneId = fortune.id;
       console.log(`  타입: 운세 (${getCategoryLabel(fortune.category)})`);
     } else {
-      const fortune = pickRandomFortune(state.postedFortuneIds);
+      const { fortune, resetted } = pickRandomFortune(state.postedFortuneIds);
+      fortuneQueueResetted = resetted;
       tweetText = buildFortuneTweet(fortune);
       tweetType = '운세';
       fortuneId = fortune.id;
       console.log(`  타입: 운세 (${getCategoryLabel(fortune.category)})`);
     }
   } else {
-    const fortune = pickRandomFortune(state.postedFortuneIds);
+    const { fortune, resetted } = pickRandomFortune(state.postedFortuneIds);
+    fortuneQueueResetted = resetted;
     tweetText = buildFortuneTweet(fortune);
     tweetType = '운세';
     fortuneId = fortune.id;
@@ -258,7 +266,11 @@ async function main() {
     state.postedSlugs.push(blogSlug);
   }
   if (fortuneId) {
-    state.postedFortuneIds.push(fortuneId);
+    if (fortuneQueueResetted) {
+      state.postedFortuneIds = [fortuneId];
+    } else {
+      state.postedFortuneIds.push(fortuneId);
+    }
   }
   saveState(state);
 
