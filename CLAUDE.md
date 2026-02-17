@@ -245,7 +245,8 @@ X_ACCESS_TOKEN_SECRET=                       # X API Access Token Secret ✅
 ### 블로그 포스트 추가
 1. `src/data/blog-posts.ts`의 `blogPosts` 배열에 새 포스트 추가
 2. 필수 필드: slug (URL), title, description, date, content (HTML 문자열)
-3. 빌드 시 자동으로 SSG 페이지 생성
+3. **정렬 규칙**: 배열은 반드시 최신순(날짜 내림차순)으로 정렬 — 가장 최근 포스트가 배열 맨 위
+4. 빌드 시 자동으로 SSG 페이지 생성
 
 ### 시즌별 업데이트
 - **설날 (1-2월)**: 신년 특별 운세 추가
