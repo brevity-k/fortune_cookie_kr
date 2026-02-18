@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CATEGORIES, FortuneCategory } from "@/types/fortune";
 import CategoryPageClient from "./client";
+import { CATEGORY_SEO_CONTENT } from "@/data/seo/category-content";
 
 type PageProps = {
   params: Promise<{ category: string }>;
@@ -31,7 +32,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+function FaqJsonLd({ category }: { category: string }) {
+  const seoContent = CATEGORY_SEO_CONTENT[category];
+  if (!seoContent) return null;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: seoContent.faq.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
 export default async function CategoryPage({ params }: PageProps) {
   const { category } = await params;
-  return <CategoryPageClient category={category as FortuneCategory} />;
+  return (
+    <>
+      <FaqJsonLd category={category} />
+      <CategoryPageClient category={category as FortuneCategory} />
+    </>
+  );
 }

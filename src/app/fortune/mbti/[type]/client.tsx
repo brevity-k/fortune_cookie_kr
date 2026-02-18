@@ -13,6 +13,8 @@ import { MBTI_TYPES } from '@/types/mbti';
 import { useStreak } from '@/hooks/useStreak';
 import { useFortuneCollection } from '@/hooks/useFortuneCollection';
 import { trackStreak } from '@/lib/analytics';
+import SEOContentSection from '@/components/seo/SEOContentSection';
+import { MBTI_SEO_CONTENT } from '@/data/seo/mbti-content';
 
 interface MBTIPageClientProps {
   mbtiType: string;
@@ -87,19 +89,12 @@ export default function MBTIPageClient({ mbtiType }: MBTIPageClientProps) {
           </div>
         </section>
 
-        <section className="px-4 py-8 max-w-2xl mx-auto">
-          <div className="bg-bg-card/30 rounded-xl p-6 border border-white/5">
-            <h2 className="text-lg font-semibold text-cookie-gold mb-3">
-              {mbti.label} 포춘쿠키란?
-            </h2>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              {mbti.label}({mbti.description}) 유형을 위한 맞춤 포춘쿠키 운세입니다.
-              매일 달라지는 MBTI별 운세를 통해 오늘 하루의 기운을 가볍게 점쳐보세요.
-              포춘쿠키를 깨는 재미와 함께 나의 성격 유형에 맞는 운세 메시지를
-              확인할 수 있습니다.
-            </p>
-          </div>
-        </section>
+        {MBTI_SEO_CONTENT[mbtiType] && (
+          <SEOContentSection
+            title={mbti.label}
+            content={MBTI_SEO_CONTENT[mbtiType]}
+          />
+        )}
       </main>
 
       <Footer />

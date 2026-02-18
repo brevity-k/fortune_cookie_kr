@@ -13,6 +13,8 @@ import { ZODIAC_ANIMALS } from '@/types/zodiac';
 import { useStreak } from '@/hooks/useStreak';
 import { useFortuneCollection } from '@/hooks/useFortuneCollection';
 import { trackStreak } from '@/lib/analytics';
+import SEOContentSection from '@/components/seo/SEOContentSection';
+import { ZODIAC_SEO_CONTENT } from '@/data/seo/zodiac-content';
 
 interface ZodiacPageClientProps {
   animal: string;
@@ -89,19 +91,12 @@ export default function ZodiacPageClient({ animal }: ZodiacPageClientProps) {
           </div>
         </section>
 
-        <section className="px-4 py-8 max-w-2xl mx-auto">
-          <div className="bg-bg-card/30 rounded-xl p-6 border border-white/5">
-            <h2 className="text-lg font-semibold text-cookie-gold mb-3">
-              {zodiac.label} 운세란?
-            </h2>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              {zodiac.label}({yearStr}년생)의 오늘 하루 운세를 포춘쿠키로 확인해보세요.
-              매일 달라지는 띠별 운세를 통해 오늘 하루의 방향을 가볍게 점쳐볼 수 있습니다.
-              띠별 운세는 12지신(십이지) 동물에 기반한 한국 전통 운세로,
-              재미와 영감을 위한 것입니다.
-            </p>
-          </div>
-        </section>
+        {ZODIAC_SEO_CONTENT[animal] && (
+          <SEOContentSection
+            title={zodiac.label}
+            content={ZODIAC_SEO_CONTENT[animal]}
+          />
+        )}
       </main>
 
       <Footer />
