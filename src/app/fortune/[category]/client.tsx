@@ -12,6 +12,8 @@ import { allFortunes } from '@/data/fortunes';
 import { useStreak } from '@/hooks/useStreak';
 import { useFortuneCollection } from '@/hooks/useFortuneCollection';
 import { trackStreak } from '@/lib/analytics';
+import SEOContentSection from '@/components/seo/SEOContentSection';
+import { CATEGORY_SEO_CONTENT } from '@/data/seo/category-content';
 
 interface CategoryPageClientProps {
   category: FortuneCategory;
@@ -87,27 +89,12 @@ export default function CategoryPageClient({ category }: CategoryPageClientProps
           </div>
         </section>
 
-        <section className="px-4 py-8 max-w-2xl mx-auto">
-          <div className="bg-bg-card/30 rounded-xl p-6 border border-white/5">
-            <h2 className="text-lg font-semibold text-cookie-gold mb-3">
-              {categoryInfo.label}이란?
-            </h2>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              {category === 'love' &&
-                '사랑운은 연애, 결혼, 짝사랑, 이별, 재회 등 사랑과 관련된 전반적인 운세를 다룹니다. 오늘 당신의 사랑에 어떤 기운이 감도는지 포춘쿠키로 확인해보세요.'}
-              {category === 'career' &&
-                '재물운은 직장 생활, 사업, 투자, 재테크, 부업 등 경제적인 운세를 다룹니다. 오늘의 재물운을 확인하고 현명한 경제 활동을 계획해보세요.'}
-              {category === 'health' &&
-                '건강운은 신체적, 정신적 건강과 활력에 대한 운세를 다룹니다. 오늘의 건강 운세를 확인하고 자신의 몸과 마음을 돌보는 하루를 보내세요.'}
-              {category === 'study' &&
-                '학업운은 공부, 시험, 자격증, 자기계발 등 학습과 관련된 운세를 다룹니다. 수능, 공무원 시험, 자격증 준비 중이라면 오늘의 학업운을 확인해보세요.'}
-              {category === 'general' &&
-                '총운은 오늘 하루의 전반적인 운세와 행운을 다룹니다. 사랑, 재물, 건강 등 모든 분야를 아우르는 종합적인 운세를 포춘쿠키로 확인해보세요.'}
-              {category === 'relationship' &&
-                '대인운은 친구, 가족, 직장 동료, 새로운 만남 등 인간관계 전반에 대한 운세를 다룹니다. 오늘의 대인운을 확인하고 소중한 관계를 가꿔보세요.'}
-            </p>
-          </div>
-        </section>
+        {CATEGORY_SEO_CONTENT[category] && (
+          <SEOContentSection
+            title={categoryInfo.label}
+            content={CATEGORY_SEO_CONTENT[category]}
+          />
+        )}
       </main>
 
       <Footer />
