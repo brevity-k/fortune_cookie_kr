@@ -67,7 +67,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/fortune/zodiac/rat"
+                  href="/fortune/zodiac"
                   className="text-sm text-text-muted hover:text-text-secondary transition-colors"
                 >
                   띠별 운세
@@ -75,7 +75,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/fortune/mbti/enfp"
+                  href="/fortune/mbti"
                   className="text-sm text-text-muted hover:text-text-secondary transition-colors"
                 >
                   MBTI 운세
@@ -83,7 +83,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/fortune/horoscope/aries"
+                  href="/fortune/horoscope"
                   className="text-sm text-text-muted hover:text-text-secondary transition-colors"
                 >
                   별자리 운세

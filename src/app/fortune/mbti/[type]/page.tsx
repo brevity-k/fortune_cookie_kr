@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MBTI_TYPES } from "@/types/mbti";
 import MBTIPageClient from "./client";
+import { MBTI_SEO_CONTENT } from "@/data/seo/mbti-content";
 
 type PageProps = {
   params: Promise<{ type: string }>;
@@ -32,7 +33,33 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+function FaqJsonLd({ mbtiKey }: { mbtiKey: string }) {
+  const seoContent = MBTI_SEO_CONTENT[mbtiKey];
+  if (!seoContent) return null;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: seoContent.faq.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
 export default async function MBTIPage({ params }: PageProps) {
   const { type } = await params;
-  return <MBTIPageClient mbtiType={type.toLowerCase()} />;
+  const mbtiKey = type.toLowerCase();
+  return (
+    <>
+      <FaqJsonLd mbtiKey={mbtiKey} />
+      <MBTIPageClient mbtiType={mbtiKey} />
+    </>
+  );
 }

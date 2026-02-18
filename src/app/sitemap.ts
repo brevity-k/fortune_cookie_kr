@@ -43,6 +43,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
+  const hubEntries = [
+    {
+      url: `${siteUrl}/fortune/horoscope`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/fortune/zodiac`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/fortune/mbti`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    },
+  ];
+
   return [
     {
       url: siteUrl,
@@ -51,6 +72,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     ...categoryEntries,
+    ...hubEntries,
     ...zodiacEntries,
     ...mbtiEntries,
     ...horoscopeEntries,
