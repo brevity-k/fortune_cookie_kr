@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ZODIAC_ANIMALS } from "@/types/zodiac";
 import ZodiacPageClient from "./client";
+import { ZODIAC_SEO_CONTENT } from "@/data/seo/zodiac-content";
 
 type PageProps = {
   params: Promise<{ animal: string }>;
@@ -34,7 +35,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+function FaqJsonLd({ animal }: { animal: string }) {
+  const seoContent = ZODIAC_SEO_CONTENT[animal];
+  if (!seoContent) return null;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: seoContent.faq.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
 export default async function ZodiacPage({ params }: PageProps) {
   const { animal } = await params;
-  return <ZodiacPageClient animal={animal} />;
+  return (
+    <>
+      <FaqJsonLd animal={animal} />
+      <ZodiacPageClient animal={animal} />
+    </>
+  );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { HOROSCOPE_SIGNS } from "@/types/horoscope";
 import HoroscopePageClient from "./client";
+import { HOROSCOPE_SEO_CONTENT } from "@/data/seo/horoscope-content";
 
 type PageProps = {
   params: Promise<{ sign: string }>;
@@ -32,7 +33,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+function FaqJsonLd({ sign }: { sign: string }) {
+  const seoContent = HOROSCOPE_SEO_CONTENT[sign];
+  if (!seoContent) return null;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: seoContent.faq.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
 export default async function HoroscopePage({ params }: PageProps) {
   const { sign } = await params;
-  return <HoroscopePageClient sign={sign} />;
+  return (
+    <>
+      <FaqJsonLd sign={sign} />
+      <HoroscopePageClient sign={sign} />
+    </>
+  );
 }

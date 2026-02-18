@@ -13,6 +13,8 @@ import { HOROSCOPE_SIGNS } from '@/types/horoscope';
 import { useStreak } from '@/hooks/useStreak';
 import { useFortuneCollection } from '@/hooks/useFortuneCollection';
 import { trackStreak } from '@/lib/analytics';
+import SEOContentSection from '@/components/seo/SEOContentSection';
+import { HOROSCOPE_SEO_CONTENT } from '@/data/seo/horoscope-content';
 
 interface HoroscopePageClientProps {
   sign: string;
@@ -87,19 +89,12 @@ export default function HoroscopePageClient({ sign }: HoroscopePageClientProps) 
           </div>
         </section>
 
-        <section className="px-4 py-8 max-w-2xl mx-auto">
-          <div className="bg-bg-card/30 rounded-xl p-6 border border-white/5">
-            <h2 className="text-lg font-semibold text-cookie-gold mb-3">
-              {horoscope.label} 운세란?
-            </h2>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              {horoscope.label}({horoscope.dateRange})의 오늘 하루 운세를 포춘쿠키로 확인해보세요.
-              매일 달라지는 별자리 운세를 통해 오늘 하루의 방향을 가볍게 점쳐볼 수 있습니다.
-              {horoscope.label}은(는) {horoscope.element}의 원소에 속하는 별자리로,
-              서양 점성술에 기반한 재미있는 운세입니다.
-            </p>
-          </div>
-        </section>
+        {HOROSCOPE_SEO_CONTENT[sign] && (
+          <SEOContentSection
+            title={horoscope.label}
+            content={HOROSCOPE_SEO_CONTENT[sign]}
+          />
+        )}
       </main>
 
       <Footer />
