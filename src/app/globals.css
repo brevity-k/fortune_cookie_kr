@@ -190,6 +190,33 @@ body {
   background: var(--text-secondary);
 }
 
+/* FAQ details/summary */
+.faq-details summary::-webkit-details-marker,
+.faq-details summary::marker {
+  display: none;
+  content: '';
+}
+
+.faq-details[open] .faq-marker {
+  content: '−';
+}
+
+.faq-details[open] .faq-marker::before {
+  content: '−';
+}
+
+.faq-details:not([open]) .faq-marker::before {
+  content: '+';
+}
+
+.faq-marker {
+  font-size: 0;
+}
+
+.faq-marker::before {
+  font-size: 1.125rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-cookie-float,
   .animate-cookie-glow,

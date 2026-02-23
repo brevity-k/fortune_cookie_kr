@@ -6,11 +6,12 @@ import { MBTI_TYPES } from "@/types/mbti";
 import { HOROSCOPE_SIGNS } from "@/types/horoscope";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fortunecookie.ai.kr";
+const LAST_CONTENT_UPDATE = new Date("2026-02-23");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const categoryEntries = CATEGORIES.map((cat) => ({
     url: `${siteUrl}/fortune/${cat.key}`,
-    lastModified: new Date(),
+    lastModified: LAST_CONTENT_UPDATE,
     changeFrequency: "daily" as const,
     priority: 0.8,
   }));
@@ -24,21 +25,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const zodiacEntries = ZODIAC_ANIMALS.map((z) => ({
     url: `${siteUrl}/fortune/zodiac/${z.key}`,
-    lastModified: new Date(),
+    lastModified: LAST_CONTENT_UPDATE,
     changeFrequency: "daily" as const,
     priority: 0.8,
   }));
 
   const mbtiEntries = MBTI_TYPES.map((m) => ({
     url: `${siteUrl}/fortune/mbti/${m.key}`,
-    lastModified: new Date(),
+    lastModified: LAST_CONTENT_UPDATE,
     changeFrequency: "daily" as const,
     priority: 0.8,
   }));
 
   const horoscopeEntries = HOROSCOPE_SIGNS.map((s) => ({
     url: `${siteUrl}/fortune/horoscope/${s.key}`,
-    lastModified: new Date(),
+    lastModified: LAST_CONTENT_UPDATE,
     changeFrequency: "daily" as const,
     priority: 0.8,
   }));
@@ -46,19 +47,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const hubEntries = [
     {
       url: `${siteUrl}/fortune/horoscope`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "weekly" as const,
       priority: 0.9,
     },
     {
       url: `${siteUrl}/fortune/zodiac`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "weekly" as const,
       priority: 0.9,
     },
     {
       url: `${siteUrl}/fortune/mbti`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "weekly" as const,
       priority: 0.9,
     },
@@ -67,7 +68,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
       url: siteUrl,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "daily",
       priority: 1,
     },
@@ -78,68 +79,68 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...horoscopeEntries,
     {
       url: `${siteUrl}/compatibility`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${siteUrl}/collection`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "weekly",
       priority: 0.6,
     },
     {
       url: `${siteUrl}/fortune/new-year`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "yearly",
       priority: 0.7,
     },
     {
       url: `${siteUrl}/fortune/valentines`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "yearly",
       priority: 0.7,
     },
     {
       url: `${siteUrl}/fortune/exam-luck`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "yearly",
       priority: 0.7,
     },
     {
       url: `${siteUrl}/fortune/christmas`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "yearly",
       priority: 0.7,
     },
     {
       url: `${siteUrl}/blog`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "weekly",
       priority: 0.7,
     },
     ...blogEntries,
     {
       url: `${siteUrl}/about`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: `${siteUrl}/privacy`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "yearly",
       priority: 0.3,
     },
     {
       url: `${siteUrl}/terms`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "yearly",
       priority: 0.3,
     },
     {
       url: `${siteUrl}/contact`,
-      lastModified: new Date(),
+      lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "monthly",
       priority: 0.4,
     },
