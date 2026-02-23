@@ -145,14 +145,15 @@ function appendBlogPost(
     \`,
   },`;
 
-  // Insert before the closing ];
-  const insertPoint = fileContent.lastIndexOf('];');
+  // Insert at the beginning of the array (newest first)
+  const insertPoint = fileContent.indexOf('BlogPost[] = [');
   if (insertPoint === -1) {
-    throw new Error('Could not find closing ]; in blog-posts.ts');
+    throw new Error('Could not find BlogPost[] = [ in blog-posts.ts');
   }
 
+  const arrayStart = fileContent.indexOf('[', insertPoint);
   const updatedContent =
-    fileContent.slice(0, insertPoint) + newPost + '\n' + fileContent.slice(insertPoint);
+    fileContent.slice(0, arrayStart + 1) + '\n' + newPost + fileContent.slice(arrayStart + 1);
 
   atomicWriteFile(BLOG_POSTS_FILE, updatedContent);
 }
