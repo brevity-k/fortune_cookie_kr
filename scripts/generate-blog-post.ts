@@ -146,12 +146,13 @@ function appendBlogPost(
   },`;
 
   // Insert at the beginning of the array (newest first)
-  const insertPoint = fileContent.indexOf('BlogPost[] = [');
+  const marker = 'BlogPost[] = [';
+  const insertPoint = fileContent.indexOf(marker);
   if (insertPoint === -1) {
     throw new Error('Could not find BlogPost[] = [ in blog-posts.ts');
   }
 
-  const arrayStart = fileContent.indexOf('[', insertPoint);
+  const arrayStart = insertPoint + marker.length - 1;
   const updatedContent =
     fileContent.slice(0, arrayStart + 1) + '\n' + newPost + fileContent.slice(arrayStart + 1);
 
