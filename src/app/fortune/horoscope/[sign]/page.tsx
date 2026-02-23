@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { HOROSCOPE_SIGNS } from "@/types/horoscope";
-import HoroscopePageClient from "./client";
+import HoroscopeFortuneWidget from "./client";
 import { HOROSCOPE_SEO_CONTENT } from "@/data/seo/horoscope-content";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import HoroscopeSelector from "@/components/fortune/HoroscopeSelector";
+import SEOContentServer from "@/components/seo/SEOContentServer";
 
 type PageProps = {
   params: Promise<{ sign: string }>;
@@ -36,6 +41,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 function FaqJsonLd({ sign }: { sign: string }) {
   const seoContent = HOROSCOPE_SEO_CONTENT[sign];
   if (!seoContent) return null;
+  // Content is from our own static SEO data definitions, not user input
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -55,10 +61,54 @@ function FaqJsonLd({ sign }: { sign: string }) {
 
 export default async function HoroscopePage({ params }: PageProps) {
   const { sign } = await params;
+  const horoscope = HOROSCOPE_SIGNS.find((s) => s.key === sign);
+
+  if (!horoscope) {
+    notFound();
+  }
+
+  const seoContent = HOROSCOPE_SEO_CONTENT[sign];
+
   return (
     <>
       <FaqJsonLd sign={sign} />
-      <HoroscopePageClient sign={sign} />
+      <div className="star-field min-h-dvh flex flex-col">
+        <Header />
+
+        <main className="flex-1 pt-14">
+          <section className="relative px-4 pt-8 pb-4">
+            <div className="max-w-lg mx-auto text-center">
+              <span className="text-4xl mb-2 block">{horoscope.emoji}</span>
+              <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">
+                <span className="text-cookie-gold">{horoscope.label}</span> 오늘의 운세
+              </h1>
+              <p className="text-sm text-text-muted mb-6">
+                {horoscope.dateRange} | {horoscope.element}의 별자리 | 포춘쿠키를 깨고 확인하세요
+              </p>
+            </div>
+          </section>
+
+          <HoroscopeFortuneWidget sign={sign} />
+
+          <section className="px-4 py-8 mt-4">
+            <div className="max-w-lg mx-auto">
+              <h2 className="text-center text-sm text-text-muted mb-4">
+                다른 별자리 보기
+              </h2>
+              <HoroscopeSelector activeSign={sign} />
+            </div>
+          </section>
+
+          {seoContent && (
+            <SEOContentServer
+              title={horoscope.label}
+              content={seoContent}
+            />
+          )}
+        </main>
+
+        <Footer />
+      </div>
     </>
   );
 }
