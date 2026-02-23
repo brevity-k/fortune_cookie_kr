@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { MBTI_TYPES } from '@/types/mbti';
 

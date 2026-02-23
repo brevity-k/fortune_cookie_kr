@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { HOROSCOPE_SIGNS } from '@/types/horoscope';
 
