@@ -3,25 +3,18 @@
 import { useCallback, useState } from 'react';
 import FortuneCookie from '@/components/cookie/FortuneCookie';
 import FortuneShare from '@/components/fortune/FortuneShare';
-import HoroscopeSelector from '@/components/fortune/HoroscopeSelector';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import { Fortune, CookieBreakMethod } from '@/types/fortune';
 import { getHoroscopeDailyFortune } from '@/lib/fortune-selector';
 import { allFortunes } from '@/data/fortunes';
-import { HOROSCOPE_SIGNS } from '@/types/horoscope';
 import { useStreak } from '@/hooks/useStreak';
 import { useFortuneCollection } from '@/hooks/useFortuneCollection';
 import { trackStreak } from '@/lib/analytics';
-import SEOContentSection from '@/components/seo/SEOContentSection';
-import { HOROSCOPE_SEO_CONTENT } from '@/data/seo/horoscope-content';
 
-interface HoroscopePageClientProps {
+interface HoroscopeFortuneWidgetProps {
   sign: string;
 }
 
-export default function HoroscopePageClient({ sign }: HoroscopePageClientProps) {
-  const horoscope = HOROSCOPE_SIGNS.find((s) => s.key === sign);
+export default function HoroscopeFortuneWidget({ sign }: HoroscopeFortuneWidgetProps) {
   const [fortune, setFortune] = useState<Fortune | null>(null);
   const [isNew, setIsNew] = useState(false);
   const { streak, recordVisit } = useStreak();
@@ -41,63 +34,17 @@ export default function HoroscopePageClient({ sign }: HoroscopePageClientProps) 
     [sign, recordVisit, addToCollection]
   );
 
-  if (!horoscope) {
-    return (
-      <div className="star-field min-h-dvh flex flex-col">
-        <Header />
-        <main className="flex-1 pt-14 flex items-center justify-center">
-          <p className="text-text-muted">존재하지 않는 별자리입니다.</p>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
   return (
-    <div className="star-field min-h-dvh flex flex-col">
-      <Header />
+    <>
+      <section className="px-4 relative z-10">
+        <FortuneCookie onBreak={handleBreak} fortune={fortune} streak={streak.currentStreak} isNewCollection={isNew} />
+      </section>
 
-      <main className="flex-1 pt-14">
-        <section className="relative px-4 pt-8 pb-4">
-          <div className="max-w-lg mx-auto text-center">
-            <span className="text-4xl mb-2 block">{horoscope.emoji}</span>
-            <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">
-              <span className="text-cookie-gold">{horoscope.label}</span> 오늘의 운세
-            </h1>
-            <p className="text-sm text-text-muted mb-6">
-              {horoscope.dateRange} | {horoscope.element}의 별자리 | 포춘쿠키를 깨고 확인하세요
-            </p>
-          </div>
+      {fortune && (
+        <section className="px-4 py-4 max-w-sm mx-auto animate-fade-in-up">
+          <FortuneShare fortune={fortune} streak={streak.currentStreak} />
         </section>
-
-        <section className="px-4 relative z-10">
-          <FortuneCookie onBreak={handleBreak} fortune={fortune} streak={streak.currentStreak} isNewCollection={isNew} />
-        </section>
-
-        {fortune && (
-          <section className="px-4 py-4 max-w-sm mx-auto animate-fade-in-up">
-            <FortuneShare fortune={fortune} streak={streak.currentStreak} />
-          </section>
-        )}
-
-        <section className="px-4 py-8 mt-4">
-          <div className="max-w-lg mx-auto">
-            <h2 className="text-center text-sm text-text-muted mb-4">
-              다른 별자리 보기
-            </h2>
-            <HoroscopeSelector activeSign={sign} />
-          </div>
-        </section>
-
-        {HOROSCOPE_SEO_CONTENT[sign] && (
-          <SEOContentSection
-            title={horoscope.label}
-            content={HOROSCOPE_SEO_CONTENT[sign]}
-          />
-        )}
-      </main>
-
-      <Footer />
-    </div>
+      )}
+    </>
   );
 }
