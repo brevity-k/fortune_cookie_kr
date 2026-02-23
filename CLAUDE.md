@@ -22,17 +22,25 @@ src/
 ├── app/                          # Next.js App Router 페이지
 │   ├── layout.tsx                # 루트 레이아웃 (폰트, GA, AdSense, PWA 메타태그, WebSite JSON-LD)
 │   ├── icon.svg                  # 커스텀 파비콘 (골드 쿠키 SVG)
-│   ├── page.tsx                  # 메인 페이지 서버 컴포넌트 (메타데이터 export)
-│   ├── client.tsx                # 메인 페이지 클라이언트 컴포넌트 (쿠키 인터랙션)
+│   ├── page.tsx                  # 메인 페이지 서버 컴포넌트 (메타데이터, 히어로, SEO 텍스트, 허브 네비게이션)
+│   ├── client.tsx                # HomeFortuneWidget (쿠키 인터랙션 + 공유만)
 │   ├── error.tsx                 # 글로벌 에러 바운더리 (쿠키 테마 에러 페이지)
 │   ├── not-found.tsx             # 커스텀 404 페이지 (쿠키 테마)
 │   ├── globals.css               # Tailwind + 커스텀 CSS 애니메이션 + prefers-reduced-motion
 │   ├── fortune/[category]/       # 카테고리별 운세 페이지 (6개)
-│   │   ├── page.tsx              # 서버 컴포넌트 (메타데이터, SSG)
-│   │   └── client.tsx            # 클라이언트 컴포넌트
+│   │   ├── page.tsx              # 서버 컴포넌트 (히어로, 셀렉터, SEO 콘텐츠, FAQ JSON-LD)
+│   │   └── client.tsx            # CategoryFortuneWidget (쿠키 인터랙션 + 공유만)
 │   ├── fortune/horoscope/[sign]/  # 별자리 운세 페이지 (12개)
-│   │   ├── page.tsx              # 서버 컴포넌트 (메타데이터, SSG)
-│   │   └── client.tsx            # 클라이언트 컴포넌트
+│   │   ├── page.tsx              # 서버 컴포넌트 (히어로, 셀렉터, SEO 콘텐츠)
+│   │   └── client.tsx            # HoroscopeFortuneWidget (쿠키 인터랙션 + 공유만)
+│   ├── fortune/zodiac/[animal]/   # 띠별 운세 페이지 (12개)
+│   │   ├── page.tsx              # 서버 컴포넌트 (히어로, 셀렉터, SEO 콘텐츠)
+│   │   └── client.tsx            # ZodiacFortuneWidget (쿠키 인터랙션 + 공유만)
+│   ├── fortune/mbti/[type]/      # MBTI 운세 페이지 (16개)
+│   │   ├── page.tsx              # 서버 컴포넌트 (히어로, 셀렉터, SEO 콘텐츠)
+│   │   └── client.tsx            # MBTIFortuneWidget (쿠키 인터랙션 + 공유만)
+│   ├── fortune/{new-year,valentines,exam-luck,christmas}/
+│   │   └── page.tsx              # 시즌 페이지 (서버 레이아웃 + CategoryFortuneWidget)
 │   ├── gift/[id]/                # 선물 포춘쿠키
 │   │   ├── page.tsx              # 서버 컴포넌트
 │   │   └── client.tsx            # 클라이언트 컴포넌트
@@ -53,11 +61,16 @@ src/
 │   │   └── InteractionHint.tsx   # 인터랙션 힌트 칩
 │   ├── fortune/
 │   │   ├── FortuneShare.tsx      # 공유 버튼 (카카오/트위터/웹공유/복사)
-│   │   ├── CategorySelector.tsx  # 카테고리 선택 칩
-│   │   └── HoroscopeSelector.tsx # 별자리 선택 칩 (12개)
+│   │   ├── CategorySelector.tsx  # 카테고리 선택 칩 (서버 컴포넌트)
+│   │   ├── HoroscopeSelector.tsx # 별자리 선택 칩 (서버 컴포넌트)
+│   │   ├── ZodiacSelector.tsx    # 띠별 선택 칩 (서버 컴포넌트)
+│   │   └── MBTISelector.tsx      # MBTI 선택 그리드 (서버 컴포넌트)
 │   ├── layout/
 │   │   ├── Header.tsx            # 네비게이션 헤더 (모바일 햄버거 메뉴, safe-area 대응)
 │   │   └── Footer.tsx            # 푸터 (카테고리/콘텐츠/법적 링크)
+│   ├── seo/
+│   │   ├── SEOContentSection.tsx # FAQ 아코디언 (클라이언트, useState) — 레거시, 사용하지 말 것
+│   │   └── SEOContentServer.tsx  # FAQ <details>/<summary> (서버 컴포넌트, JS 불필요)
 │   ├── ads/AdSense.tsx           # Google AdSense 광고 컴포넌트
 │   ├── ui/MuteToggle.tsx         # 사운드 음소거 토글 (safe-area 대응)
 │   └── KakaoScript.tsx           # Kakao SDK 로드 + 즉시 초기화 (next/script)
@@ -185,6 +198,7 @@ X_ACCESS_TOKEN_SECRET=                       # X API Access Token Secret ✅
 - robots.txt 동적 생성 (`src/app/robots.ts` Next.js 라우트)
 - **JSON-LD 구조화 데이터**: WebSite 스키마 (`layout.tsx`), BlogPosting 스키마 (`blog/[slug]/page.tsx`)
 - **홈페이지 메타데이터**: 서버/클라이언트 분리로 `page.tsx`에서 metadata export 지원
+- **SSR 콘텐츠 최적화**: 모든 운세 페이지의 h1, 설명, FAQ, 셀렉터 링크를 서버 컴포넌트에서 렌더링 (Google 인덱싱 개선)
 
 ### 4단계: AdSense 신청
 - 아래 "AdSense 승인 체크리스트" 참조
@@ -415,6 +429,41 @@ npm run content:season     # 시즌별 콘텐츠 확인
 
 ## 코드 아키텍처 원칙
 
+### 서버/클라이언트 분리 원칙 (Google 인덱싱 필수)
+
+모든 운세 페이지는 **서버 컴포넌트(page.tsx)** + **클라이언트 위젯(client.tsx)** 패턴을 따릅니다. Google 크롤러가 JS 실행 없이 핵심 콘텐츠를 볼 수 있어야 합니다.
+
+**page.tsx (서버 컴포넌트)에 포함할 것:**
+- `<h1>`, 설명 텍스트, 카테고리/셀렉터 `<a>` 링크
+- `Header`, `Footer`, `SEOContentServer` (FAQ)
+- JSON-LD 구조화 데이터
+- 허브 페이지 네비게이션 링크
+
+**client.tsx (클라이언트 위젯)에 포함할 것:**
+- `FortuneCookie` 인터랙션 (쿠키 깨기)
+- `FortuneShare` 공유 버튼
+- `useStreak`, `useFortuneCollection` 훅
+- `useState`, `useCallback` 등 React 훅
+
+**금지 사항:**
+- client.tsx에 `Header`, `Footer`, 히어로 섹션, 셀렉터, SEO 콘텐츠를 넣지 말 것
+- 새 운세 페이지 추가 시 반드시 이 패턴을 따를 것
+
+**위젯 이름 규칙:**
+| 페이지 | 위젯 | 파일 |
+|--------|------|------|
+| 홈 | `HomeFortuneWidget` | `src/app/client.tsx` |
+| 카테고리 | `CategoryFortuneWidget` | `src/app/fortune/[category]/client.tsx` |
+| 별자리 | `HoroscopeFortuneWidget` | `src/app/fortune/horoscope/[sign]/client.tsx` |
+| 띠별 | `ZodiacFortuneWidget` | `src/app/fortune/zodiac/[animal]/client.tsx` |
+| MBTI | `MBTIFortuneWidget` | `src/app/fortune/mbti/[type]/client.tsx` |
+
+**셀렉터 컴포넌트**: `CategorySelector`, `HoroscopeSelector`, `ZodiacSelector`, `MBTISelector`는 모두 **서버 컴포넌트** (Link + 정적 데이터만 사용, `'use client'` 없음)
+
+**FAQ 컴포넌트**: 새 페이지에서는 `SEOContentServer`를 사용할 것 (`<details>/<summary>`, JS 불필요). `SEOContentSection`(useState 기반)은 레거시.
+
+**시즌 페이지**: `CategoryFortuneWidget`을 직접 import하여 사용 (시즌별 히어로 + 카테고리 위젯 조합)
+
 ### 단일 소스 원칙 (Single Source of Truth)
 
 모든 공유 상수와 타입은 `src/types/fortune.ts`에 정의하고, 스크립트는 `scripts/utils/constants.ts`를 통해 재export하여 사용합니다.
@@ -458,6 +507,9 @@ npm run content:season     # 시즌별 콘텐츠 확인
 - **OpenGraph type/locale**: 루트 `layout.tsx`에서 `type: 'website'`, `locale: 'ko_KR'` 설정 → 자식 페이지에 자동 상속
 - **Canonical URL**: 모든 인덱싱 가능한 페이지에 `alternates.canonical` 필수 (상대 경로, `metadataBase`에서 자동 해석)
 - **robots.ts**: `/api/`와 `/gift/` 경로 크롤링 차단 (선물 쿠키는 개인 링크)
+- **SSR 콘텐츠**: h1, 설명, FAQ 답변, 셀렉터 링크는 반드시 서버 컴포넌트에서 렌더링 (Google 크롤러가 JS 없이 볼 수 있어야 함)
+- **sitemap.ts**: `lastModified`에 `new Date()` 사용 금지 — `LAST_CONTENT_UPDATE` 상수 또는 블로그 `post.date` 사용 (매 빌드마다 변경되면 크롤 예산 낭비)
+- **next.config.ts**: `output: 'standalone'` 사용 금지 (Vercel 배포 시 정적 최적화 방해)
 
 ### 스크립트 유틸리티 (`scripts/utils/`)
 
