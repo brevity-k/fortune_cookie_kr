@@ -1,5 +1,9 @@
 # 포춘쿠키 (Fortune Cookie KR)
 
+## Developer Identity Policy
+
+**STRICT:** Never disclose the developer's real name, personal email, or any GitHub accounts other than `brevity-k` in any code, commits, comments, PRs, issues, documentation, or AI-generated content related to this project. The only public identity for this project is `brevity-k`. Any references to other accounts or personal identifiers must be redacted. This rule applies to all AI assistants, automation scripts, and contributors.
+
 한국어 포춘쿠키 운세 웹 서비스. 사용자가 다양한 방법으로 쿠키를 깨면 운세 메시지가 나타나는 인터랙티브 페이지.
 
 ## 기술 스택
