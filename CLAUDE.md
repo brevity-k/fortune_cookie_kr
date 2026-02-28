@@ -34,27 +34,41 @@ src/
 │   ├── fortune/[category]/       # 카테고리별 운세 페이지 (6개)
 │   │   ├── page.tsx              # 서버 컴포넌트 (히어로, 셀렉터, SEO 콘텐츠, FAQ JSON-LD)
 │   │   └── client.tsx            # CategoryFortuneWidget (쿠키 인터랙션 + 공유만)
-│   ├── fortune/horoscope/[sign]/  # 별자리 운세 페이지 (12개)
-│   │   ├── page.tsx              # 서버 컴포넌트 (히어로, 셀렉터, SEO 콘텐츠)
-│   │   └── client.tsx            # HoroscopeFortuneWidget (쿠키 인터랙션 + 공유만)
-│   ├── fortune/zodiac/[animal]/   # 띠별 운세 페이지 (12개)
-│   │   ├── page.tsx              # 서버 컴포넌트 (히어로, 셀렉터, SEO 콘텐츠)
-│   │   └── client.tsx            # ZodiacFortuneWidget (쿠키 인터랙션 + 공유만)
-│   ├── fortune/mbti/[type]/      # MBTI 운세 페이지 (16개)
-│   │   ├── page.tsx              # 서버 컴포넌트 (히어로, 셀렉터, SEO 콘텐츠)
-│   │   └── client.tsx            # MBTIFortuneWidget (쿠키 인터랙션 + 공유만)
+│   ├── fortune/horoscope/        # 별자리 운세 허브
+│   │   ├── page.tsx              # 허브 페이지 (12별자리 네비게이션)
+│   │   └── [sign]/              # 별자리 운세 페이지 (12개)
+│   │       ├── page.tsx          # 서버 컴포넌트 (히어로, 셀렉터, SEO 콘텐츠)
+│   │       └── client.tsx        # HoroscopeFortuneWidget (쿠키 인터랙션 + 공유만)
+│   ├── fortune/zodiac/           # 띠별 운세 허브
+│   │   ├── page.tsx              # 허브 페이지 (12띠 네비게이션)
+│   │   └── [animal]/            # 띠별 운세 페이지 (12개)
+│   │       ├── page.tsx          # 서버 컴포넌트 (히어로, 셀렉터, SEO 콘텐츠)
+│   │       └── client.tsx        # ZodiacFortuneWidget (쿠키 인터랙션 + 공유만)
+│   ├── fortune/mbti/             # MBTI 운세 허브
+│   │   ├── page.tsx              # 허브 페이지 (16 MBTI 네비게이션)
+│   │   └── [type]/              # MBTI 운세 페이지 (16개)
+│   │       ├── page.tsx          # 서버 컴포넌트 (히어로, 셀렉터, SEO 콘텐츠)
+│   │       └── client.tsx        # MBTIFortuneWidget (쿠키 인터랙션 + 공유만)
 │   ├── fortune/{new-year,valentines,exam-luck,christmas}/
 │   │   └── page.tsx              # 시즌 페이지 (서버 레이아웃 + CategoryFortuneWidget)
+│   ├── compatibility/            # 궁합 포춘쿠키
+│   │   ├── page.tsx              # 서버 컴포넌트
+│   │   └── client.tsx            # 클라이언트 컴포넌트
+│   ├── collection/               # 포춘쿠키 도감
+│   │   ├── page.tsx              # 서버 컴포넌트
+│   │   └── client.tsx            # 클라이언트 컴포넌트
 │   ├── gift/[id]/                # 선물 포춘쿠키
 │   │   ├── page.tsx              # 서버 컴포넌트
 │   │   └── client.tsx            # 클라이언트 컴포넌트
 │   ├── blog/                     # 블로그 목록
 │   │   └── [slug]/page.tsx       # 블로그 상세 (SSG, generateStaticParams, BlogPosting JSON-LD)
+│   ├── offline/page.tsx          # PWA 오프라인 폴백 페이지
 │   ├── about/page.tsx            # 소개
 │   ├── privacy/page.tsx          # 개인정보처리방침
 │   ├── terms/page.tsx            # 이용약관
 │   ├── contact/page.tsx          # 문의 (ContactForm 포함)
-│   └── api/contact/route.ts      # 문의 폼 API (Resend 이메일)
+│   ├── api/contact/route.ts      # 문의 폼 API (Resend 이메일)
+│   └── api/fortune-card/route.tsx # 공유 카드 이미지 생성 API (동적 OG)
 ├── components/
 │   ├── contact/
 │   │   └── ContactForm.tsx       # 문의 폼 (이름/이메일/메시지, 자동 답장)
@@ -85,20 +99,22 @@ src/
 │       ├── fortune-file.ts       # 운세 파일 읽기/파싱 공유 유틸리티
 │       └── constants.ts          # src/types/fortune.ts에서 재export (단일 소스)
 ├── data/
-│   ├── fortunes/                 # 운세 데이터 (총 291개+, 자동 증가)
+│   ├── fortunes/                 # 운세 데이터 (총 301개+, 자동 증가)
 │   │   ├── index.ts              # 통합 export
-│   │   ├── love.ts               # 사랑운 50개
-│   │   ├── career.ts             # 재물운 50개
-│   │   ├── health.ts             # 건강운 40개
+│   │   ├── love.ts               # 사랑운 57개
+│   │   ├── career.ts             # 재물운 57개
+│   │   ├── health.ts             # 건강운 45개
 │   │   ├── study.ts              # 학업운 40개
-│   │   ├── general.ts            # 총운 60개
+│   │   ├── general.ts            # 총운 62개
 │   │   └── relationship.ts       # 대인운 40개
-│   └── blog-posts.ts             # 블로그 포스트 10개 (한국어 HTML)
+│   └── blog-posts.ts             # 블로그 포스트 24개+ (한국어 HTML, 자동 증가)
 ├── hooks/
 │   ├── useDailyFortune.ts        # 일일 운세 (날짜 기반 시드, localStorage)
+│   ├── useFortuneCollection.ts   # 포춘쿠키 도감 수집 추적 (localStorage)
 │   ├── useShakeDetection.ts      # 모바일 흔들기 감지 (DeviceMotion API)
+│   ├── useShareFortune.ts        # 공유 (카카오/웹공유/트위터/클립보드)
 │   ├── useSoundEffects.ts        # Howler.js 사운드 관리 + 음소거
-│   └── useShareFortune.ts        # 공유 (카카오/웹공유/트위터/클립보드)
+│   └── useStreak.ts              # 연속 방문 스트릭 (currentStreak/maxStreak, localStorage)
 ├── lib/
 │   ├── fortune-selector.ts       # 운세 선택 로직 (시드 해싱, 랜덤, 빈 배열 안전, 띠별/MBTI/별자리 일일운세)
 │   ├── date-utils.ts             # 공유 날짜 포맷 (getTodayString, getYesterdayString)
@@ -108,6 +124,8 @@ src/
 └── types/
     ├── fortune.ts                # Fortune, FortuneCategory, CookieState, VALID_COLORS, CATEGORY_LABELS (단일 소스)
     ├── horoscope.ts              # HoroscopeSign 타입, HOROSCOPE_SIGNS (12별자리 데이터)
+    ├── mbti.ts                   # MBTI 타입 정의, MBTI_TYPES (16개 유형 데이터)
+    ├── zodiac.ts                 # ZodiacAnimal 타입, ZODIAC_ANIMALS (12띠 데이터)
     └── kakao.d.ts                # Kakao JS SDK 타입 선언
 ```
 
@@ -171,7 +189,7 @@ npm run lint       # ESLint
 
 ```bash
 NEXT_PUBLIC_GA_ID=G-GCVN75X50X              # Google Analytics 4 측정 ID ✅
-NEXT_PUBLIC_ADSENSE_CLIENT=                  # Google AdSense 클라이언트 ID (미설정)
+NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-7561681382580308  # Google AdSense 클라이언트 ID ✅
 NEXT_PUBLIC_KAKAO_KEY=                       # Kakao JavaScript 앱 키 ✅
 NEXT_PUBLIC_SITE_URL=https://fortunecookie.ai.kr  # 사이트 URL ✅
 RESEND_API_KEY=                              # Resend API 키 (문의 폼) ✅
@@ -217,20 +235,20 @@ X_ACCESS_TOKEN_SECRET=                       # X API Access Token Secret ✅
 ## AdSense 승인 체크리스트
 
 ### 사용자가 준비해야 할 것
-1. **Google AdSense 계정 생성**: https://adsense.google.com
-2. **AdSense 클라이언트 ID 확인**: `ca-pub-XXXXXXXXXXXXXXXX` 형식
-3. **ads.txt 업데이트**: `public/ads.txt`에서 `pub-XXXXXXXXXXXXXXXX`를 실제 ID로 교체
-4. **환경 변수 설정**: `NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXX`
+1. **Google AdSense 계정 생성**: https://adsense.google.com ✅
+2. **AdSense 클라이언트 ID 확인**: `ca-pub-7561681382580308` ✅
+3. **ads.txt 업데이트**: `public/ads.txt` 설정 완료 ✅
+4. **환경 변수 설정**: `NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-7561681382580308`
 
 ### 사이트 요구사항 (이미 충족됨)
-- [x] 15개 이상 콘텐츠 페이지 (현재 19개)
+- [x] 15개 이상 콘텐츠 페이지 (현재 22개+)
 - [x] 법적 페이지: 개인정보처리방침, 이용약관
 - [x] 소개(about) 및 문의(contact) 페이지
 - [x] 사이트맵(sitemap.xml) 동적 생성 (Next.js 라우트)
 - [x] robots.txt 동적 생성 (Next.js 라우트)
 - [x] ads.txt 파일 준비
 - [x] 모바일 반응형 디자인
-- [x] 원본 한국어 콘텐츠 (291개+ 운세 + 10개+ 블로그, 자동 증가)
+- [x] 원본 한국어 콘텐츠 (301개+ 운세 + 24개+ 블로그, 자동 증가)
 - [x] 사이트 속도 최적화 (Next.js SSG)
 
 ### AdSense 승인 후 작업
@@ -281,7 +299,7 @@ GitHub Actions를 통한 자동 콘텐츠 업데이트가 구성되어 있음.
 Claude API를 사용하여 매일 자동으로 블로그 포스트를 생성합니다.
 
 **파일 구조:**
-- `scripts/blog-topics.ts` - 60+ 주제 큐 (운세/문화/생활/시즌/심리)
+- `scripts/blog-topics.ts` - 90개 주제 큐 (운세/문화/생활/시즌/심리)
 - `scripts/generate-blog-post.ts` - 포스트 생성 스크립트
 - `scripts/used-topics.json` - 사용된 주제 추적
 - `.github/workflows/daily-blog-post.yml` - 매일 자동 실행
@@ -299,9 +317,9 @@ ANTHROPIC_API_KEY=sk-ant-... npm run blog:generate --topic tarot-card-basics  # 
 3. 매일 오전 6시(KST) 자동 실행, PR로 생성되어 리뷰 후 머지
 
 **주제 큐 현황:**
-- 총 60개 주제 (10개 사용됨, 50개 남음)
-- 카테고리: fortune(13), culture(8), lifestyle(12), seasonal(7), psychology(10)
-- 큐가 소진되면 자동 리셋 (순환)
+- 총 90개 주제 (23개 사용됨, 67개 남음)
+- 카테고리: fortune(13), culture(8), lifestyle(12), seasonal(7), psychology(10) + 보충분
+- 큐가 소진되면 `replenish-topics` 워크플로우가 자동 보충
 
 ### 자동 운세 메시지 생성 (주간)
 
@@ -676,7 +694,7 @@ npm run content:season     # 시즌별 콘텐츠 확인
 
 **포춘쿠키 도감** (`/collection`) ✅:
 - `useFortuneCollection.ts` 훅으로 localStorage 기반 수집 추적
-- 카테고리별 진행률 표시 (X/280개)
+- 카테고리별 진행률 표시 (X/301개)
 - 완성 욕구(completionist) 심리로 재방문 유도
 
 **오늘의 행운 퍼센타일** ❌:
