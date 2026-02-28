@@ -147,7 +147,7 @@ src/
 ### 문의 폼 + 자동 답장 이메일
 - **API**: `/api/contact` (POST) — Resend SDK로 이메일 전송 (`Promise.all`로 병렬 발송)
 - **입력 검증**: 이름 100자, 이메일 254자, 메시지 5000자 제한 + 이메일 형식 검증
-- **알림 메일**: 사이트 운영자(fortune0.kr@gmail.com)에게 문의 내용 전달
+- **알림 메일**: 사이트 운영자에게 문의 내용 전달
 - **자동 답장**: 문의자에게 접수 확인 메일 자동 발송
 - **발신 주소**: `onboarding@resend.dev` (Resend 무료 티어 기본) → 커스텀 도메인 추가 가능
 - **무료 제한**: 하루 100건 (Resend 무료 플랜)
@@ -189,7 +189,7 @@ npm run lint       # ESLint
 
 ```bash
 NEXT_PUBLIC_GA_ID=G-GCVN75X50X              # Google Analytics 4 측정 ID ✅
-NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-7561681382580308  # Google AdSense 클라이언트 ID ✅
+NEXT_PUBLIC_ADSENSE_CLIENT=                         # Google AdSense 클라이언트 ID ✅ (ads.txt 참조)
 NEXT_PUBLIC_KAKAO_KEY=                       # Kakao JavaScript 앱 키 ✅
 NEXT_PUBLIC_SITE_URL=https://fortunecookie.ai.kr  # 사이트 URL ✅
 RESEND_API_KEY=                              # Resend API 키 (문의 폼) ✅
@@ -236,9 +236,9 @@ X_ACCESS_TOKEN_SECRET=                       # X API Access Token Secret ✅
 
 ### 사용자가 준비해야 할 것
 1. **Google AdSense 계정 생성**: https://adsense.google.com ✅
-2. **AdSense 클라이언트 ID 확인**: `ca-pub-7561681382580308` ✅
+2. **AdSense 클라이언트 ID 확인**: `public/ads.txt` 참조 ✅
 3. **ads.txt 업데이트**: `public/ads.txt` 설정 완료 ✅
-4. **환경 변수 설정**: `NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-7561681382580308`
+4. **환경 변수 설정**: `NEXT_PUBLIC_ADSENSE_CLIENT` (ads.txt의 pub ID 사용)
 
 ### 사이트 요구사항 (이미 충족됨)
 - [x] 15개 이상 콘텐츠 페이지 (현재 22개+)
@@ -360,7 +360,7 @@ ANTHROPIC_API_KEY=sk-ant-... npm run fortune:generate --category love  # 특정 
 X API (twitter-api-v2)를 사용하여 매일 자동으로 트윗을 게시합니다.
 오늘 생성된 블로그 포스트가 있으면 블로그 트윗, 없으면 랜덤 운세 트윗을 게시합니다.
 
-**X 계정**: KR 전용 계정 (fortune0.kr@gmail.com)
+**X 계정**: KR 전용 계정
 - 2개 언어별 계정 전략: KR 계정 (fortune_cookie_kr + lottery_kr), EN 계정 (별도)
 - X API 과금: pay-per-use 모델 ($0.01/tweet, $30 충전 = ~3,000 tweets)
 
