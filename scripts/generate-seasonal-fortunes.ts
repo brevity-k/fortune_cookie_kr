@@ -174,6 +174,27 @@ function formatFortuneAsCode(f: Fortune): string {
   },`;
 }
 
+function sanitizeFortunes(fortunes: Fortune[]): void {
+  const validColors: readonly string[] = VALID_COLORS;
+
+  for (const f of fortunes) {
+    if (!validColors.includes(f.luckyColor)) {
+      const original = f.luckyColor;
+      f.luckyColor = VALID_COLORS[Math.floor(Math.random() * VALID_COLORS.length)];
+      console.log(
+        `  ⚠️ luckyColor 자동 수정: "${original}" → "${f.luckyColor}"`
+      );
+    }
+
+    for (const field of ['message', 'interpretation', 'shareText'] as const) {
+      if (f[field] && f[field].includes("'")) {
+        f[field] = f[field].replace(/'/g, '\u2019');
+        console.log(`  ⚠️ ${field}의 작은따옴표 자동 수정 (${f.id})`);
+      }
+    }
+  }
+}
+
 function validateFortunes(
   fortunes: Fortune[],
   category: FortuneCategory,
@@ -296,6 +317,9 @@ async function main() {
       highestId + 1,
       existing
     );
+
+    // Sanitize fixable issues (invalid colors, single quotes)
+    sanitizeFortunes(fortunes);
 
     // Validate before writing
     console.log(`  유효성 검증 중...`);
