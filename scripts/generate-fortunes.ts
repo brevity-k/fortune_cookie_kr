@@ -153,6 +153,29 @@ ${existingMessages.map((m) => `- ${m}`).join('\n')}
   return parseClaudeJSONArray<Fortune>(text);
 }
 
+function sanitizeFortunes(fortunes: Fortune[]): void {
+  const validColors: readonly string[] = VALID_COLORS;
+
+  for (const f of fortunes) {
+    // Fix invalid luckyColor by replacing with a random valid color
+    if (!validColors.includes(f.luckyColor)) {
+      const original = f.luckyColor;
+      f.luckyColor = VALID_COLORS[Math.floor(Math.random() * VALID_COLORS.length)];
+      console.log(
+        `  ⚠️ luckyColor 자동 수정: "${original}" → "${f.luckyColor}"`
+      );
+    }
+
+    // Fix single quotes in text fields (replace with similar Unicode character)
+    for (const field of ['message', 'interpretation', 'shareText'] as const) {
+      if (f[field] && f[field].includes("'")) {
+        f[field] = f[field].replace(/'/g, '\u2019');
+        console.log(`  ⚠️ ${field}의 작은따옴표 자동 수정 (${f.id})`);
+      }
+    }
+  }
+}
+
 function validateFortunes(
   fortunes: Fortune[],
   category: FortuneCategory,
@@ -330,6 +353,9 @@ async function main() {
     messages,
     sampleFortunes
   );
+
+  // Sanitize fixable issues (invalid colors, single quotes)
+  sanitizeFortunes(fortunes);
 
   // Validate
   console.log('  유효성 검증 중...');
