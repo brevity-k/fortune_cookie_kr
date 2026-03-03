@@ -82,8 +82,11 @@ export default async function HoroscopePage({ params }: PageProps) {
               <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">
                 <span className="text-cookie-gold">{horoscope.label}</span> 오늘의 운세
               </h1>
-              <p className="text-sm text-text-muted mb-6">
-                {horoscope.dateRange} | {horoscope.element}의 별자리 | 포춘쿠키를 깨고 확인하세요
+              <p className="text-sm text-text-muted mb-3">
+                {horoscope.dateRange} | {horoscope.element}의 별자리
+              </p>
+              <p className="text-xs text-text-muted/70 max-w-md mx-auto mb-6 leading-relaxed">
+                {horoscope.label}의 오늘 운세를 포춘쿠키로 확인하세요. 날짜와 별자리 정보를 기반으로 매일 새로운 운세 메시지가 준비됩니다.
               </p>
             </div>
           </section>

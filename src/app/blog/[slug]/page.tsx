@@ -53,6 +53,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.kr';
 
+  const authorName = post.author || '포춘쿠키 에디터';
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -60,9 +62,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     description: post.description,
     datePublished: post.date,
     author: {
-      '@type': 'Organization',
-      name: '포춘쿠키',
-      url: siteUrl,
+      '@type': 'Person',
+      name: authorName,
     },
     publisher: {
       '@type': 'Organization',
@@ -92,9 +93,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             &larr; 블로그 목록으로
           </Link>
 
-          <time className="block text-sm text-text-muted mb-3">
-            {post.date}
-          </time>
+          <div className="flex items-center gap-3 text-sm text-text-muted mb-3">
+            <time>{post.date}</time>
+            <span className="text-white/20">|</span>
+            <span>{authorName}</span>
+          </div>
           <h1 className="text-3xl font-bold text-cookie-gold mb-8">
             {post.title}
           </h1>

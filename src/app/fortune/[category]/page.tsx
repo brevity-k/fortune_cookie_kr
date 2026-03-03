@@ -83,9 +83,14 @@ export default async function CategoryPage({ params }: PageProps) {
                 오늘의{' '}
                 <span className="text-cookie-gold">{categoryInfo.label}</span>
               </h1>
-              <p className="text-sm text-text-muted mb-6">
+              <p className="text-sm text-text-muted mb-3">
                 {categoryInfo.description}
               </p>
+              {seoContent && (
+                <p className="text-xs text-text-muted/70 max-w-md mx-auto mb-6 leading-relaxed">
+                  매일 새로운 {categoryInfo.label}을 포춘쿠키로 확인하세요. 행운의 숫자, 행운의 색과 함께 오늘 하루에 대한 영감을 얻을 수 있습니다.
+                </p>
+              )}
             </div>
           </section>
 

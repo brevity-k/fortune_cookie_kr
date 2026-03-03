@@ -80,8 +80,11 @@ export default async function ZodiacPage({ params }: PageProps) {
               <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">
                 <span className="text-cookie-gold">{zodiac.label}</span> 오늘의 운세
               </h1>
-              <p className="text-sm text-text-muted mb-6">
-                {yearStr}년생 | 포춘쿠키를 깨고 확인하세요
+              <p className="text-sm text-text-muted mb-3">
+                {yearStr}년생
+              </p>
+              <p className="text-xs text-text-muted/70 max-w-md mx-auto mb-6 leading-relaxed">
+                {zodiac.label}의 오늘 운세를 포춘쿠키로 확인하세요. 한국 전통 12지신에 기반한 띠별 운세를 매일 새롭게 제공합니다.
               </p>
             </div>
           </section>

@@ -77,8 +77,11 @@ export default async function MBTIPage({ params }: PageProps) {
               <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">
                 <span className="text-cookie-gold">{mbti.label}</span> 오늘의 운세
               </h1>
-              <p className="text-sm text-text-muted mb-6">
-                {mbti.description} | 포춘쿠키를 깨고 확인하세요
+              <p className="text-sm text-text-muted mb-3">
+                {mbti.description}
+              </p>
+              <p className="text-xs text-text-muted/70 max-w-md mx-auto mb-6 leading-relaxed">
+                {mbti.label}({mbti.description})를 위한 맞춤 포춘쿠키 운세. 당신의 성격 유형에 맞는 오늘의 운세를 확인하세요.
               </p>
             </div>
           </section>
