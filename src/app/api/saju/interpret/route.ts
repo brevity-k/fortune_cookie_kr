@@ -140,14 +140,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'AI 서비스가 현재 이용 불가합니다.' }, { status: 503 });
   }
 
-  // Rate limit by IP (10 req/day)
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'anonymous';
-  const { success, reset } = await sajuAIRatelimit.limit(ip);
-  if (!success) {
-    return NextResponse.json(
-      { error: '일일 요청 한도를 초과했습니다. 내일 다시 시도해주세요.' },
-      { status: 429, headers: { 'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString() } },
-    );
+  // Rate limit by IP (10 req/day) — skipped if Upstash not configured
+  if (sajuAIRatelimit) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'anonymous';
+    const { success, reset } = await sajuAIRatelimit.limit(ip);
+    if (!success) {
+      return NextResponse.json(
+        { error: '일일 요청 한도를 초과했습니다. 내일 다시 시도해주세요.' },
+        { status: 429, headers: { 'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString() } },
+      );
+    }
   }
 
   let body: unknown;
