@@ -99,6 +99,14 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  href="/saju"
+                  className="text-sm text-text-muted hover:text-text-secondary transition-colors"
+                >
+                  사주팔자
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/collection"
                   className="text-sm text-text-muted hover:text-text-secondary transition-colors"
                 >

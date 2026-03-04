@@ -22,9 +22,13 @@
     "twitter:preview": "tsx scripts/post-to-twitter.ts --dry-run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.3",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "howler": "^2.2.4",
+    "korean-lunar-calendar": "^0.3.6",
     "motion": "^12.34.0",
     "next": "16.1.6",
     "react": "19.2.3",
@@ -33,7 +37,6 @@
     "twitter-api-v2": "^1.29.0"
   },
   "devDependencies": {
-    "@anthropic-ai/sdk": "^0.74.0",
     "@tailwindcss/postcss": "^4",
     "@types/canvas-confetti": "^1.9.0",
     "@types/howler": "^2.2.12",
