@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Noto_Sans_KR } from "next/font/google";
 import KakaoScript from "@/components/KakaoScript";
 import "./globals.css";
@@ -74,6 +75,9 @@ export default function RootLayout({
         <meta name="google" content="notranslate" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
+      <body className={`${notoSansKr.variable} antialiased`}>
+        {/* JSON-LD in body to avoid hydration mismatch from AdSense script injection in head */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -92,20 +96,25 @@ export default function RootLayout({
             }),
           }}
         />
+        {children}
         {process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
-          <script
-            async
+          <Script
+            id="adsense"
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}`}
             crossOrigin="anonymous"
+            strategy="afterInteractive"
           />
         )}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
-            <script
-              async
+            <Script
+              id="gtag"
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+              strategy="afterInteractive"
             />
-            <script
+            <Script
+              id="gtag-config"
+              strategy="afterInteractive"
               dangerouslySetInnerHTML={{
                 __html: `
                   window.dataLayer = window.dataLayer || [];
@@ -117,9 +126,6 @@ export default function RootLayout({
             />
           </>
         )}
-      </head>
-      <body className={`${notoSansKr.variable} antialiased`}>
-        {children}
         <KakaoScript />
         <script
           dangerouslySetInnerHTML={{

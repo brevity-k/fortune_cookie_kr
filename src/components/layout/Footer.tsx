@@ -107,6 +107,14 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  href="/birth-chart"
+                  className="text-sm text-text-muted hover:text-text-secondary transition-colors"
+                >
+                  출생 차트
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/collection"
                   className="text-sm text-text-muted hover:text-text-secondary transition-colors"
                 >

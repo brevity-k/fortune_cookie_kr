@@ -51,6 +51,12 @@ export default function Header() {
             사주
           </Link>
           <Link
+            href="/birth-chart"
+            className="text-sm text-text-secondary hover:text-cookie-gold transition-colors"
+          >
+            출생차트
+          </Link>
+          <Link
             href="/collection"
             className="text-sm text-text-secondary hover:text-cookie-gold transition-colors"
           >
@@ -131,6 +137,13 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               🔮 사주팔자
+            </Link>
+            <Link
+              href="/birth-chart"
+              className="text-text-secondary hover:text-cookie-gold transition-colors py-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              🌌 출생 차트
             </Link>
             <Link
               href="/collection"
