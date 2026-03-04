@@ -9,12 +9,19 @@ export const FORTUNE_CATEGORY_LABELS: Record<FortuneCategory, string> = {
   monthly: '이번 달 운세',
 };
 
+function sanitizeContent(text: string): string {
+  // Truncate and strip control characters to reduce prompt injection surface
+  return text.slice(0, 500).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+}
+
 function summarizeContext(entries: { content: string; context_type: string; created_at: string }[]): string {
   if (entries.length === 0) return '(사용자가 공유한 정보 없음)';
 
-  const lines = entries.map((e) => {
+  // Limit to 10 most recent entries and sanitize each
+  const limited = entries.slice(0, 10);
+  const lines = limited.map((e) => {
     const date = new Date(e.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
-    return `- [${date}] ${e.content}`;
+    return `- [${date}] ${sanitizeContent(e.content)}`;
   });
   return lines.join('\n');
 }

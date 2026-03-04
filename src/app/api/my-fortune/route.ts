@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@/lib/supabase/server';
 import { isSubscribed } from '@/lib/subscription';
+import { premiumFortuneRatelimit } from '@/lib/rate-limit';
 import {
   buildSajuFortunePrompt,
   buildAstroFortunePrompt,
@@ -38,6 +39,17 @@ export async function POST(request: Request) {
   const subscribed = await isSubscribed(supabase, user.id);
   if (!subscribed) {
     return NextResponse.json({ error: '프리미엄 구독이 필요합니다.' }, { status: 403 });
+  }
+
+  // Rate limit by user ID (30 req/day)
+  if (premiumFortuneRatelimit) {
+    const { success, reset } = await premiumFortuneRatelimit.limit(user.id);
+    if (!success) {
+      return NextResponse.json(
+        { error: '일일 요청 한도를 초과했습니다. 내일 다시 시도해주세요.' },
+        { status: 429, headers: { 'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString() } },
+      );
+    }
   }
 
   let body: { track?: string; category?: string };
@@ -98,11 +110,12 @@ export async function POST(request: Request) {
     created_at: r.created_at,
   }));
 
-  // Build prompt based on track
+  // Build prompt based on track — truncate chart data to limit prompt injection surface
   const currentDate = getTodayDateString();
-  const chartDescription = typeof chartRow.chart_data === 'string'
+  const rawChart = typeof chartRow.chart_data === 'string'
     ? chartRow.chart_data
     : JSON.stringify(chartRow.chart_data, null, 2);
+  const chartDescription = rawChart.slice(0, 3000);
 
   const { system, user: userMessage } = track === 'saju'
     ? buildSajuFortunePrompt(chartDescription, category, contextEntries, currentDate)

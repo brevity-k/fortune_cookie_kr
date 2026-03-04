@@ -58,7 +58,6 @@ export default async function MyFortunePage() {
       <Header />
       <main className="flex-1 pt-14 pb-8 px-4">
         <MyFortuneDashboard
-          userId={user.id}
           activeTracks={activeTracks}
           availableTracks={availableTracks}
           hasOnboarded={hasOnboarded}

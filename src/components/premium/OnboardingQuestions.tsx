@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 interface OnboardingQuestionsProps {
-  userId: string;
   onComplete: () => void;
 }
 
@@ -52,31 +51,49 @@ const STEPS: Step[] = [
   },
 ];
 
-export default function OnboardingQuestions({ userId, onComplete }: OnboardingQuestionsProps) {
+export default function OnboardingQuestions({ onComplete }: OnboardingQuestionsProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [textValue, setTextValue] = useState('');
   const [selectedChips, setSelectedChips] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const step = STEPS[currentStep];
   const isLast = currentStep === STEPS.length - 1;
 
   async function saveAndNext() {
-    const supabase = createClient();
     const hasInput =
       step.type === 'chips' ? selectedChips.length > 0 : textValue.trim().length > 0;
 
     if (hasInput) {
       setSaving(true);
-      const content =
-        step.type === 'chips' ? selectedChips.join(', ') : textValue.trim();
+      setError(null);
+      const supabase = createClient();
 
-      await supabase.from('user_context').insert({
-        user_id: userId,
+      // Get authenticated user instead of trusting props
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setError('로그인이 필요합니다.');
+        setSaving(false);
+        return;
+      }
+
+      const content =
+        step.type === 'chips' ? selectedChips.join(', ') : textValue.trim().slice(0, 1000);
+
+      const { error: insertError } = await supabase.from('user_context').insert({
+        user_id: user.id,
         content,
         context_type: step.contextType,
         topic: step.topic || null,
       });
+
+      if (insertError) {
+        setError('저장에 실패했습니다. 다시 시도해주세요.');
+        setSaving(false);
+        return;
+      }
+
       setSaving(false);
     }
 
@@ -86,6 +103,7 @@ export default function OnboardingQuestions({ userId, onComplete }: OnboardingQu
       setCurrentStep((prev) => prev + 1);
       setTextValue('');
       setSelectedChips([]);
+      setError(null);
     }
   }
 
@@ -139,6 +157,9 @@ export default function OnboardingQuestions({ userId, onComplete }: OnboardingQu
           className="w-full bg-bg-card/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:border-cookie-gold/40 resize-none"
         />
       )}
+
+      {/* Error */}
+      {error && <p className="text-xs text-accent-red">{error}</p>}
 
       {/* Actions */}
       <div className="flex items-center justify-between">

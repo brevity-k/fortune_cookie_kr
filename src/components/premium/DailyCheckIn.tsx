@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 interface DailyCheckInProps {
-  userId: string;
   onSubmit?: () => void;
 }
 
@@ -16,33 +15,34 @@ const PROMPTS = [
   '요즘 가장 많이 생각하는 것은?',
 ];
 
-function getTodayKey(userId: string): string {
+function getTodayKey(): string {
   const today = new Date().toISOString().split('T')[0];
-  return `premium_checkin_${userId}_${today}`;
+  return `premium_checkin_${today}`;
 }
 
-export default function DailyCheckIn({ userId, onSubmit }: DailyCheckInProps) {
+export default function DailyCheckIn({ onSubmit }: DailyCheckInProps) {
   const [dismissed, setDismissed] = useState(true);
   const [text, setText] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const prompt = PROMPTS[new Date().getDate() % PROMPTS.length];
 
   useEffect(() => {
     try {
-      const done = localStorage.getItem(getTodayKey(userId));
+      const done = localStorage.getItem(getTodayKey());
       setDismissed(done === '1');
     } catch {
       setDismissed(false);
     }
-  }, [userId]);
+  }, []);
 
   if (dismissed || saved) return null;
 
   function markDone() {
     try {
-      localStorage.setItem(getTodayKey(userId), '1');
+      localStorage.setItem(getTodayKey(), '1');
     } catch { /* Safari private mode */ }
   }
 
@@ -50,12 +50,29 @@ export default function DailyCheckIn({ userId, onSubmit }: DailyCheckInProps) {
     if (!text.trim()) return;
 
     setSaving(true);
+    setError(null);
     const supabase = createClient();
-    await supabase.from('user_context').insert({
-      user_id: userId,
-      content: text.trim(),
+
+    // Get authenticated user server-side instead of trusting props
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setError('로그인이 필요합니다.');
+      setSaving(false);
+      return;
+    }
+
+    const { error: insertError } = await supabase.from('user_context').insert({
+      user_id: user.id,
+      content: text.trim().slice(0, 1000),
       context_type: 'daily_check_in',
     });
+
+    if (insertError) {
+      setError('저장에 실패했습니다. 다시 시도해주세요.');
+      setSaving(false);
+      return;
+    }
+
     markDone();
     setSaved(true);
     setSaving(false);
@@ -78,6 +95,7 @@ export default function DailyCheckIn({ userId, onSubmit }: DailyCheckInProps) {
         maxLength={300}
         className="w-full bg-bg-card/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:border-cookie-gold/40 resize-none"
       />
+      {error && <p className="text-xs text-accent-red">{error}</p>}
       <div className="flex items-center justify-between">
         <button
           onClick={handleSkip}
