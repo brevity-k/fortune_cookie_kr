@@ -8,4 +8,5 @@ export const STORAGE_KEYS = {
   STREAK: 'fortune_cookie_streak',
   COLLECTION: 'fortune_cookie_collection',
   MUTED: 'fortune_cookie_muted',
+  SAJU_AI_PREFIX: 'saju_ai_',
 } as const;

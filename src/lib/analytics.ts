@@ -25,3 +25,7 @@ export function trackShare(platform: string) {
 export function trackStreak(streak: number) {
   trackEvent('streak', 'engagement', `streak_${streak}`);
 }
+
+export function trackSajuAI(action: string) {
+  trackEvent('saju_ai', 'saju', action);
+}

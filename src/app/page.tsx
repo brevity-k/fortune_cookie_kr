@@ -56,6 +56,7 @@ export default function HomePage() {
             <Link href="/fortune/zodiac" className="text-xs text-text-secondary hover:text-cookie-gold transition-colors px-3 py-1.5 rounded-full bg-bg-card/60 border border-white/5">띠별 운세</Link>
             <Link href="/fortune/mbti" className="text-xs text-text-secondary hover:text-cookie-gold transition-colors px-3 py-1.5 rounded-full bg-bg-card/60 border border-white/5">MBTI 운세</Link>
             <Link href="/compatibility" className="text-xs text-text-secondary hover:text-cookie-gold transition-colors px-3 py-1.5 rounded-full bg-bg-card/60 border border-white/5">궁합 테스트</Link>
+            <Link href="/saju" className="text-xs text-text-secondary hover:text-cookie-gold transition-colors px-3 py-1.5 rounded-full bg-bg-card/60 border border-white/5">사주팔자</Link>
           </div>
         </nav>
 

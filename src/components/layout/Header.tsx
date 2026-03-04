@@ -45,6 +45,12 @@ export default function Header() {
             별자리
           </Link>
           <Link
+            href="/saju"
+            className="text-sm text-text-secondary hover:text-cookie-gold transition-colors"
+          >
+            사주
+          </Link>
+          <Link
             href="/collection"
             className="text-sm text-text-secondary hover:text-cookie-gold transition-colors"
           >
@@ -118,6 +124,13 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               ⭐ 별자리 운세
+            </Link>
+            <Link
+              href="/saju"
+              className="text-text-secondary hover:text-cookie-gold transition-colors py-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              🔮 사주팔자
             </Link>
             <Link
               href="/collection"
