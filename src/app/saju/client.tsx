@@ -7,6 +7,7 @@ import { saveSajuProfile, getSajuProfile, clearSajuProfile } from '@/lib/saju/pr
 import type { SajuProfile } from '@/lib/saju/profile';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
 import { trackSajuAI } from '@/lib/analytics';
+import Link from 'next/link';
 import SajuOnboarding from '@/components/saju/SajuOnboarding';
 import SajuChart from '@/components/saju/SajuChart';
 import FiveElementsBar from '@/components/saju/FiveElementsBar';
@@ -166,6 +167,19 @@ export default function SajuDashboard() {
           onRequest={handleAIRequest}
           onRetry={handleAIRequest}
         />
+
+        {/* Premium CTA */}
+        <div className="bg-cookie-gold/5 border border-cookie-gold/20 rounded-xl p-5 text-center space-y-2">
+          <p className="text-sm text-text-secondary">
+            매일 업데이트되는 나만의 사주 운세가 궁금하세요?
+          </p>
+          <Link
+            href="/premium?track=saju"
+            className="inline-block bg-cookie-gold/20 text-cookie-gold border border-cookie-gold/30 rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-cookie-gold/30 transition-colors"
+          >
+            나의 운세 보기
+          </Link>
+        </div>
       </div>
     </section>
   );
