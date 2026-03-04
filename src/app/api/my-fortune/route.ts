@@ -50,6 +50,8 @@ export async function POST(request: Request) {
         { status: 429, headers: { 'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString() } },
       );
     }
+  } else {
+    console.warn('[SECURITY] Premium fortune rate limiting disabled — Upstash not configured');
   }
 
   let body: { track?: string; category?: string };
@@ -137,16 +139,28 @@ export async function POST(request: Request) {
 
       const text = message.content[0]?.type === 'text' ? message.content[0].text : '';
       const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-      const fortune = JSON.parse(cleaned);
+      const parsed = JSON.parse(cleaned);
 
-      // Validate
-      if (!fortune.title || !fortune.content || typeof fortune.intensity !== 'number') {
+      // Validate and sanitize AI output
+      if (
+        typeof parsed.title !== 'string' || !parsed.title ||
+        typeof parsed.content !== 'string' || !parsed.content ||
+        typeof parsed.intensity !== 'number'
+      ) {
         return NextResponse.json({ error: 'AI 응답 형식 오류입니다.' }, { status: 500 });
       }
 
+      const fortune = {
+        title: parsed.title.slice(0, 50),
+        content: parsed.content.slice(0, 2000),
+        intensity: Math.min(5, Math.max(1, Math.round(parsed.intensity))),
+        luckyElement: typeof parsed.luckyElement === 'string' ? parsed.luckyElement.slice(0, 10) : undefined,
+        luckyPlanet: typeof parsed.luckyPlanet === 'string' ? parsed.luckyPlanet.slice(0, 20) : undefined,
+      };
+
       // Cache
       const contextIds = (contextRows || []).map((r) => r.id);
-      await supabase.from('daily_fortunes').insert({
+      const { error: cacheError } = await supabase.from('daily_fortunes').insert({
         user_id: user.id,
         track,
         fortune_date: today,
@@ -154,6 +168,9 @@ export async function POST(request: Request) {
         content: fortune,
         context_snapshot: contextIds,
       });
+      if (cacheError) {
+        console.error('Failed to cache daily fortune:', cacheError.message);
+      }
 
       return NextResponse.json({ fortune });
     } catch (error) {
@@ -163,6 +180,12 @@ export async function POST(request: Request) {
       }
       if (error instanceof Anthropic.AuthenticationError) {
         return NextResponse.json({ error: 'AI 서비스 인증 오류입니다.' }, { status: 503 });
+      }
+      // Retry on JSON parse errors (AI may return valid JSON next attempt)
+      if (error instanceof SyntaxError && attempt < 2) {
+        console.warn('AI response JSON parse failed, retrying:', error.message);
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
       }
       const status = (error as { status?: number }).status;
       if ((status === 529 || status === 500 || status === 502 || status === 503) && attempt < 2) {

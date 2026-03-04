@@ -69,27 +69,32 @@ export default function SajuDashboard() {
   // Sync chart to Supabase if authenticated (enables premium /my-fortune)
   useEffect(() => {
     if (!currentProfile) return;
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-      supabase.from('user_charts').upsert({
-        user_id: user.id,
-        track: 'saju' as const,
-        chart_data: currentProfile.chart,
-        birth_info: currentProfile.chart.birthInfo,
-      }, { onConflict: 'user_id,track' }).then(({ error }) => {
-        if (error) { console.error('Chart sync error:', error.message); return; }
-        supabase.from('profiles').select('active_tracks').eq('id', user.id).single()
-          .then(({ data }) => {
-            const tracks: string[] = data?.active_tracks || [];
-            if (!tracks.includes('saju')) {
-              supabase.from('profiles').update({
-                active_tracks: [...tracks, 'saju'],
-              }).eq('id', user.id);
-            }
-          });
-      });
-    });
+    const cp = currentProfile;
+    async function syncChart() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { error: upsertErr } = await supabase.from('user_charts').upsert({
+          user_id: user.id,
+          track: 'saju' as const,
+          chart_data: cp.chart,
+          birth_info: cp.chart.birthInfo,
+        }, { onConflict: 'user_id,track' });
+        if (upsertErr) { console.error('Chart sync error:', upsertErr.message); return; }
+        const { data } = await supabase.from('profiles').select('active_tracks').eq('id', user.id).single();
+        const tracks: string[] = data?.active_tracks || [];
+        if (!tracks.includes('saju')) {
+          const { error: updateErr } = await supabase.from('profiles').update({
+            active_tracks: [...tracks, 'saju'],
+          }).eq('id', user.id);
+          if (updateErr) console.error('Profile update error:', updateErr.message);
+        }
+      } catch (err) {
+        console.error('Chart sync unexpected error:', err);
+      }
+    }
+    syncChart();
   }, [currentProfile]);
 
   const handleSubmit = useCallback((birthInfo: BirthInfo) => {

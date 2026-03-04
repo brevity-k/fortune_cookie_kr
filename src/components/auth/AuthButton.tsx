@@ -12,10 +12,10 @@ export default function AuthButton() {
   useEffect(() => {
     const supabase = createClient();
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      setLoading(false);
-    });
+    supabase.auth.getUser()
+      .then(({ data: { user } }) => setUser(user))
+      .catch((err) => console.error('AuthButton getUser failed:', err))
+      .finally(() => setLoading(false));
 
     const {
       data: { subscription },
