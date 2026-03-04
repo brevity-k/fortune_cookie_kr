@@ -9,11 +9,16 @@ interface Profile {
 }
 
 export async function getProfile(supabase: SupabaseClient, userId: string): Promise<Profile | null> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('profiles')
     .select('subscription_tier, subscription_expires_at, active_tracks')
     .eq('id', userId)
     .single();
+
+  if (error && error.code !== 'PGRST116') {
+    // PGRST116 = "no rows found" — expected for new users
+    console.error('getProfile error:', error.message);
+  }
   return data;
 }
 
@@ -40,6 +45,10 @@ export async function ensureProfile(supabase: SupabaseClient, userId: string): P
     .single();
 
   if (!data) {
-    await supabase.from('profiles').insert({ id: userId });
+    const { error } = await supabase.from('profiles').insert({ id: userId });
+    if (error && error.code !== '23505') {
+      // 23505 = unique constraint violation (race condition — profile already exists)
+      console.error('ensureProfile insert error:', error.message);
+    }
   }
 }

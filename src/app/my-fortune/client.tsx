@@ -8,7 +8,6 @@ import type { FortuneCategory } from '@/lib/premium/prompts';
 import { FORTUNE_CATEGORY_LABELS } from '@/lib/premium/prompts';
 
 interface Props {
-  userId: string;
   activeTracks: string[];
   availableTracks: string[];
   hasOnboarded: boolean;
@@ -40,7 +39,7 @@ function IntensityStars({ value }: { value: number }) {
   );
 }
 
-export default function MyFortuneDashboard({ userId, activeTracks, availableTracks, hasOnboarded }: Props) {
+export default function MyFortuneDashboard({ activeTracks, availableTracks, hasOnboarded }: Props) {
   const [showOnboarding, setShowOnboarding] = useState(!hasOnboarded);
   const [activeTrack, setActiveTrack] = useState<string>(
     activeTracks[0] || availableTracks[0] || 'saju',
@@ -122,7 +121,7 @@ export default function MyFortuneDashboard({ userId, activeTracks, availableTrac
             간단한 질문에 답하면 첫 운세부터 맞춤으로 드려요.
           </p>
         </div>
-        <OnboardingQuestions userId={userId} onComplete={() => setShowOnboarding(false)} />
+        <OnboardingQuestions onComplete={() => setShowOnboarding(false)} />
       </div>
     );
   }
@@ -149,7 +148,7 @@ export default function MyFortuneDashboard({ userId, activeTracks, availableTrac
       )}
 
       {/* Daily check-in */}
-      <DailyCheckIn userId={userId} />
+      <DailyCheckIn />
 
       {/* Category fortune cards */}
       <div className="space-y-3">

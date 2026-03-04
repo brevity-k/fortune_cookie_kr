@@ -26,8 +26,8 @@ create table public.user_charts (
 create table public.user_context (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references public.profiles not null,
-  content text not null,
-  context_type text not null,
+  content text not null check (char_length(content) <= 1000),
+  context_type text not null check (context_type in ('onboarding', 'daily_check_in', 'life_event', 'concern')),
   topic text,
   created_at timestamptz default now()
 );
@@ -45,16 +45,34 @@ create table public.daily_fortunes (
   unique(user_id, track, fortune_date, category)
 );
 
--- RLS policies (all tables: users can only access their own data)
+-- RLS policies
 alter table public.profiles enable row level security;
 alter table public.user_charts enable row level security;
 alter table public.user_context enable row level security;
 alter table public.daily_fortunes enable row level security;
 
-create policy "own_profile" on public.profiles for all using (auth.uid() = id);
-create policy "own_charts" on public.user_charts for all using (auth.uid() = user_id);
-create policy "own_context" on public.user_context for all using (auth.uid() = user_id);
-create policy "own_fortunes" on public.daily_fortunes for all using (auth.uid() = user_id);
+-- Profiles: users can read/insert their own, but cannot modify subscription fields
+create policy "profiles_select" on public.profiles for select using (auth.uid() = id);
+create policy "profiles_insert" on public.profiles for insert with check (auth.uid() = id);
+create policy "profiles_update" on public.profiles for update using (auth.uid() = id) with check (
+  -- Prevent users from self-upgrading subscription via client
+  subscription_tier = (select subscription_tier from public.profiles where id = auth.uid())
+  and subscription_expires_at is not distinct from (select subscription_expires_at from public.profiles where id = auth.uid())
+);
+-- No delete policy = delete denied
+
+-- Charts: users can read/insert/update their own, no delete
+create policy "charts_select" on public.user_charts for select using (auth.uid() = user_id);
+create policy "charts_insert" on public.user_charts for insert with check (auth.uid() = user_id);
+create policy "charts_update" on public.user_charts for update using (auth.uid() = user_id);
+
+-- Context: users can read/insert their own, no update/delete
+create policy "context_select" on public.user_context for select using (auth.uid() = user_id);
+create policy "context_insert" on public.user_context for insert with check (auth.uid() = user_id);
+
+-- Fortunes: users can read their own only (insert/delete managed by server via service_role)
+create policy "fortunes_select" on public.daily_fortunes for select using (auth.uid() = user_id);
+create policy "fortunes_insert" on public.daily_fortunes for insert with check (auth.uid() = user_id);
 
 -- Indexes for common queries
 create index idx_user_charts_user_track on public.user_charts(user_id, track);

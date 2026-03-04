@@ -6,9 +6,16 @@ import { createClient } from '@/lib/supabase/client';
 
 type AuthMethod = 'kakao' | 'google' | 'email';
 
+function getSafeRedirect(raw: string | null): string {
+  if (!raw || !raw.startsWith('/') || raw.startsWith('//') || raw.includes('..') || raw.includes('@')) {
+    return '/my-fortune';
+  }
+  return raw;
+}
+
 export default function LoginForm() {
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/my-fortune';
+  const redirect = getSafeRedirect(searchParams.get('redirect'));
   const error = searchParams.get('error');
 
   const [email, setEmail] = useState('');
