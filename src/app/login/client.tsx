@@ -10,6 +10,12 @@ function getSafeRedirect(raw: string | null): string {
   if (!raw || !raw.startsWith('/') || raw.startsWith('//') || raw.includes('..') || raw.includes('@')) {
     return '/my-fortune';
   }
+  try {
+    const url = new URL(raw, 'http://localhost');
+    if (url.hostname !== 'localhost') return '/my-fortune';
+  } catch {
+    return '/my-fortune';
+  }
   return raw;
 }
 

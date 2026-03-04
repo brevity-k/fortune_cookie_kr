@@ -37,27 +37,32 @@ export default function AstroDashboard() {
   // Sync chart to Supabase if authenticated (enables premium /my-fortune)
   useEffect(() => {
     if (!profile) return;
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-      supabase.from('user_charts').upsert({
-        user_id: user.id,
-        track: 'astro' as const,
-        chart_data: profile.chart,
-        birth_info: profile.birthInfo,
-      }, { onConflict: 'user_id,track' }).then(({ error }) => {
-        if (error) { console.error('Chart sync error:', error.message); return; }
-        supabase.from('profiles').select('active_tracks').eq('id', user.id).single()
-          .then(({ data }) => {
-            const tracks: string[] = data?.active_tracks || [];
-            if (!tracks.includes('astro')) {
-              supabase.from('profiles').update({
-                active_tracks: [...tracks, 'astro'],
-              }).eq('id', user.id);
-            }
-          });
-      });
-    });
+    const p = profile;
+    async function syncChart() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { error: upsertErr } = await supabase.from('user_charts').upsert({
+          user_id: user.id,
+          track: 'astro' as const,
+          chart_data: p.chart,
+          birth_info: p.birthInfo,
+        }, { onConflict: 'user_id,track' });
+        if (upsertErr) { console.error('Chart sync error:', upsertErr.message); return; }
+        const { data } = await supabase.from('profiles').select('active_tracks').eq('id', user.id).single();
+        const tracks: string[] = data?.active_tracks || [];
+        if (!tracks.includes('astro')) {
+          const { error: updateErr } = await supabase.from('profiles').update({
+            active_tracks: [...tracks, 'astro'],
+          }).eq('id', user.id);
+          if (updateErr) console.error('Profile update error:', updateErr.message);
+        }
+      } catch (err) {
+        console.error('Chart sync unexpected error:', err);
+      }
+    }
+    syncChart();
   }, [profile]);
 
   function handleComplete(p: AstroProfile) {

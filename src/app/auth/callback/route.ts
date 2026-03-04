@@ -26,6 +26,7 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${origin}${redirect}`);
     }
+    console.error('Auth code exchange failed:', error.message);
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth`);

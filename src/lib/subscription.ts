@@ -38,11 +38,16 @@ export async function getSubscriptionTier(supabase: SupabaseClient, userId: stri
 }
 
 export async function ensureProfile(supabase: SupabaseClient, userId: string): Promise<void> {
-  const { data } = await supabase
+  const { data, error: selectError } = await supabase
     .from('profiles')
     .select('id')
     .eq('id', userId)
     .single();
+
+  if (selectError && selectError.code !== 'PGRST116') {
+    console.error('ensureProfile select error:', selectError.message);
+    return;
+  }
 
   if (!data) {
     const { error } = await supabase.from('profiles').insert({ id: userId });
