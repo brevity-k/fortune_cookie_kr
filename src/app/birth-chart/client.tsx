@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useSyncExternalStore } from 'react';
+import Link from 'next/link';
 import { getAstroProfile, clearAstroProfile } from '@/lib/astro/profile';
 import { ZODIAC_KOREAN } from '@/lib/astro/constants';
 import type { AstroProfile } from '@/lib/astro/types';
@@ -100,6 +101,19 @@ export default function AstroDashboard() {
 
         {/* AI Interpretation (auto-fetches) */}
         <AstroInterpretation chart={chart} birthInfo={birthInfo} />
+
+        {/* Premium CTA */}
+        <div className="bg-cookie-gold/5 border border-cookie-gold/20 rounded-xl p-5 text-center space-y-2">
+          <p className="text-sm text-text-secondary">
+            매일 업데이트되는 나만의 별자리 운세가 궁금하세요?
+          </p>
+          <Link
+            href="/premium?track=astro"
+            className="inline-block bg-cookie-gold/20 text-cookie-gold border border-cookie-gold/30 rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-cookie-gold/30 transition-colors"
+          >
+            나의 운세 보기
+          </Link>
+        </div>
       </div>
     </section>
   );
