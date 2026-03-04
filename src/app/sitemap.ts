@@ -90,6 +90,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${siteUrl}/premium`,
+      lastModified: LAST_CONTENT_UPDATE,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
       url: `${siteUrl}/compatibility`,
       lastModified: LAST_CONTENT_UPDATE,
       changeFrequency: "weekly",

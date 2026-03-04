@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useSyncExternalStore } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { getAstroProfile, clearAstroProfile } from '@/lib/astro/profile';
+import { createClient } from '@/lib/supabase/client';
 import { ZODIAC_KOREAN } from '@/lib/astro/constants';
 import type { AstroProfile } from '@/lib/astro/types';
 import AstroOnboarding from '@/components/astro/AstroOnboarding';
@@ -32,6 +33,32 @@ export default function AstroDashboard() {
     getServerSnapshot,
   );
   const [profile, setProfile] = useState<AstroProfile | null>(storedProfile);
+
+  // Sync chart to Supabase if authenticated (enables premium /my-fortune)
+  useEffect(() => {
+    if (!profile) return;
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from('user_charts').upsert({
+        user_id: user.id,
+        track: 'astro' as const,
+        chart_data: profile.chart,
+        birth_info: profile.birthInfo,
+      }, { onConflict: 'user_id,track' }).then(({ error }) => {
+        if (error) { console.error('Chart sync error:', error.message); return; }
+        supabase.from('profiles').select('active_tracks').eq('id', user.id).single()
+          .then(({ data }) => {
+            const tracks: string[] = data?.active_tracks || [];
+            if (!tracks.includes('astro')) {
+              supabase.from('profiles').update({
+                active_tracks: [...tracks, 'astro'],
+              }).eq('id', user.id);
+            }
+          });
+      });
+    });
+  }, [profile]);
 
   function handleComplete(p: AstroProfile) {
     setProfile(p);
