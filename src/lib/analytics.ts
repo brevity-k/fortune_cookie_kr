@@ -29,3 +29,7 @@ export function trackStreak(streak: number) {
 export function trackSajuAI(action: string) {
   trackEvent('saju_ai', 'saju', action);
 }
+
+export function trackAstro(action: string) {
+  trackEvent('astro', 'birth_chart', action);
+}

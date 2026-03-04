@@ -9,4 +9,6 @@ export const STORAGE_KEYS = {
   COLLECTION: 'fortune_cookie_collection',
   MUTED: 'fortune_cookie_muted',
   SAJU_AI_PREFIX: 'saju_ai_',
+  ASTRO_PROFILE: 'astro_profile',
+  ASTRO_AI_PREFIX: 'astro_ai_',
 } as const;

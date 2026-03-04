@@ -165,34 +165,57 @@ export async function POST(request: Request) {
 
   const description = buildSajuDescription(body);
 
-  try {
-    const client = new Anthropic({ apiKey });
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      temperature: 0.7,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: `다음 사주를 해석해주세요.\n\n${description}` }],
-    });
+  const client = new Anthropic({ apiKey });
 
-    const text = message.content[0]?.type === 'text' ? message.content[0].text : '';
-    const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-    const interpretation: SajuAIInterpretation = JSON.parse(cleaned);
+  // Retry up to 2 times for transient errors (overloaded, network)
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const message = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2048,
+        temperature: 0.7,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: `다음 사주를 해석해주세요.\n\n${description}` }],
+      });
 
-    // Validate required fields + length cap
-    const required = ['personality', 'career', 'relationships', 'health', 'currentLuck', 'advice'] as const;
-    for (const key of required) {
-      if (typeof interpretation[key] !== 'string' || !interpretation[key] || interpretation[key].length > 1000) {
-        return NextResponse.json({ error: 'AI 응답 형식 오류입니다. 다시 시도해주세요.' }, { status: 500 });
+      const text = message.content[0]?.type === 'text' ? message.content[0].text : '';
+      const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+      const interpretation: SajuAIInterpretation = JSON.parse(cleaned);
+
+      // Validate required fields + length cap
+      const required = ['personality', 'career', 'relationships', 'health', 'currentLuck', 'advice'] as const;
+      for (const key of required) {
+        if (typeof interpretation[key] !== 'string' || !interpretation[key] || interpretation[key].length > 1000) {
+          return NextResponse.json({ error: 'AI 응답 형식 오류입니다. 다시 시도해주세요.' }, { status: 500 });
+        }
       }
-    }
 
-    return NextResponse.json({ interpretation });
-  } catch (error) {
-    if (error instanceof Anthropic.RateLimitError) {
-      return NextResponse.json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 });
+      return NextResponse.json({ interpretation });
+    } catch (error) {
+      lastError = error;
+      if (error instanceof Anthropic.RateLimitError) {
+        return NextResponse.json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 });
+      }
+      if (error instanceof Anthropic.AuthenticationError) {
+        return NextResponse.json({ error: 'AI 서비스 인증 오류입니다.' }, { status: 503 });
+      }
+      // Retry on overloaded (529) or server errors
+      const status = (error as { status?: number }).status;
+      if (status === 529 || status === 500 || status === 502 || status === 503) {
+        if (attempt < 2) {
+          await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+          continue;
+        }
+      }
+      break;
     }
-    console.error('Saju AI error:', error);
-    return NextResponse.json({ error: 'AI 해석 중 오류가 발생했습니다. 다시 시도해주세요.' }, { status: 500 });
   }
+
+  console.error('Saju AI error:', lastError);
+  const status = (lastError as { status?: number }).status;
+  if (status === 529) {
+    return NextResponse.json({ error: 'AI 서버가 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요.' }, { status: 503 });
+  }
+  return NextResponse.json({ error: 'AI 해석 중 오류가 발생했습니다. 다시 시도해주세요.' }, { status: 500 });
 }
