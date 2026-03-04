@@ -7,6 +7,7 @@ import { saveSajuProfile, getSajuProfile, clearSajuProfile } from '@/lib/saju/pr
 import type { SajuProfile } from '@/lib/saju/profile';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
 import { trackSajuAI } from '@/lib/analytics';
+import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import SajuOnboarding from '@/components/saju/SajuOnboarding';
 import SajuChart from '@/components/saju/SajuChart';
@@ -63,6 +64,32 @@ export default function SajuDashboard() {
       const cached = getCachedAI(currentProfile.chart.birthInfo);
       if (cached) setAiInterpretation(cached);
     }
+  }, [currentProfile]);
+
+  // Sync chart to Supabase if authenticated (enables premium /my-fortune)
+  useEffect(() => {
+    if (!currentProfile) return;
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from('user_charts').upsert({
+        user_id: user.id,
+        track: 'saju' as const,
+        chart_data: currentProfile.chart,
+        birth_info: currentProfile.chart.birthInfo,
+      }, { onConflict: 'user_id,track' }).then(({ error }) => {
+        if (error) { console.error('Chart sync error:', error.message); return; }
+        supabase.from('profiles').select('active_tracks').eq('id', user.id).single()
+          .then(({ data }) => {
+            const tracks: string[] = data?.active_tracks || [];
+            if (!tracks.includes('saju')) {
+              supabase.from('profiles').update({
+                active_tracks: [...tracks, 'saju'],
+              }).eq('id', user.id);
+            }
+          });
+      });
+    });
   }, [currentProfile]);
 
   const handleSubmit = useCallback((birthInfo: BirthInfo) => {
