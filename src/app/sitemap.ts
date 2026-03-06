@@ -6,7 +6,7 @@ import { MBTI_TYPES } from "@/types/mbti";
 import { HOROSCOPE_SIGNS } from "@/types/horoscope";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fortunecookie.ai.kr";
-const LAST_CONTENT_UPDATE = new Date("2026-02-23");
+const LAST_CONTENT_UPDATE = new Date("2026-03-06");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const categoryEntries = CATEGORIES.map((cat) => ({
