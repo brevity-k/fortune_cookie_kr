@@ -1,5 +1,5 @@
 {
-  "lastPostDate": "2026-03-04",
+  "lastPostDate": "2026-03-06",
   "postedSlugs": [
     "tarot-card-basics",
     "palm-reading-guide",
@@ -29,5 +29,7 @@
     "korean-talisman-bujeok",
     "four-pillars-of-destiny"
   ],
-  "postedFortuneIds": []
+  "postedFortuneIds": [
+    "study_034"
+  ]
 }
