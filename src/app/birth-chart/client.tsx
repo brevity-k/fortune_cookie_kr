@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useSyncExternalStore } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
+import Link from 'next/link';
 import { getAstroProfile, clearAstroProfile } from '@/lib/astro/profile';
+import { createClient } from '@/lib/supabase/client';
 import { ZODIAC_KOREAN } from '@/lib/astro/constants';
 import type { AstroProfile } from '@/lib/astro/types';
 import AstroOnboarding from '@/components/astro/AstroOnboarding';
@@ -31,6 +33,37 @@ export default function AstroDashboard() {
     getServerSnapshot,
   );
   const [profile, setProfile] = useState<AstroProfile | null>(storedProfile);
+
+  // Sync chart to Supabase if authenticated (enables premium /my-fortune)
+  useEffect(() => {
+    if (!profile) return;
+    const p = profile;
+    async function syncChart() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { error: upsertErr } = await supabase.from('user_charts').upsert({
+          user_id: user.id,
+          track: 'astro' as const,
+          chart_data: p.chart,
+          birth_info: p.birthInfo,
+        }, { onConflict: 'user_id,track' });
+        if (upsertErr) { console.error('Chart sync error:', upsertErr.message); return; }
+        const { data } = await supabase.from('profiles').select('active_tracks').eq('id', user.id).single();
+        const tracks: string[] = data?.active_tracks || [];
+        if (!tracks.includes('astro')) {
+          const { error: updateErr } = await supabase.from('profiles').update({
+            active_tracks: [...tracks, 'astro'],
+          }).eq('id', user.id);
+          if (updateErr) console.error('Profile update error:', updateErr.message);
+        }
+      } catch (err) {
+        console.error('Chart sync unexpected error:', err);
+      }
+    }
+    syncChart();
+  }, [profile]);
 
   function handleComplete(p: AstroProfile) {
     setProfile(p);
@@ -100,6 +133,19 @@ export default function AstroDashboard() {
 
         {/* AI Interpretation (auto-fetches) */}
         <AstroInterpretation chart={chart} birthInfo={birthInfo} />
+
+        {/* Premium CTA */}
+        <div className="bg-cookie-gold/5 border border-cookie-gold/20 rounded-xl p-5 text-center space-y-2">
+          <p className="text-sm text-text-secondary">
+            매일 업데이트되는 나만의 별자리 운세가 궁금하세요?
+          </p>
+          <Link
+            href="/premium?track=astro"
+            className="inline-block bg-cookie-gold/20 text-cookie-gold border border-cookie-gold/30 rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-cookie-gold/30 transition-colors"
+          >
+            나의 운세 보기
+          </Link>
+        </div>
       </div>
     </section>
   );
