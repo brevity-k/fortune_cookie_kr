@@ -7,8 +7,6 @@ import { saveSajuProfile, getSajuProfile, clearSajuProfile } from '@/lib/saju/pr
 import type { SajuProfile } from '@/lib/saju/profile';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
 import { trackSajuAI } from '@/lib/analytics';
-import { createClient } from '@/lib/supabase/client';
-import Link from 'next/link';
 import SajuOnboarding from '@/components/saju/SajuOnboarding';
 import SajuChart from '@/components/saju/SajuChart';
 import FiveElementsBar from '@/components/saju/FiveElementsBar';
@@ -64,37 +62,6 @@ export default function SajuDashboard() {
       const cached = getCachedAI(currentProfile.chart.birthInfo);
       if (cached) setAiInterpretation(cached);
     }
-  }, [currentProfile]);
-
-  // Sync chart to Supabase if authenticated (enables premium /my-fortune)
-  useEffect(() => {
-    if (!currentProfile) return;
-    const cp = currentProfile;
-    async function syncChart() {
-      try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        const { error: upsertErr } = await supabase.from('user_charts').upsert({
-          user_id: user.id,
-          track: 'saju' as const,
-          chart_data: cp.chart,
-          birth_info: cp.chart.birthInfo,
-        }, { onConflict: 'user_id,track' });
-        if (upsertErr) { console.error('Chart sync error:', upsertErr.message); return; }
-        const { data } = await supabase.from('profiles').select('active_tracks').eq('id', user.id).single();
-        const tracks: string[] = data?.active_tracks || [];
-        if (!tracks.includes('saju')) {
-          const { error: updateErr } = await supabase.from('profiles').update({
-            active_tracks: [...tracks, 'saju'],
-          }).eq('id', user.id);
-          if (updateErr) console.error('Profile update error:', updateErr.message);
-        }
-      } catch (err) {
-        console.error('Chart sync unexpected error:', err);
-      }
-    }
-    syncChart();
   }, [currentProfile]);
 
   const handleSubmit = useCallback((birthInfo: BirthInfo) => {
@@ -199,19 +166,6 @@ export default function SajuDashboard() {
           onRequest={handleAIRequest}
           onRetry={handleAIRequest}
         />
-
-        {/* Premium CTA */}
-        <div className="bg-cookie-gold/5 border border-cookie-gold/20 rounded-xl p-5 text-center space-y-2">
-          <p className="text-sm text-text-secondary">
-            매일 업데이트되는 나만의 사주 운세가 궁금하세요?
-          </p>
-          <Link
-            href="/premium?track=saju"
-            className="inline-block bg-cookie-gold/20 text-cookie-gold border border-cookie-gold/30 rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-cookie-gold/30 transition-colors"
-          >
-            나의 운세 보기
-          </Link>
-        </div>
       </div>
     </section>
   );

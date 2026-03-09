@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import AuthButton from '@/components/auth/AuthButton';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -75,7 +74,6 @@ export default function Header() {
           >
             소개
           </Link>
-          <AuthButton />
         </nav>
 
         {/* Mobile Menu Button */}
@@ -168,9 +166,6 @@ export default function Header() {
             >
               ℹ️ 소개
             </Link>
-            <div className="border-t border-white/5 pt-3 mt-1" onClick={() => setIsMenuOpen(false)}>
-              <AuthButton />
-            </div>
           </div>
         </nav>
       )}
