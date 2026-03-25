@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ContactForm from '@/components/contact/ContactForm';
+import { SuppressAds } from '@/components/ads/AdsContext';
 
 export const metadata: Metadata = {
   title: '문의하기',
@@ -18,6 +19,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <div className="star-field min-h-dvh flex flex-col">
+      <SuppressAds />
       <Header />
       <main className="flex-1 pt-14 px-4 py-12">
         <article className="max-w-2xl mx-auto">

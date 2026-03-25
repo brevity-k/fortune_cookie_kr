@@ -3,7 +3,6 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import SajuDashboard from './client';
 import { SAJU_SEO_CONTENT } from '@/data/seo/saju-content';
-import AdSenseScript from '@/components/ads/AdSenseScript';
 
 export const metadata: Metadata = {
   title: '무료 사주팔자 분석 - 나의 사주 보기 | 포춘쿠키',
@@ -109,7 +108,6 @@ export default function SajuPage() {
         </main>
 
         <Footer />
-        <AdSenseScript />
       </div>
     </>
   );

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import CompatibilityClient from "./client";
-import AdSenseScript from "@/components/ads/AdSenseScript";
 
 export const metadata: Metadata = {
   title: "궁합 포춘쿠키 - 두 사람의 궁합을 확인하세요",
@@ -16,10 +15,5 @@ export const metadata: Metadata = {
 };
 
 export default function CompatibilityPage() {
-  return (
-    <>
-      <CompatibilityClient />
-      <AdSenseScript />
-    </>
-  );
+  return <CompatibilityClient />;
 }

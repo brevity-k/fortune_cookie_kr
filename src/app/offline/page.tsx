@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SuppressAds } from "@/components/ads/AdsContext";
 
 export const metadata: Metadata = {
   title: "오프라인 - 포춘쿠키",
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
 export default function OfflinePage() {
   return (
     <div className="star-field min-h-dvh flex flex-col items-center justify-center px-4">
+      <SuppressAds />
       <div className="text-6xl mb-6">🥠</div>
       <h1 className="text-2xl font-bold text-text-primary mb-3">
         인터넷 연결이 끊겼어요

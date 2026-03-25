@@ -3,7 +3,6 @@ import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { blogPosts } from '@/data/blog-posts';
-import AdSenseScript from '@/components/ads/AdSenseScript';
 
 export const metadata: Metadata = {
   title: '블로그',
@@ -57,7 +56,6 @@ export default function BlogPage() {
         </div>
       </main>
       <Footer />
-      <AdSenseScript />
     </div>
   );
 }

@@ -3,7 +3,6 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import AstroDashboard from './client';
 import { BIRTH_CHART_SEO_CONTENT } from '@/data/seo/birth-chart-content';
-import AdSenseScript from '@/components/ads/AdSenseScript';
 
 export const metadata: Metadata = {
   title: '무료 서양 출생 차트 분석 - 나의 별자리 차트 | 포춘쿠키',
@@ -110,7 +109,6 @@ export default function BirthChartPage() {
         </main>
 
         <Footer />
-        <AdSenseScript />
       </div>
     </>
   );

@@ -3,7 +3,6 @@ import CategoryFortuneWidget from "../[category]/client";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CategorySelector from "@/components/fortune/CategorySelector";
-import AdSenseScript from "@/components/ads/AdSenseScript";
 
 export const metadata: Metadata = {
   title: "수능 합격 운세 포춘쿠키 - 시험 행운 확인",
@@ -49,7 +48,6 @@ export default function ExamLuckPage() {
       </main>
 
       <Footer />
-      <AdSenseScript />
     </div>
   );
 }

@@ -1,9 +1,20 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Script from 'next/script';
+import { useAdsSuppressed } from './AdsContext';
 
 export default function AdSenseScript() {
-  if (!process.env.NEXT_PUBLIC_ADSENSE_CLIENT) {
+  const suppressed = useAdsSuppressed();
+  const [ready, setReady] = useState(false);
+
+  // Delay one tick so SuppressAds (which fires in useEffect) can run first
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  if (!process.env.NEXT_PUBLIC_ADSENSE_CLIENT || !ready || suppressed) {
     return null;
   }
 

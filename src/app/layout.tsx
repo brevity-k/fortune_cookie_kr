@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Noto_Sans_KR } from "next/font/google";
 import KakaoScript from "@/components/KakaoScript";
+import { AdsProvider } from "@/components/ads/AdsContext";
+import AdSenseScript from "@/components/ads/AdSenseScript";
 import "./globals.css";
 
 const notoSansKr = Noto_Sans_KR({
@@ -96,7 +98,10 @@ export default function RootLayout({
             }),
           }}
         />
-        {children}
+        <AdsProvider>
+          {children}
+          <AdSenseScript />
+        </AdsProvider>
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
             <Script
