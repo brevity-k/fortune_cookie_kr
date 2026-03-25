@@ -8,11 +8,10 @@ export default function AdSenseScript() {
   const suppressed = useAdsSuppressed();
   const [ready, setReady] = useState(false);
 
-  // Delay one tick so SuppressAds (which fires in useEffect) can run first
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setReady(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
+  // Starts false so the script never renders on the initial synchronous pass.
+  // React runs children's effects before siblings, so SuppressAds (in children)
+  // sets suppressed=true before this effect fires.
+  useEffect(() => { setReady(true); }, []);
 
   if (!process.env.NEXT_PUBLIC_ADSENSE_CLIENT || !ready || suppressed) {
     return null;
