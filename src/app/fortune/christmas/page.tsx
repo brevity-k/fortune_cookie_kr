@@ -3,6 +3,7 @@ import CategoryFortuneWidget from "../[category]/client";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CategorySelector from "@/components/fortune/CategorySelector";
+import AdSenseScript from "@/components/ads/AdSenseScript";
 
 export const metadata: Metadata = {
   title: "크리스마스 운세 포춘쿠키 - 성탄절 특별 운세 무료",
@@ -48,6 +49,7 @@ export default function ChristmasPage() {
       </main>
 
       <Footer />
+      <AdSenseScript />
     </div>
   );
 }

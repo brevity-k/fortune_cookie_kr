@@ -77,7 +77,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={`${notoSansKr.variable} antialiased`}>
-        {/* JSON-LD in body to avoid hydration mismatch from AdSense script injection in head */}
+        {/* JSON-LD in body to avoid hydration mismatch from script injection in head */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -97,14 +97,6 @@ export default function RootLayout({
           }}
         />
         {children}
-        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
-          <Script
-            id="adsense"
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}`}
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
-        )}
         {process.env.NEXT_PUBLIC_GA_ID && (
           <>
             <Script

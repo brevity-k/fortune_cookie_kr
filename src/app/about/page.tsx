@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Link from 'next/link';
+import AdSenseScript from '@/components/ads/AdSenseScript';
 
 export const metadata: Metadata = {
   title: '소개 - 포춘쿠키 운세 서비스',
@@ -342,6 +343,7 @@ export default function AboutPage() {
         </article>
       </main>
       <Footer />
+      <AdSenseScript />
     </div>
   );
 }

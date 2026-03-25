@@ -7,6 +7,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CategorySelector from "@/components/fortune/CategorySelector";
 import SEOContentServer from "@/components/seo/SEOContentServer";
+import AdSenseScript from "@/components/ads/AdSenseScript";
 import Link from "next/link";
 
 type PageProps = {
@@ -125,6 +126,7 @@ export default async function CategoryPage({ params }: PageProps) {
         </main>
 
         <Footer />
+        <AdSenseScript />
       </div>
     </>
   );

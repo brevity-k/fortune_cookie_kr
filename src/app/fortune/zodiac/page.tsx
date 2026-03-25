@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ZODIAC_ANIMALS } from "@/types/zodiac";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import AdSenseScript from "@/components/ads/AdSenseScript";
 
 export const metadata: Metadata = {
   title: "띠별 운세 - 12띠 오늘의 포춘쿠키 운세",
@@ -150,6 +151,7 @@ export default function ZodiacHubPage() {
       </main>
 
       <Footer />
+      <AdSenseScript />
     </div>
   );
 }

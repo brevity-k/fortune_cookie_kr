@@ -3,6 +3,7 @@ import Link from "next/link";
 import { HOROSCOPE_SIGNS } from "@/types/horoscope";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import AdSenseScript from "@/components/ads/AdSenseScript";
 
 export const metadata: Metadata = {
   title: "별자리 운세 - 12별자리 오늘의 포춘쿠키 운세",
@@ -170,6 +171,7 @@ export default function HoroscopeHubPage() {
       </main>
 
       <Footer />
+      <AdSenseScript />
     </div>
   );
 }
