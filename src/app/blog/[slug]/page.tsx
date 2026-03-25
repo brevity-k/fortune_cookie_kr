@@ -103,7 +103,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </h1>
 
           <div
-            className="prose-blog text-text-secondary leading-relaxed [&>h2]:text-xl [&>h2]:font-semibold [&>h2]:text-text-primary [&>h2]:mt-8 [&>h2]:mb-3 [&>p]:mb-4 [&>p]:text-text-secondary [&>p]:leading-relaxed [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-2 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:space-y-2 [&>ol]:mb-4"
+            className="prose-blog text-text-secondary leading-relaxed [&>h2]:text-xl [&>h2]:font-semibold [&>h2]:text-text-primary [&>h2]:mt-8 [&>h2]:mb-3 [&>h3]:text-lg [&>h3]:font-medium [&>h3]:text-text-primary [&>h3]:mt-6 [&>h3]:mb-2 [&>p]:mb-4 [&>p]:text-text-secondary [&>p]:leading-relaxed [&>blockquote]:border-l-3 [&>blockquote]:border-cookie-gold/50 [&>blockquote]:pl-4 [&>blockquote]:py-2 [&>blockquote]:my-6 [&>blockquote]:text-text-primary [&>blockquote]:italic [&>blockquote]:bg-white/3 [&>blockquote]:rounded-r-lg [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-2 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:space-y-2 [&>ol]:mb-4 [&_a]:text-cookie-gold [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-gold-sparkle [&_a]:transition-colors"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
 
