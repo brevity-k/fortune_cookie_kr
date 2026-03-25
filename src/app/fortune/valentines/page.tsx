@@ -3,6 +3,7 @@ import CategoryFortuneWidget from "../[category]/client";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CategorySelector from "@/components/fortune/CategorySelector";
+import AdSenseScript from "@/components/ads/AdSenseScript";
 
 export const metadata: Metadata = {
   title: "발렌타인 사랑운 포춘쿠키 - 2026년 발렌타인데이 운세",
@@ -48,6 +49,7 @@ export default function ValentinesPage() {
       </main>
 
       <Footer />
+      <AdSenseScript />
     </div>
   );
 }

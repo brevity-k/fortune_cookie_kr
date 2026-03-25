@@ -3,6 +3,7 @@ import CategoryFortuneWidget from "../[category]/client";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CategorySelector from "@/components/fortune/CategorySelector";
+import AdSenseScript from "@/components/ads/AdSenseScript";
 
 export const metadata: Metadata = {
   title: "2026 신년운세 포춘쿠키 - 새해 운세 무료 확인",
@@ -48,6 +49,7 @@ export default function NewYearPage() {
       </main>
 
       <Footer />
+      <AdSenseScript />
     </div>
   );
 }

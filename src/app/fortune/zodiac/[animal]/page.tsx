@@ -7,6 +7,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ZodiacSelector from "@/components/fortune/ZodiacSelector";
 import SEOContentServer from "@/components/seo/SEOContentServer";
+import AdSenseScript from "@/components/ads/AdSenseScript";
 
 type PageProps = {
   params: Promise<{ animal: string }>;
@@ -109,6 +110,7 @@ export default async function ZodiacPage({ params }: PageProps) {
         </main>
 
         <Footer />
+        <AdSenseScript />
       </div>
     </>
   );

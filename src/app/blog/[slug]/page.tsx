@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { blogPosts } from '@/data/blog-posts';
+import AdSenseScript from '@/components/ads/AdSenseScript';
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -118,6 +119,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </article>
       </main>
       <Footer />
+      <AdSenseScript />
     </div>
   );
 }
