@@ -3,7 +3,6 @@ import Link from "next/link";
 import { MBTI_TYPES } from "@/types/mbti";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import AdSenseScript from "@/components/ads/AdSenseScript";
 
 export const metadata: Metadata = {
   title: "MBTI 운세 - 16가지 MBTI 유형별 오늘의 포춘쿠키",
@@ -201,7 +200,6 @@ export default function MBTIHubPage() {
       </main>
 
       <Footer />
-      <AdSenseScript />
     </div>
   );
 }

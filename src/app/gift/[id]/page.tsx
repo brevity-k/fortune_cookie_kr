@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import GiftPageClient from "./client";
+import { SuppressAds } from "@/components/ads/AdsContext";
 import { allFortunes } from "@/data/fortunes";
 import { getFortuneFromId } from "@/lib/fortune-selector";
 
@@ -25,5 +26,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function GiftPage({ params }: PageProps) {
   const { id } = await params;
-  return <GiftPageClient giftId={id} />;
+  return (
+    <>
+      <SuppressAds />
+      <GiftPageClient giftId={id} />
+    </>
+  );
 }

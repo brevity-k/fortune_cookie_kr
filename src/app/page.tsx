@@ -3,7 +3,6 @@ import HomeFortuneWidget from './client';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CategorySelector from '@/components/fortune/CategorySelector';
-import AdSenseScript from '@/components/ads/AdSenseScript';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
@@ -221,7 +220,6 @@ export default function HomePage() {
       </main>
 
       <Footer />
-      <AdSenseScript />
     </div>
   );
 }

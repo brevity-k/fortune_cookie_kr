@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { SuppressAds } from '@/components/ads/AdsContext';
 
 export default function GlobalError({
   error,
@@ -15,6 +16,7 @@ export default function GlobalError({
 
   return (
     <div className="star-field min-h-dvh flex flex-col items-center justify-center px-4">
+      <SuppressAds />
       <div className="text-6xl mb-6">🥠</div>
       <h2 className="text-2xl font-bold text-cookie-gold mb-3">
         앗, 쿠키가 깨져버렸어요!

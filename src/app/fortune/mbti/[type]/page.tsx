@@ -7,7 +7,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import MBTISelector from "@/components/fortune/MBTISelector";
 import SEOContentServer from "@/components/seo/SEOContentServer";
-import AdSenseScript from "@/components/ads/AdSenseScript";
 
 type PageProps = {
   params: Promise<{ type: string }>;
@@ -107,7 +106,6 @@ export default async function MBTIPage({ params }: PageProps) {
         </main>
 
         <Footer />
-        <AdSenseScript />
       </div>
     </>
   );

@@ -7,7 +7,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HoroscopeSelector from "@/components/fortune/HoroscopeSelector";
 import SEOContentServer from "@/components/seo/SEOContentServer";
-import AdSenseScript from "@/components/ads/AdSenseScript";
 
 type PageProps = {
   params: Promise<{ sign: string }>;
@@ -112,7 +111,6 @@ export default async function HoroscopePage({ params }: PageProps) {
         </main>
 
         <Footer />
-        <AdSenseScript />
       </div>
     </>
   );

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import CollectionClient from "./client";
-import AdSenseScript from "@/components/ads/AdSenseScript";
 
 export const metadata: Metadata = {
   title: "포춘쿠키 도감 - 수집한 운세 모아보기",
@@ -15,10 +14,5 @@ export const metadata: Metadata = {
 };
 
 export default function CollectionPage() {
-  return (
-    <>
-      <CollectionClient />
-      <AdSenseScript />
-    </>
-  );
+  return <CollectionClient />;
 }

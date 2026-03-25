@@ -1,8 +1,10 @@
 import Link from 'next/link';
+import { SuppressAds } from '@/components/ads/AdsContext';
 
 export default function NotFound() {
   return (
     <div className="star-field min-h-dvh flex flex-col items-center justify-center px-4">
+      <SuppressAds />
       <div className="text-6xl mb-6">🥠</div>
       <h2 className="text-2xl font-bold text-cookie-gold mb-3">
         페이지를 찾을 수 없어요
