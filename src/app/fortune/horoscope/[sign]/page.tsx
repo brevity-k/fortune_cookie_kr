@@ -12,6 +12,8 @@ type PageProps = {
   params: Promise<{ sign: string }>;
 };
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   return HOROSCOPE_SIGNS.map((s) => ({ sign: s.key }));
 }

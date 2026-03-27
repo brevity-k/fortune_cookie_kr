@@ -12,6 +12,8 @@ type PageProps = {
   params: Promise<{ animal: string }>;
 };
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   return ZODIAC_ANIMALS.map((z) => ({ animal: z.key }));
 }

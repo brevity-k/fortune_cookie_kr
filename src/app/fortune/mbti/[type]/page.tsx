@@ -12,6 +12,8 @@ type PageProps = {
   params: Promise<{ type: string }>;
 };
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   return MBTI_TYPES.map((m) => ({ type: m.key }));
 }
