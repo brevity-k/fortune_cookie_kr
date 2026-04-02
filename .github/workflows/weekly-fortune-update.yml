@@ -30,11 +30,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -86,7 +86,7 @@ jobs:
       - name: Create Pull Request
         id: pr
         if: steps.changes.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: 'content: add weekly fortune messages'
@@ -137,7 +137,7 @@ jobs:
 
       - name: Notify failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const title = `[Workflow Failure] Weekly Fortune Update - ${new Date().toISOString().split('T')[0]}`;
@@ -160,7 +160,7 @@ jobs:
 
       - name: Auto-close failure issues on success
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const { data: issues } = await github.rest.issues.listForRepo({

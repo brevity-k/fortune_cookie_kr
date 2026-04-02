@@ -27,11 +27,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -62,7 +62,7 @@ jobs:
 
       - name: Trigger daily-blog if stale
         if: env.BLOG_STALE == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             try {
@@ -93,7 +93,7 @@ jobs:
 
       - name: Trigger weekly-fortune if stale
         if: env.FORTUNE_STALE == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             try {
@@ -110,7 +110,7 @@ jobs:
             }
 
       - name: Create issue if content needs update
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const now = new Date();
@@ -195,7 +195,7 @@ jobs:
 
       - name: Notify failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const title = `[Workflow Failure] Content Update - ${new Date().toISOString().split('T')[0]}`;
@@ -218,7 +218,7 @@ jobs:
 
       - name: Auto-close failure issues on success
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const { data: issues } = await github.rest.issues.listForRepo({
