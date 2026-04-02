@@ -1,4 +1,4 @@
-name: Daily Twitter Post
+name: Daily Social Post
 
 on:
   schedule:
@@ -21,7 +21,7 @@ on:
         type: boolean
 
 concurrency:
-  group: twitter-posting
+  group: social-posting
   cancel-in-progress: false
 
 permissions:
@@ -29,7 +29,7 @@ permissions:
   issues: write
 
 jobs:
-  post-tweet:
+  post-social:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -42,10 +42,10 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Validate X API keys
+      - name: Validate API keys
         run: |
           MISSING=""
-          for KEY in X_CONSUMER_KEY X_SECRET_KEY X_ACCESS_TOKEN X_ACCESS_TOKEN_SECRET; do
+          for KEY in X_CONSUMER_KEY X_SECRET_KEY X_ACCESS_TOKEN X_ACCESS_TOKEN_SECRET BLUESKY_HANDLE BLUESKY_APP_PASSWORD; do
             eval "VAL=\$$KEY"
             if [ -z "$VAL" ]; then
               MISSING="$MISSING $KEY"
@@ -60,6 +60,8 @@ jobs:
           X_SECRET_KEY: ${{ secrets.X_SECRET_KEY }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
 
       - run: npm ci
 
@@ -81,16 +83,33 @@ jobs:
           fi
           npx tsx scripts/post-to-twitter.ts $ARGS
 
+      - name: Post to Bluesky
+        continue-on-error: true
+        env:
+          BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+          INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
+          INPUT_TYPE: ${{ github.event.inputs.type }}
+        run: |
+          ARGS=""
+          if [ "$INPUT_DRY_RUN" = "true" ]; then
+            ARGS="--dry-run"
+          fi
+          if [ -n "$INPUT_TYPE" ]; then
+            ARGS="$ARGS --type $INPUT_TYPE"
+          fi
+          npx tsx scripts/post-to-bluesky.ts $ARGS
+
       - name: Commit state changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet scripts/twitter-post-state.json; then
-            git add scripts/twitter-post-state.json
-            git commit -m "chore: update twitter post state"
-            git push
-          else
+          git add scripts/twitter-post-state.json scripts/bsky-post-state.json
+          if git diff --cached --quiet; then
             echo "No state changes to commit"
+          else
+            git commit -m "chore: update social post state"
+            git push
           fi
 
       - name: Notify failure
@@ -98,14 +117,14 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            const title = `[Workflow Failure] Daily Twitter Post - ${new Date().toISOString().split('T')[0]}`;
+            const title = `[Workflow Failure] Daily Social Post - ${new Date().toISOString().split('T')[0]}`;
             const { data: issues } = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
               labels: 'workflow-failure',
             });
-            const existing = issues.find(i => i.title.includes('Daily Twitter Post'));
+            const existing = issues.find(i => i.title.includes('Daily Social Post'));
             if (!existing) {
               await github.rest.issues.create({
                 owner: context.repo.owner,
@@ -128,7 +147,7 @@ jobs:
               labels: 'workflow-failure',
             });
             for (const issue of issues) {
-              if (issue.title.includes('Daily Twitter Post')) {
+              if (issue.title.includes('Daily Social Post')) {
                 await github.rest.issues.update({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
