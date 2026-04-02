@@ -42,12 +42,11 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Validate API keys
+      - name: Validate X API keys
         run: |
           MISSING=""
-          for KEY in X_CONSUMER_KEY X_SECRET_KEY X_ACCESS_TOKEN X_ACCESS_TOKEN_SECRET BLUESKY_HANDLE BLUESKY_APP_PASSWORD; do
-            eval "VAL=\$$KEY"
-            if [ -z "$VAL" ]; then
+          for KEY in X_CONSUMER_KEY X_SECRET_KEY X_ACCESS_TOKEN X_ACCESS_TOKEN_SECRET; do
+            if [ -z "${!KEY}" ]; then
               MISSING="$MISSING $KEY"
             fi
           done
@@ -60,6 +59,13 @@ jobs:
           X_SECRET_KEY: ${{ secrets.X_SECRET_KEY }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+
+      - name: Check Bluesky API keys
+        run: |
+          if [ -z "$BLUESKY_HANDLE" ] || [ -z "$BLUESKY_APP_PASSWORD" ]; then
+            echo "::warning::Bluesky secrets not configured — Bluesky posting will be skipped"
+          fi
+        env:
           BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
           BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
 
