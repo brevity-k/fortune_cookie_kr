@@ -24,6 +24,7 @@ import { withRetry } from './utils/retry';
 const STATE_FILE = path.join(__dirname, 'bsky-post-state.json');
 const SITE_URL = 'https://fortunecookie.ai.kr';
 const MAX_GRAPHEMES = 300;
+const segmenter = new Intl.Segmenter('ko', { granularity: 'grapheme' });
 
 interface BlueskyPostState {
   lastPostDate: string;
@@ -79,7 +80,6 @@ function getCategoryLabel(category: FortuneCategory): string {
 }
 
 function graphemeLength(text: string): number {
-  const segmenter = new Intl.Segmenter('ko', { granularity: 'grapheme' });
   return [...segmenter.segment(text)].length;
 }
 
@@ -103,19 +103,19 @@ function pickRandomFortune(postedIds: string[]): { fortune: Fortune; resetted: b
   return { fortune: pool[index], resetted };
 }
 
+function truncateGraphemes(text: string, maxLen: number): string {
+  const segments = [...segmenter.segment(text)];
+  if (segments.length <= maxLen) return text;
+  return segments.slice(0, maxLen - 1).map((s) => s.segment).join('') + '…';
+}
+
 function buildBlogPost(post: BlogPost): string {
   const categoryTag = CATEGORY_HASHTAGS.general;
   const url = `${SITE_URL}/blog/${post.slug}`;
 
-  let description = post.description;
   const template = `📝 ${post.title}\n\n\n\n👉 ${url}\n\n#포춘쿠키 #운세 #${categoryTag}`;
   const maxDescLen = MAX_GRAPHEMES - graphemeLength(template);
-
-  if (graphemeLength(description) > maxDescLen) {
-    const segmenter = new Intl.Segmenter('ko', { granularity: 'grapheme' });
-    const segments = [...segmenter.segment(description)];
-    description = segments.slice(0, maxDescLen - 1).map((s) => s.segment).join('') + '…';
-  }
+  const description = truncateGraphemes(post.description, maxDescLen);
 
   return `📝 ${post.title}\n\n${description}\n\n👉 ${url}\n\n#포춘쿠키 #운세 #${categoryTag}`;
 }
@@ -124,15 +124,9 @@ function buildFortunePost(fortune: Fortune): string {
   const categoryLabel = getCategoryLabel(fortune.category);
   const categoryTag = CATEGORY_HASHTAGS[fortune.category];
 
-  let message = fortune.message;
   const template = `🥠 오늘의 ${categoryLabel}\n\n""\n\n💫 행운의 숫자: ${fortune.luckyNumber} | 행운의 색: ${fortune.luckyColor}\n\n오늘의 운세를 확인하세요 👉 ${SITE_URL}\n\n#포춘쿠키 #오늘의운세 #${categoryTag}`;
   const maxMsgLen = MAX_GRAPHEMES - graphemeLength(template);
-
-  if (graphemeLength(message) > maxMsgLen) {
-    const segmenter = new Intl.Segmenter('ko', { granularity: 'grapheme' });
-    const segments = [...segmenter.segment(message)];
-    message = segments.slice(0, maxMsgLen - 1).map((s) => s.segment).join('') + '…';
-  }
+  const message = truncateGraphemes(fortune.message, maxMsgLen);
 
   return `🥠 오늘의 ${categoryLabel}\n\n"${message}"\n\n💫 행운의 숫자: ${fortune.luckyNumber} | 행운의 색: ${fortune.luckyColor}\n\n오늘의 운세를 확인하세요 👉 ${SITE_URL}\n\n#포춘쿠키 #오늘의운세 #${categoryTag}`;
 }
@@ -190,33 +184,20 @@ async function main() {
   let fortuneId: string | null = null;
   let fortuneQueueResetted = false;
 
-  if (forceType === 'blog' || (!forceType && forceType !== 'fortune')) {
-    const blogPost = findTodayBlogPost(state);
-    if (blogPost && forceType !== 'fortune') {
-      postText = buildBlogPost(blogPost);
-      postType = '블로그';
-      blogSlug = blogPost.slug;
-      console.log(`  타입: 블로그 포스트`);
-      console.log(`  제목: ${blogPost.title}`);
-      console.log(`  슬러그: ${blogPost.slug}`);
-    } else if (forceType === 'blog') {
+  const blogPost = forceType !== 'fortune' ? findTodayBlogPost(state) : null;
+
+  if (blogPost) {
+    postText = buildBlogPost(blogPost);
+    postType = '블로그';
+    blogSlug = blogPost.slug;
+    console.log(`  타입: 블로그 포스트`);
+    console.log(`  제목: ${blogPost.title}`);
+    console.log(`  슬러그: ${blogPost.slug}`);
+  } else {
+    if (forceType === 'blog') {
       console.log('  ⚠️ 오늘 게시된 새 블로그 포스트가 없습니다.');
       console.log('  운세 포스트로 대체합니다.');
-      const { fortune, resetted } = pickRandomFortune(state.postedFortuneIds);
-      fortuneQueueResetted = resetted;
-      postText = buildFortunePost(fortune);
-      postType = '운세';
-      fortuneId = fortune.id;
-      console.log(`  타입: 운세 (${getCategoryLabel(fortune.category)})`);
-    } else {
-      const { fortune, resetted } = pickRandomFortune(state.postedFortuneIds);
-      fortuneQueueResetted = resetted;
-      postText = buildFortunePost(fortune);
-      postType = '운세';
-      fortuneId = fortune.id;
-      console.log(`  타입: 운세 (${getCategoryLabel(fortune.category)})`);
     }
-  } else {
     const { fortune, resetted } = pickRandomFortune(state.postedFortuneIds);
     fortuneQueueResetted = resetted;
     postText = buildFortunePost(fortune);
@@ -225,14 +206,15 @@ async function main() {
     console.log(`  타입: 운세 (${getCategoryLabel(fortune.category)})`);
   }
 
-  console.log(`  글자 수: ${graphemeLength(postText)}/${MAX_GRAPHEMES}`);
+  const postLength = graphemeLength(postText);
+  console.log(`  글자 수: ${postLength}/${MAX_GRAPHEMES}`);
   console.log('');
   console.log('  --- 포스트 내용 ---');
   console.log(postText);
   console.log('  -------------------');
   console.log('');
 
-  if (graphemeLength(postText) > MAX_GRAPHEMES) {
+  if (postLength > MAX_GRAPHEMES) {
     console.error(`  ❌ 포스트가 ${MAX_GRAPHEMES} grapheme을 초과합니다!`);
     process.exit(1);
   }
