@@ -42,7 +42,7 @@ jobs:
 
       - name: Create issue on failure
         if: steps.health.outputs.healthy == 'false'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: issues } = await github.rest.issues.listForRepo({
@@ -64,7 +64,7 @@ jobs:
 
       - name: Auto-close issue on recovery
         if: steps.health.outputs.healthy == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: issues } = await github.rest.issues.listForRepo({
