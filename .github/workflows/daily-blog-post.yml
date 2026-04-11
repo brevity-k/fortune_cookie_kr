@@ -160,7 +160,7 @@ jobs:
 
       - name: Notify failure
         if: failure()
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const title = `[Workflow Failure] Daily Blog Post - ${new Date().toISOString().split('T')[0]}`;
@@ -183,7 +183,7 @@ jobs:
 
       - name: Auto-close failure issues on success
         if: success()
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: issues } = await github.rest.issues.listForRepo({
