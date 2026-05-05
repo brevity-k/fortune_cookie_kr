@@ -54,7 +54,7 @@ export async function POST(request: Request) {
 
   // Rate limit by IP (shared pool with saju: 10 req/day)
   if (sajuAIRatelimit) {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'anonymous';
+    const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'anonymous';
     const { success, reset } = await sajuAIRatelimit.limit(ip);
     if (!success) {
       return NextResponse.json(
