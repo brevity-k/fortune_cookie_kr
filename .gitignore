@@ -41,3 +41,9 @@ firebase-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# Local-only project notes (strategic content, not for public repo)
+.private/
+
+# OMC agent local state
+.omc/
