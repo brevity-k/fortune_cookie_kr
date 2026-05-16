@@ -22,8 +22,8 @@
     "twitter:preview": "tsx scripts/post-to-twitter.ts --dry-run"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.95.1",
-    "@atproto/api": "^0.19.16",
+    "@anthropic-ai/sdk": "^0.96.0",
+    "@atproto/api": "^0.19.18",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "astronomy-engine": "^2.1.19",
@@ -42,13 +42,13 @@
     "@tailwindcss/postcss": "^4",
     "@types/canvas-confetti": "^1.9.0",
     "@types/howler": "^2.2.12",
-    "@types/node": "^25.6.2",
+    "@types/node": "^25.8.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^10.3.0",
+    "eslint": "^10.4.0",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
-    "tsx": "^4.21.0",
+    "tsx": "^4.22.0",
     "typescript": "^6.0.3"
   }
 }
