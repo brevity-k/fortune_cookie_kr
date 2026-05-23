@@ -14,7 +14,7 @@ import { trackCookieBreak, trackFortuneReveal } from '@/lib/analytics';
 import MuteToggle from '@/components/ui/MuteToggle';
 
 interface FortuneCookieProps {
-  onBreak: (method: CookieBreakMethod) => Fortune;
+  onBreak: (method: CookieBreakMethod) => Fortune | Promise<Fortune>;
   fortune: Fortune | null;
   streak?: number;
   isNewCollection?: boolean;
@@ -55,14 +55,15 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
 
         play('sparkle');
 
-        const result = onBreak(method);
-        setCurrentFortune(result);
-        trackFortuneReveal(result.category);
+        Promise.resolve(onBreak(method)).then((result) => {
+          setCurrentFortune(result);
+          trackFortuneReveal(result.category);
 
-        setTimeout(() => {
-          setCookieState('revealed');
-          play('paper');
-        }, 600);
+          setTimeout(() => {
+            setCookieState('revealed');
+            play('paper');
+          }, 600);
+        });
       }, 400);
     },
     [onBreak, play]

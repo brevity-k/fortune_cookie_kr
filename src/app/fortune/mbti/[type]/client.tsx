@@ -4,8 +4,7 @@ import { useCallback, useState } from 'react';
 import FortuneCookie from '@/components/cookie/FortuneCookie';
 import FortuneShare from '@/components/fortune/FortuneShare';
 import { Fortune, CookieBreakMethod } from '@/types/fortune';
-import { getMBTIDailyFortune } from '@/lib/fortune-selector';
-import { allFortunes } from '@/data/fortunes';
+import { mbtiFortuneAction } from '@/app/fortune-actions';
 import { useStreak } from '@/hooks/useStreak';
 import { useFortuneCollection } from '@/hooks/useFortuneCollection';
 import { trackStreak } from '@/lib/analytics';
@@ -21,8 +20,8 @@ export default function MBTIFortuneWidget({ mbtiType }: MBTIFortuneWidgetProps) 
   const { addToCollection } = useFortuneCollection();
 
   const handleBreak = useCallback(
-    (_method: CookieBreakMethod): Fortune => {
-      const result = getMBTIDailyFortune(allFortunes, mbtiType);
+    async (_method: CookieBreakMethod): Promise<Fortune> => {
+      const result = await mbtiFortuneAction(mbtiType);
       setFortune(result);
       const updated = recordVisit();
       if (updated.currentStreak > 1) {

@@ -6,8 +6,8 @@ import confetti from 'canvas-confetti';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Fortune } from '@/types/fortune';
-import { allFortunes } from '@/data/fortunes';
-import { getCompatibilityScore, getCompatibilityFortunes, getRatingStars } from '@/lib/fortune-selector';
+import { getCompatibilityScore, getRatingStars } from '@/lib/fortune-selector';
+import { compatibilityFortunesAction } from '@/app/fortune-actions';
 import { useShareFortune } from '@/hooks/useShareFortune';
 
 type Step = 'input' | 'result';
@@ -36,7 +36,7 @@ export default function CompatibilityClient() {
   const [fortunes, setFortunes] = useState<[Fortune, Fortune] | null>(null);
   const { shareViaKakao, copyToClipboard } = useShareFortune();
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nameA.trim() || !yearA.trim() || !nameB.trim() || !yearB.trim()) return;
 
@@ -44,7 +44,7 @@ export default function CompatibilityClient() {
     const yB = parseInt(yearB, 10);
     if (isNaN(yA) || yA < 1900 || yA > 2025 || isNaN(yB) || yB < 1900 || yB > 2025) return;
     const s = getCompatibilityScore(nameA.trim(), yA, nameB.trim(), yB);
-    const [fA, fB] = getCompatibilityFortunes(allFortunes, nameA.trim(), yA, nameB.trim(), yB);
+    const [fA, fB] = await compatibilityFortunesAction(nameA.trim(), yA, nameB.trim(), yB);
 
     setScore(s);
     setFortunes([fA, fB]);

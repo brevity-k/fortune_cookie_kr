@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Fortune } from '@/types/fortune';
-import { getDailyFortune } from '@/lib/fortune-selector';
 import { getTodayString } from '@/lib/date-utils';
 import { STORAGE_KEYS } from '@/lib/storage-keys';
-import { allFortunes } from '@/data/fortunes';
+import { dailyFortuneAction } from '@/app/fortune-actions';
 
 const STORAGE_KEY = STORAGE_KEYS.DAILY_FORTUNE;
 
@@ -36,18 +35,15 @@ export function useDailyFortune() {
       // localStorage unavailable (Safari private mode, quota exceeded)
     }
 
-    const fortune = getDailyFortune(allFortunes);
-    const newState: DailyFortuneState = {
-      fortune,
-      date: today,
-      opened: false,
-    };
-    setDailyState(newState);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-    } catch {
-      // Silent fail - state still works in memory
-    }
+    dailyFortuneAction().then((fortune) => {
+      const newState: DailyFortuneState = { fortune, date: today, opened: false };
+      setDailyState(newState);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
+      } catch {
+        // Silent fail - state still works in memory
+      }
+    });
   }, []);
 
   const markAsOpened = useCallback(() => {

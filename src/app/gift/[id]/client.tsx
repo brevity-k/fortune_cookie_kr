@@ -8,8 +8,7 @@ import FortuneShare from '@/components/fortune/FortuneShare';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Fortune, CookieBreakMethod } from '@/types/fortune';
-import { allFortunes } from '@/data/fortunes';
-import { getFortuneFromId } from '@/lib/fortune-selector';
+import { fortuneFromIdAction } from '@/app/fortune-actions';
 import { useStreak } from '@/hooks/useStreak';
 import { useFortuneCollection } from '@/hooks/useFortuneCollection';
 import { trackStreak } from '@/lib/analytics';
@@ -24,8 +23,8 @@ export default function GiftPageClient({ giftId }: GiftPageClientProps) {
   const { streak, recordVisit } = useStreak();
   const { addToCollection } = useFortuneCollection();
 
-  const handleBreak = useCallback((_method: CookieBreakMethod): Fortune => {
-    const result = getFortuneFromId(allFortunes, giftId);
+  const handleBreak = useCallback(async (_method: CookieBreakMethod): Promise<Fortune> => {
+    const result = await fortuneFromIdAction(giftId);
     setFortune(result);
     const updated = recordVisit();
     if (updated.currentStreak > 1) {
