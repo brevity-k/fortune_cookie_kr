@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { Fortune } from '@/types/fortune';
+import { RATING_LABELS } from '@/lib/fortune-selector';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.kr';
 
@@ -12,8 +13,7 @@ export function useShareFortune() {
       return;
     }
 
-    const labels: Record<number, string> = { 1: '흉', 2: '소흉', 3: '평', 4: '소길', 5: '대길' };
-    const ratingLabel = labels[fortune.rating] || '평';
+    const ratingLabel = RATING_LABELS[fortune.rating] || '평';
     const linkUrl = giftUrl || SITE_URL;
 
     try {
