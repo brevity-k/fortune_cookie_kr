@@ -5,6 +5,13 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { blogPosts } from '@/data/blog-posts';
 
+function sanitizeHtml(html: string): string {
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/\s+on\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\s+on\w+\s*=\s*'[^']*'/gi, '');
+}
+
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
 }
@@ -106,7 +113,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
           <div
             className="prose-blog text-text-secondary leading-relaxed [&>h2]:text-xl [&>h2]:font-semibold [&>h2]:text-text-primary [&>h2]:mt-8 [&>h2]:mb-3 [&>h3]:text-lg [&>h3]:font-medium [&>h3]:text-text-primary [&>h3]:mt-6 [&>h3]:mb-2 [&>p]:mb-4 [&>p]:text-text-secondary [&>p]:leading-relaxed [&>blockquote]:border-l-3 [&>blockquote]:border-cookie-gold/50 [&>blockquote]:pl-4 [&>blockquote]:py-2 [&>blockquote]:my-6 [&>blockquote]:text-text-primary [&>blockquote]:italic [&>blockquote]:bg-white/3 [&>blockquote]:rounded-r-lg [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-2 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:space-y-2 [&>ol]:mb-4 [&_a]:text-cookie-gold [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-gold-sparkle [&_a]:transition-colors"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
           />
 
           <div className="mt-12 pt-8 border-t border-white/5">
