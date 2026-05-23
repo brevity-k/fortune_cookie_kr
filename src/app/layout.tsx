@@ -72,7 +72,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
-  const isValidGaId = gaId && /^G-[A-Z0-9]+$/.test(gaId);
+  const isValidGaId = gaId && /^G-[A-Za-z0-9]+$/.test(gaId);
 
   return (
     <html lang="ko" translate="no">
