@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Fortune } from '@/types/fortune';
 import { RATING_LABELS } from '@/lib/fortune-selector';
 
@@ -112,12 +112,14 @@ export function useShareFortune() {
     }
   }, []);
 
+  const canWebShare = useMemo(() => typeof navigator !== 'undefined' && 'share' in navigator, []);
+
   return {
     shareViaKakao,
     shareViaWebShare,
     copyToClipboard,
     shareViaTwitter,
     downloadCard,
-    canWebShare: typeof navigator !== 'undefined' && 'share' in navigator,
+    canWebShare,
   };
 }
