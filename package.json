@@ -22,8 +22,8 @@
     "twitter:preview": "tsx scripts/post-to-twitter.ts --dry-run"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.95.1",
-    "@atproto/api": "^0.19.16",
+    "@anthropic-ai/sdk": "^0.98.0",
+    "@atproto/api": "^0.20.5",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "astronomy-engine": "^2.1.19",
@@ -31,7 +31,7 @@
     "clsx": "^2.1.1",
     "howler": "^2.2.4",
     "korean-lunar-calendar": "^0.3.6",
-    "motion": "^12.38.0",
+    "motion": "^12.40.0",
     "next": "^16.2.6",
     "react": "19.2.6",
     "react-dom": "19.2.6",
@@ -41,14 +41,14 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/canvas-confetti": "^1.9.0",
-    "@types/howler": "^2.2.12",
-    "@types/node": "^25.6.2",
+    "@types/howler": "^2.2.13",
+    "@types/node": "^25.9.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^10.3.0",
+    "eslint": "^10.4.0",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
-    "tsx": "^4.21.0",
+    "tsx": "^4.22.3",
     "typescript": "^6.0.3"
   }
 }
