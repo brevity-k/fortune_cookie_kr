@@ -13,3 +13,16 @@ export const sajuAIRatelimit: Ratelimit | null = (() => {
     ephemeralCache: new Map(),
   });
 })();
+
+/** Contact form: 5 requests per hour per IP. null if Upstash not configured. */
+export const contactRatelimit: Ratelimit | null = (() => {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return null;
+  }
+  return new Ratelimit({
+    redis: Redis.fromEnv(),
+    limiter: Ratelimit.slidingWindow(5, '1 h'),
+    prefix: 'ratelimit:contact',
+    ephemeralCache: new Map(),
+  });
+})();
