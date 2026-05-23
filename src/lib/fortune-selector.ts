@@ -135,7 +135,10 @@ export function getCompatibilityScore(
   nameB: string,
   yearB: number
 ): number {
-  const seed = hashString(nameA + yearA + nameB + yearB);
+  const pairs = [[nameA, String(yearA)], [nameB, String(yearB)]].sort(
+    (a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1])
+  );
+  const seed = hashString(pairs[0][0] + pairs[0][1] + pairs[1][0] + pairs[1][1]);
   const random = seededRandom(seed);
   return Math.floor(random() * 56) + 40; // 40-95%
 }
@@ -149,7 +152,10 @@ export function getCompatibilityFortunes(
 ): [Fortune, Fortune] {
   if (fortunes.length === 0) return [fallbackFortune, fallbackFortune];
   if (fortunes.length === 1) return [fortunes[0], fortunes[0]];
-  const seed = hashString(nameA + yearA + nameB + yearB + 'fortunes');
+  const pairs = [[nameA, String(yearA)], [nameB, String(yearB)]].sort(
+    (a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1])
+  );
+  const seed = hashString(pairs[0][0] + pairs[0][1] + pairs[1][0] + pairs[1][1] + 'fortunes');
   const random = seededRandom(seed);
   const idxA = Math.floor(random() * fortunes.length);
   let idxB = Math.floor(random() * fortunes.length);
