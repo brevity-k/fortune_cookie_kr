@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { motion, useMotionValue, useAnimation, PanInfo } from 'motion/react';
+import { motion, useMotionValue, useAnimation } from 'motion/react';
 import confetti from 'canvas-confetti';
 import CookieSVG from './CookieSVG';
 import InteractionHint from './InteractionHint';
@@ -9,6 +9,7 @@ import FortunePaper from './FortunePaper';
 import { CookieState, CookieBreakMethod, Fortune } from '@/types/fortune';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useShakeDetection } from '@/hooks/useShakeDetection';
+import { useCookieInteraction } from '@/hooks/useCookieInteraction';
 import { trackCookieBreak, trackFortuneReveal } from '@/lib/analytics';
 import MuteToggle from '@/components/ui/MuteToggle';
 
@@ -20,21 +21,12 @@ interface FortuneCookieProps {
 }
 
 export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewCollection = false }: FortuneCookieProps) {
-  const DOUBLE_TAP_THRESHOLD_MS = 300;
-
   const [cookieState, setCookieState] = useState<CookieState>('idle');
   const [breakMethod, setBreakMethod] = useState<CookieBreakMethod | null>(null);
-  const [longPressProgress, setLongPressProgress] = useState(0);
   const [currentFortune, setCurrentFortune] = useState<Fortune | null>(fortune);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const clickCountRef = useRef(0);
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const lastTapRef = useRef(0);
   const isBreakingRef = useRef(false);
-  const isDraggingRef = useRef(false);
-  const dragStartPosRef = useRef({ x: 0, y: 0 });
 
   const x = useMotionValue(0);
   const controls = useAnimation();
@@ -86,103 +78,8 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
     }, [cookieState, triggerBreak]),
   });
 
-  // Click interaction: 3 clicks to break
-  const handleClick = useCallback(() => {
-    // Ignore click if we just finished a drag
-    if (isDraggingRef.current) {
-      isDraggingRef.current = false;
-      return;
-    }
-    if (cookieState !== 'idle' && cookieState !== 'crack-1' && cookieState !== 'crack-2') return;
-
-    // Request DeviceMotion permission on first click (iOS requires user gesture from click/touchend)
-    enableShake();
-
-    // Check for double tap
-    const now = Date.now();
-    if (now - lastTapRef.current < DOUBLE_TAP_THRESHOLD_MS) {
-      lastTapRef.current = 0;
-      triggerBreak('doubletap');
-      return;
-    }
-    lastTapRef.current = now;
-
-    clickCountRef.current += 1;
-
-    if (clickCountRef.current === 1) {
-      setCookieState('crack-1');
-      play('crack1');
-    } else if (clickCountRef.current === 2) {
-      setCookieState('crack-2');
-      play('crack2');
-    } else if (clickCountRef.current >= 3) {
-      triggerBreak('click');
-    }
-  }, [cookieState, triggerBreak, play, enableShake]);
-
-  // Long press interaction
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (cookieState === 'broken' || cookieState === 'revealed' || cookieState === 'breaking') return;
-
-    dragStartPosRef.current = { x: e.clientX, y: e.clientY };
-    isDraggingRef.current = false;
-
-    setLongPressProgress(0);
-    const startTime = Date.now();
-
-    longPressIntervalRef.current = setInterval(() => {
-      // Cancel long press if dragging
-      if (isDraggingRef.current) {
-        if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
-        setLongPressProgress(0);
-        return;
-      }
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / 1500, 1);
-      setLongPressProgress(progress);
-
-      if (progress >= 1) {
-        if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
-        if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-        triggerBreak('longpress');
-      }
-    }, 50);
-
-    longPressTimerRef.current = setTimeout(() => {
-      // Handled in interval above
-    }, 1500);
-  }, [cookieState, triggerBreak]);
-
-  const handlePointerUp = useCallback(() => {
-    if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
-    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-    setLongPressProgress(0);
-  }, []);
-
-  // Drag interaction
-  const handleDragStart = useCallback(() => {
-    isDraggingRef.current = true;
-    // Cancel long press when dragging starts
-    if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
-    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-    setLongPressProgress(0);
-  }, []);
-
-  const handleDragEnd = useCallback(
-    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-      if (cookieState === 'broken' || cookieState === 'revealed' || cookieState === 'breaking') return;
-
-      const velocity = Math.abs(info.velocity.x) + Math.abs(info.velocity.y);
-      const distance = Math.abs(info.offset.x) + Math.abs(info.offset.y);
-
-      if (velocity > 300 || distance > 120) {
-        triggerBreak('drag');
-      } else {
-        controls.start({ x: 0, y: 0, transition: { type: 'spring', stiffness: 300 } });
-      }
-    },
-    [cookieState, triggerBreak, controls]
-  );
+  const { longPressProgress, handleClick, handlePointerDown, handlePointerUp, handleDragStart, handleDragEnd, resetInteraction } =
+    useCookieInteraction({ cookieState, triggerBreak, play, enableShake, setCookieState, controls });
 
   // Reset
   const handleReset = useCallback(() => {
@@ -190,12 +87,11 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
     setCookieState('idle');
     setBreakMethod(null);
     setCurrentFortune(null);
-    setLongPressProgress(0);
-    clickCountRef.current = 0;
+    resetInteraction();
     isBreakingRef.current = false;
     x.set(0);
     controls.start({ x: 0, y: 0 });
-  }, [controls, x]);
+  }, [controls, x, resetInteraction]);
 
   // Auto-scroll to fortune result on reveal
   useEffect(() => {
@@ -213,14 +109,6 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
       setCurrentFortune(fortune);
     }
   }, [fortune, currentFortune]);
-
-  // Cleanup timers on unmount
-  useEffect(() => {
-    return () => {
-      if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
-      if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-    };
-  }, []);
 
   const isInteractive = cookieState !== 'broken' && cookieState !== 'revealed' && cookieState !== 'breaking';
 
