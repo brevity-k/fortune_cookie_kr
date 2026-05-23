@@ -42,6 +42,7 @@ export default function CompatibilityClient() {
 
     const yA = parseInt(yearA, 10);
     const yB = parseInt(yearB, 10);
+    if (isNaN(yA) || yA < 1900 || yA > 2025 || isNaN(yB) || yB < 1900 || yB > 2025) return;
     const s = getCompatibilityScore(nameA.trim(), yA, nameB.trim(), yB);
     const [fA, fB] = getCompatibilityFortunes(allFortunes, nameA.trim(), yA, nameB.trim(), yB);
 
@@ -81,7 +82,9 @@ export default function CompatibilityClient() {
     const text = `🥠💕 궁합 포춘쿠키 결과\n\n${nameA} ❤️ ${nameB} = ${score}%\n${getScoreEmoji(score)} ${getScoreMessage(score)}\n\nhttps://fortunecookie.ai.kr/compatibility`;
     try {
       await navigator.clipboard.writeText(text);
-    } catch {}
+    } catch {
+      alert('결과를 복사하지 못했습니다.');
+    }
   };
 
   return (
