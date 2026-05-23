@@ -1,26 +1,34 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useFortuneCollection } from '@/hooks/useFortuneCollection';
-import { allFortunes } from '@/data/fortunes';
-import { CATEGORIES } from '@/types/fortune';
+import { CATEGORIES, Fortune } from '@/types/fortune';
 import { getRatingStars, getRatingLabel } from '@/lib/fortune-selector';
+import { collectionDataAction } from '@/app/fortune-actions';
 
 export default function CollectionClient() {
   const { collectedIds, count } = useFortuneCollection();
-  const total = allFortunes.length;
+  const [collectionData, setCollectionData] = useState<{
+    total: number;
+    collected: Fortune[];
+    categoryTotals: Record<string, number>;
+  } | null>(null);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { collectionDataAction(collectedIds).then(setCollectionData); }, [count]);
+
+  const total = collectionData?.total ?? 0;
   const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+  const collectedFortunes = collectionData?.collected ?? [];
 
-  const collectedFortunes = allFortunes.filter((f) => collectedIds.includes(f.id));
-
-  // Group by category
   const grouped = CATEGORIES.map((cat) => ({
     ...cat,
     fortunes: collectedFortunes.filter((f) => f.category === cat.key),
-    total: allFortunes.filter((f) => f.category === cat.key).length,
+    total: collectionData?.categoryTotals[cat.key] ?? 0,
   }));
 
   return (
