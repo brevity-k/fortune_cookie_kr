@@ -20,6 +20,8 @@ interface FortuneCookieProps {
 }
 
 export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewCollection = false }: FortuneCookieProps) {
+  const DOUBLE_TAP_THRESHOLD_MS = 300;
+
   const [cookieState, setCookieState] = useState<CookieState>('idle');
   const [breakMethod, setBreakMethod] = useState<CookieBreakMethod | null>(null);
   const [longPressProgress, setLongPressProgress] = useState(0);
@@ -98,7 +100,7 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
 
     // Check for double tap
     const now = Date.now();
-    if (now - lastTapRef.current < 300) {
+    if (now - lastTapRef.current < DOUBLE_TAP_THRESHOLD_MS) {
       lastTapRef.current = 0;
       triggerBreak('doubletap');
       return;
@@ -211,6 +213,14 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
       setCurrentFortune(fortune);
     }
   }, [fortune, currentFortune]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
+      if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+    };
+  }, []);
 
   const isInteractive = cookieState !== 'broken' && cookieState !== 'revealed' && cookieState !== 'breaking';
 
