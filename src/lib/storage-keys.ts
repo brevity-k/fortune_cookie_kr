@@ -11,4 +11,5 @@ export const STORAGE_KEYS = {
   SAJU_AI_PREFIX: 'saju_ai_',
   ASTRO_PROFILE: 'astro_profile',
   ASTRO_AI_PREFIX: 'astro_ai_',
+  SAJU_PROFILE: 'saju_profile',
 } as const;

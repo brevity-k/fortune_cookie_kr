@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
+import { RATING_LABELS } from '@/lib/fortune-selector';
 
 export const runtime = 'edge';
 
@@ -23,8 +24,7 @@ export async function GET(req: NextRequest) {
   const isCompact = width <= 800;
 
   const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
-  const labels: Record<number, string> = { 1: '흉', 2: '소흉', 3: '평', 4: '소길', 5: '대길' };
-  const ratingLabel = labels[rating] || '평';
+  const ratingLabel = RATING_LABELS[rating] || '평';
 
   if (isCompact) {
     // Compact landscape layout for Kakao/OG share cards

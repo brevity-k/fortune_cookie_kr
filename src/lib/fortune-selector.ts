@@ -163,17 +163,18 @@ export function getCompatibilityFortunes(
   return [fortunes[idxA], fortunes[idxB]];
 }
 
+export const RATING_LABELS: Record<number, string> = {
+  1: '흉',
+  2: '소흉',
+  3: '평',
+  4: '소길',
+  5: '대길',
+};
+
 export function getRatingStars(rating: number): string {
   return '★'.repeat(rating) + '☆'.repeat(5 - rating);
 }
 
 export function getRatingLabel(rating: number): string {
-  const labels: Record<number, string> = {
-    1: '흉',
-    2: '소흉',
-    3: '평',
-    4: '소길',
-    5: '대길',
-  };
-  return labels[rating] || '평';
+  return RATING_LABELS[rating] || '평';
 }
