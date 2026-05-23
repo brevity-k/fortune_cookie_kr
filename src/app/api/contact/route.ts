@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { contactRatelimit } from '@/lib/rate-limit';
 
 const OWNER_EMAIL = 'fortune0.kr@gmail.com';
 const FROM_EMAIL = 'Fortune Cookie <onboarding@resend.dev>';
@@ -15,6 +16,21 @@ export async function POST(request: Request) {
         { error: '이메일 서비스가 설정되지 않았습니다.' },
         { status: 503 }
       );
+    }
+
+    // Rate limit by IP (5 req/hour) — skipped if Upstash not configured
+    if (contactRatelimit) {
+      const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+      if (!ip) {
+        return NextResponse.json({ error: '요청을 처리할 수 없습니다.' }, { status: 403 });
+      }
+      const { success, reset } = await contactRatelimit.limit(ip);
+      if (!success) {
+        return NextResponse.json(
+          { error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
+          { status: 429, headers: { 'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString() } },
+        );
+      }
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY);
