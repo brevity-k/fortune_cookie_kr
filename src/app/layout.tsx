@@ -71,6 +71,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const isValidGaId = gaId && /^G-[A-Z0-9]+$/.test(gaId);
+
   return (
     <html lang="ko" translate="no">
       <head>
@@ -102,11 +105,11 @@ export default function RootLayout({
           {children}
           <AdSenseScript />
         </AdsProvider>
-        {process.env.NEXT_PUBLIC_GA_ID && (
+        {isValidGaId && (
           <>
             <Script
               id="gtag"
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
               strategy="afterInteractive"
             />
             <Script
@@ -117,7 +120,7 @@ export default function RootLayout({
                   window.dataLayer = window.dataLayer || [];
                   function gtag(){dataLayer.push(arguments);}
                   gtag('js', new Date());
-                  gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+                  gtag('config', '${gaId}');
                 `,
               }}
             />
