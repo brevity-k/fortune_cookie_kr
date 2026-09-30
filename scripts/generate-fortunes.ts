@@ -144,7 +144,7 @@ ${existingMessages.map((m) => `- ${m}`).join('\n')}
   const response = await withRetry(() =>
     client.messages.create({
       model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 4000,
+      max_tokens: 8192,
       messages: [{ role: 'user', content: prompt }],
     })
   );
