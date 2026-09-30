@@ -27,9 +27,13 @@ export function saveSajuProfile(birthInfo: BirthInfo): SajuProfile {
 
   if (typeof window !== 'undefined') {
     const json = JSON.stringify(profile);
-    localStorage.setItem(STORAGE_KEYS.SAJU_PROFILE, json);
     cachedRaw = json;
     cachedProfile = profile;
+    try {
+      localStorage.setItem(STORAGE_KEYS.SAJU_PROFILE, json);
+    } catch {
+      // localStorage unavailable (Safari private mode, quota) — profile lives in memory only
+    }
   }
 
   return profile;
@@ -37,7 +41,13 @@ export function saveSajuProfile(birthInfo: BirthInfo): SajuProfile {
 
 export function getSajuProfile(): SajuProfile | null {
   if (typeof window === 'undefined') return null;
-  const raw = localStorage.getItem(STORAGE_KEYS.SAJU_PROFILE);
+  let raw: string | null;
+  try {
+    raw = localStorage.getItem(STORAGE_KEYS.SAJU_PROFILE);
+  } catch {
+    // localStorage unavailable — fall back to the in-memory copy from saveSajuProfile
+    return cachedProfile;
+  }
   if (!raw) {
     cachedRaw = null;
     cachedProfile = null;
@@ -57,7 +67,11 @@ export function getSajuProfile(): SajuProfile | null {
 
 export function clearSajuProfile(): void {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem(STORAGE_KEYS.SAJU_PROFILE);
+    try {
+      localStorage.removeItem(STORAGE_KEYS.SAJU_PROFILE);
+    } catch {
+      // localStorage unavailable
+    }
     cachedRaw = null;
     cachedProfile = null;
   }
