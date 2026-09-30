@@ -1,22 +1,21 @@
-// Centralized environment variable validation for API routes.
+// Centralized environment configuration.
 
-export function getValidatedEnv<T extends string>(
-  key: T,
-  opts?: { prefix?: string }
-): string | null {
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.kr';
+
+function getValidatedEnv(key: string, prefix: string): string | null {
   const value = process.env[key];
   if (!value) return null;
-  if (opts?.prefix && !value.startsWith(opts.prefix)) {
-    console.error(`Invalid ${key}: expected prefix "${opts.prefix}"`);
+  if (!value.startsWith(prefix)) {
+    console.error(`Invalid ${key}: expected prefix "${prefix}"`);
     return null;
   }
   return value;
 }
 
 export function getAnthropicKey(): string | null {
-  return getValidatedEnv('ANTHROPIC_API_KEY', { prefix: 'sk-ant-' });
+  return getValidatedEnv('ANTHROPIC_API_KEY', 'sk-ant-');
 }
 
 export function getResendKey(): string | null {
-  return getValidatedEnv('RESEND_API_KEY', { prefix: 're_' });
+  return getValidatedEnv('RESEND_API_KEY', 're_');
 }

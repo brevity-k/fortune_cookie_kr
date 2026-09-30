@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { contactRatelimit } from '@/lib/rate-limit';
+import { getResendKey, SITE_URL } from '@/lib/env';
+import { enforceRateLimit } from '@/lib/api-helpers';
 
 const OWNER_EMAIL = 'fortune0.kr@gmail.com';
 const FROM_EMAIL = 'Fortune Cookie <onboarding@resend.dev>';
@@ -11,37 +13,25 @@ function isValidEmail(email: string): boolean {
 
 export async function POST(request: Request) {
   try {
-    if (!process.env.RESEND_API_KEY) {
+    const resendKey = getResendKey();
+    if (!resendKey) {
       return NextResponse.json(
         { error: '이메일 서비스가 설정되지 않았습니다.' },
         { status: 503 }
       );
     }
 
-    // Rate limit by IP (5 req/hour) — skipped if Upstash not configured
-    if (contactRatelimit) {
-      const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-      if (!ip) {
-        return NextResponse.json({ error: '요청을 처리할 수 없습니다.' }, { status: 403 });
-      }
-      const { success, reset } = await contactRatelimit.limit(ip);
-      if (!success) {
-        return NextResponse.json(
-          { error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
-          { status: 429, headers: { 'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString() } },
-        );
-      }
-    }
+    // 5 req/hour per IP
+    const limited = await enforceRateLimit(request, contactRatelimit, '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.');
+    if (limited) return limited;
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const body = await request.json();
-    const { name, email, message } = body as {
-      name: string;
-      email: string;
-      message: string;
-    };
+    const resend = new Resend(resendKey);
+    const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+    const name = typeof body?.name === 'string' ? body.name : '';
+    const email = typeof body?.email === 'string' ? body.email.trim() : '';
+    const message = typeof body?.message === 'string' ? body.message : '';
 
-    if (!name?.trim() || !email?.trim() || !message?.trim()) {
+    if (!name.trim() || !email || !message.trim()) {
       return NextResponse.json(
         { error: '모든 항목을 입력해주세요.' },
         { status: 400 }
@@ -67,7 +57,7 @@ export async function POST(request: Request) {
       resend.emails.send({
         from: FROM_EMAIL,
         to: OWNER_EMAIL,
-        subject: `포춘쿠키 문의: ${name}`,
+        subject: `포춘쿠키 문의: ${name.replace(/\s+/g, ' ').trim()}`,
         html: `
           <div style="font-family: 'Noto Sans KR', sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
             <h2 style="color: #D4A574; border-bottom: 2px solid #D4A574; padding-bottom: 12px;">
@@ -92,7 +82,8 @@ export async function POST(request: Request) {
           </div>
         `,
       }),
-      // Send auto-reply to the sender
+      // Auto-reply to the sender. It goes to an unverified address, so it must not echo
+      // any user-supplied text (otherwise the form becomes a spam relay).
       resend.emails.send({
         from: FROM_EMAIL,
         to: email,
@@ -106,18 +97,14 @@ export async function POST(request: Request) {
               문의가 접수되었습니다
             </h2>
             <p style="color: #333; line-height: 1.8;">
-              안녕하세요, <strong>${escapeHtml(name)}</strong>님!<br><br>
+              안녕하세요!<br><br>
               포춘쿠키에 문의해 주셔서 감사합니다.<br>
               보내주신 내용을 확인 후 <strong>평일 기준 1~2영업일 이내</strong>에 답변 드리겠습니다.
             </p>
-            <div style="margin: 24px 0; padding: 16px; background: #f9f5f0; border-radius: 8px;">
-              <p style="margin: 0 0 8px; font-weight: bold; color: #888; font-size: 13px;">보내주신 내용</p>
-              <p style="margin: 0; color: #555; white-space: pre-wrap; line-height: 1.6;">${escapeHtml(message)}</p>
-            </div>
             <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
             <p style="color: #999; font-size: 13px; text-align: center;">
               이 메일은 자동 발송된 메일입니다.<br>
-              <a href="https://fortunecookie.ai.kr" style="color: #D4A574;">fortunecookie.ai.kr</a>
+              <a href="${SITE_URL}" style="color: #D4A574;">${new URL(SITE_URL).host}</a>
             </p>
           </div>
         `,

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
 import { sajuAIRatelimit } from '@/lib/rate-limit';
+import { getAnthropicKey } from '@/lib/env';
+import { enforceRateLimit, generateJsonInterpretation } from '@/lib/api-helpers';
 import type { SajuChart, SajuAIInterpretation } from '@/lib/saju/types';
 import {
   STEMS_HANJA,
@@ -110,8 +111,13 @@ function isValidChart(data: unknown): data is SajuChart {
     if (!isInteger(counts[el]) || (counts[el] as number) < 0 || (counts[el] as number) > 20) return false;
   }
 
-  // Validate majorLuckCycles — must be array, capped at 20
+  // Validate majorLuckCycles — must be array, capped at 20, every entry interpolated into the prompt is numeric
   if (!Array.isArray(chart.majorLuckCycles) || chart.majorLuckCycles.length > 20) return false;
+  for (const cycle of chart.majorLuckCycles as unknown[]) {
+    if (!isValidPillar(cycle)) return false;
+    const age = (cycle as Record<string, unknown>).startAge;
+    if (!isInteger(age) || age < 0 || age > 150) return false;
+  }
 
   return true;
 }
@@ -134,26 +140,19 @@ const SYSTEM_PROMPT = `당신은 한국 전통 사주명리학 전문가입니�
 - 긍정적이고 실용적인 조언 위주
 - 각 항목 2-4문장, 전체 500-800자`;
 
+const REQUIRED_KEYS: readonly (keyof SajuAIInterpretation)[] = [
+  'personality', 'career', 'relationships', 'health', 'currentLuck', 'advice',
+];
+
 export async function POST(request: Request) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = getAnthropicKey();
   if (!apiKey) {
     return NextResponse.json({ error: 'AI 서비스가 현재 이용 불가합니다.' }, { status: 503 });
   }
 
-  // Rate limit by IP (10 req/day) — skipped if Upstash not configured
-  if (sajuAIRatelimit) {
-    const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-    if (!ip) {
-      return NextResponse.json({ error: '요청을 처리할 수 없습니다.' }, { status: 403 });
-    }
-    const { success, reset } = await sajuAIRatelimit.limit(ip);
-    if (!success) {
-      return NextResponse.json(
-        { error: '일일 요청 한도를 초과했습니다. 내일 다시 시도해주세요.' },
-        { status: 429, headers: { 'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString() } },
-      );
-    }
-  }
+  // 10 req/day per IP, shared with /api/astro/interpret
+  const limited = await enforceRateLimit(request, sajuAIRatelimit, '일일 요청 한도를 초과했습니다. 내일 다시 시도해주세요.');
+  if (limited) return limited;
 
   let body: unknown;
   try {
@@ -166,59 +165,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: '유효하지 않은 사주 데이터입니다.' }, { status: 400 });
   }
 
-  const description = buildSajuDescription(body);
-
-  const client = new Anthropic({ apiKey });
-
-  // Retry up to 2 times for transient errors (overloaded, network)
-  let lastError: unknown;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const message = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2048,
-        temperature: 0.7,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: `다음 사주를 해석해주세요.\n\n${description}` }],
-      });
-
-      const text = message.content[0]?.type === 'text' ? message.content[0].text : '';
-      const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-      const interpretation: SajuAIInterpretation = JSON.parse(cleaned);
-
-      // Validate required fields + length cap
-      const required = ['personality', 'career', 'relationships', 'health', 'currentLuck', 'advice'] as const;
-      for (const key of required) {
-        if (typeof interpretation[key] !== 'string' || !interpretation[key] || interpretation[key].length > 1000) {
-          return NextResponse.json({ error: 'AI 응답 형식 오류입니다. 다시 시도해주세요.' }, { status: 500 });
-        }
-      }
-
-      return NextResponse.json({ interpretation });
-    } catch (error) {
-      lastError = error;
-      if (error instanceof Anthropic.RateLimitError) {
-        return NextResponse.json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }, { status: 429 });
-      }
-      if (error instanceof Anthropic.AuthenticationError) {
-        return NextResponse.json({ error: 'AI 서비스 인증 오류입니다.' }, { status: 503 });
-      }
-      // Retry on overloaded (529) or server errors
-      const status = (error as { status?: number }).status;
-      if (status === 529 || status === 500 || status === 502 || status === 503) {
-        if (attempt < 2) {
-          await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
-          continue;
-        }
-      }
-      break;
-    }
-  }
-
-  console.error('Saju AI error:', lastError);
-  const status = (lastError as { status?: number }).status;
-  if (status === 529) {
-    return NextResponse.json({ error: 'AI 서버가 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요.' }, { status: 503 });
-  }
-  return NextResponse.json({ error: 'AI 해석 중 오류가 발생했습니다. 다시 시도해주세요.' }, { status: 500 });
+  return generateJsonInterpretation({
+    apiKey,
+    system: SYSTEM_PROMPT,
+    prompt: `다음 사주를 해석해주세요.\n\n${buildSajuDescription(body)}`,
+    requiredKeys: REQUIRED_KEYS,
+    logLabel: 'Saju AI error',
+  });
 }
