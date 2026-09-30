@@ -1,10 +1,9 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
-import { Fortune } from '@/types/fortune';
+import { useCallback } from 'react';
+import { Fortune, CATEGORY_LABELS } from '@/types/fortune';
 import { RATING_LABELS } from '@/lib/fortune-selector';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.kr';
+import { SITE_URL } from '@/lib/env';
 
 export function useShareFortune() {
   const shareViaKakao = useCallback((fortune: Fortune, giftUrl?: string) => {
@@ -70,6 +69,26 @@ export function useShareFortune() {
     }
   }, []);
 
+  /** Shares a /gift link that opens this exact fortune for the recipient. Returns 'shared' | 'copied' | 'failed'. */
+  const shareGift = useCallback(async (fortune: Fortune): Promise<'shared' | 'copied' | 'failed'> => {
+    const giftUrl = `${SITE_URL}/gift/${encodeURIComponent(fortune.id)}`;
+    const text = '🎁 포춘쿠키를 선물했어요! 쿠키를 깨고 운세를 확인해보세요.';
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: '선물 포춘쿠키', text, url: giftUrl });
+        return 'shared';
+      } catch (error) {
+        if ((error as Error).name === 'AbortError') return 'failed';
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${text}\n${giftUrl}`);
+      return 'copied';
+    } catch {
+      return 'failed';
+    }
+  }, []);
+
   const shareViaTwitter = useCallback((fortune: Fortune) => {
     const text = encodeURIComponent(fortune.shareText);
     const url = encodeURIComponent(SITE_URL);
@@ -81,22 +100,19 @@ export function useShareFortune() {
   }, []);
 
   const downloadCard = useCallback(async (fortune: Fortune, streak: number = 0) => {
-    const categoryLabels: Record<string, string> = {
-      general: '총운', love: '사랑운', career: '재물운',
-      health: '건강운', study: '학업운', relationship: '대인운',
-    };
     const params = new URLSearchParams({
       message: fortune.message,
       rating: String(fortune.rating),
       emoji: fortune.emoji,
       luckyNumber: String(fortune.luckyNumber),
       luckyColor: fortune.luckyColor,
-      category: categoryLabels[fortune.category] || '총운',
+      category: CATEGORY_LABELS[fortune.category] || '총운',
       streak: String(streak),
     });
 
     try {
       const res = await fetch(`/api/fortune-card?${params}`);
+      if (!res.ok) throw new Error(`fortune-card ${res.status}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -112,14 +128,12 @@ export function useShareFortune() {
     }
   }, []);
 
-  const canWebShare = useMemo(() => typeof navigator !== 'undefined' && 'share' in navigator, []);
-
   return {
     shareViaKakao,
     shareViaWebShare,
     copyToClipboard,
     shareViaTwitter,
+    shareGift,
     downloadCard,
-    canWebShare,
   };
 }
