@@ -47,3 +47,7 @@ next-env.d.ts
 
 # OMC agent local state
 .omc/
+
+# Local-only assistant config (never push)
+CLAUDE.md
+.claude/
