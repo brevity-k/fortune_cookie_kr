@@ -11,9 +11,10 @@ interface FortuneShareProps {
 }
 
 export default function FortuneShare({ fortune, streak = 0 }: FortuneShareProps) {
-  const { shareViaKakao, shareViaWebShare, copyToClipboard, shareViaTwitter, downloadCard } =
+  const { shareViaKakao, shareViaWebShare, copyToClipboard, shareViaTwitter, shareGift, downloadCard } =
     useShareFortune();
   const [copied, setCopied] = useState(false);
+  const [giftCopied, setGiftCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [kakaoSharing, setKakaoSharing] = useState(false);
 
@@ -36,8 +37,24 @@ export default function FortuneShare({ fortune, streak = 0 }: FortuneShareProps)
     }
   };
 
+  const handleGift = async () => {
+    trackShare('gift');
+    if ((await shareGift(fortune)) === 'copied') {
+      setGiftCopied(true);
+      setTimeout(() => setGiftCopied(false), 2000);
+    }
+  };
+
   return (
     <div className="flex flex-wrap justify-center gap-3 mt-6">
+      {/* Gift link — recipient opens a cookie containing this exact fortune */}
+      <button
+        onClick={handleGift}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-cookie-gold/20 border border-cookie-gold/30 text-cookie-gold text-sm font-medium hover:bg-cookie-gold/30 transition"
+      >
+        🎁 {giftCopied ? '선물 링크 복사됨!' : '친구에게 선물하기'}
+      </button>
+
       {/* Kakao Share */}
       <button
         onClick={handleKakaoShare}
