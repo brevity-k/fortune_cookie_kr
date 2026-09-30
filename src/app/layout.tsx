@@ -5,6 +5,8 @@ import KakaoScript from "@/components/KakaoScript";
 import { AdsProvider } from "@/components/ads/AdsContext";
 import AdSenseScript from "@/components/ads/AdSenseScript";
 import "./globals.css";
+import { SITE_URL } from "@/lib/env";
+import JsonLd from "@/components/seo/JsonLd";
 
 const notoSansKr = Noto_Sans_KR({
   variable: "--font-noto-sans-kr",
@@ -19,7 +21,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://fortunecookie.ai.kr"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "포춘쿠키 - 오늘의 운세 | 무료 포춘쿠키 운세",
     template: "%s | 포춘쿠키",
@@ -83,22 +85,19 @@ export default function RootLayout({
       </head>
       <body className={`${notoSansKr.variable} antialiased`}>
         {/* JSON-LD in body to avoid hydration mismatch from script injection in head */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'WebSite',
-              name: '포춘쿠키 - 오늘의 운세',
-              url: process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.kr',
-              description: '포춘쿠키를 깨고 오늘의 운세를 확인하세요! 사랑운, 재물운, 건강운, 학업운, 대인운 등 다양한 카테고리의 무료 운세를 매일 새롭게 만나보세요.',
-              inLanguage: 'ko',
-              potentialAction: {
-                '@type': 'SearchAction',
-                target: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.kr'}/fortune/{category}`,
-                'query-input': 'required name=category',
-              },
-            }),
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: '포춘쿠키 - 오늘의 운세',
+            url: SITE_URL,
+            description: '포춘쿠키를 깨고 오늘의 운세를 확인하세요! 사랑운, 재물운, 건강운, 학업운, 대인운 등 다양한 카테고리의 무료 운세를 매일 새롭게 만나보세요.',
+            inLanguage: 'ko',
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: `${SITE_URL}/fortune/{category}`,
+              'query-input': 'required name=category',
+            },
           }}
         />
         <AdsProvider>

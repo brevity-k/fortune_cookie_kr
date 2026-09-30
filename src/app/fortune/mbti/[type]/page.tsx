@@ -7,6 +7,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import MBTISelector from "@/components/fortune/MBTISelector";
 import SEOContentServer from "@/components/seo/SEOContentServer";
+import JsonLd from "@/components/seo/JsonLd";
 
 type PageProps = {
   params: Promise<{ type: string }>;
@@ -52,7 +53,7 @@ function FaqJsonLd({ mbtiKey }: { mbtiKey: string }) {
       acceptedAnswer: { "@type": "Answer", text: item.a },
     })),
   };
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />;
+  return <JsonLd data={jsonLd} />;
 }
 
 export default async function MBTIPage({ params }: PageProps) {

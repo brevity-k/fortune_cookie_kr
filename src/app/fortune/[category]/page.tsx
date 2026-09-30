@@ -8,6 +8,7 @@ import Footer from "@/components/layout/Footer";
 import CategorySelector from "@/components/fortune/CategorySelector";
 import SEOContentServer from "@/components/seo/SEOContentServer";
 import Link from "next/link";
+import JsonLd from "@/components/seo/JsonLd";
 
 type PageProps = {
   params: Promise<{ category: string }>;
@@ -54,10 +55,7 @@ function FaqJsonLd({ category }: { category: string }) {
     })),
   };
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
+    <JsonLd data={jsonLd} />
   );
 }
 
