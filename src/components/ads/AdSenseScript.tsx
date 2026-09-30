@@ -11,6 +11,7 @@ export default function AdSenseScript() {
   // Starts false so the script never renders on the initial synchronous pass.
   // React runs children's effects before siblings, so SuppressAds (in children)
   // sets suppressed=true before this effect fires.
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- the deferred render is the point
   useEffect(() => { setReady(true); }, []);
 
   if (!process.env.NEXT_PUBLIC_ADSENSE_CLIENT || !ready || suppressed) {

@@ -23,6 +23,8 @@ export function useSoundEffects() {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.MUTED);
       if (stored === 'true') {
+        // Read after mount (not in the useState initializer) to keep SSR/hydration output identical.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsMuted(true);
       }
     } catch {
@@ -30,8 +32,9 @@ export function useSoundEffects() {
     }
 
     // Preload sounds
+    const sounds = soundsRef.current;
     Object.entries(SOUNDS).forEach(([name, src]) => {
-      soundsRef.current[name] = new Howl({
+      sounds[name] = new Howl({
         src: [src],
         volume: 0.5,
         preload: true,
@@ -39,7 +42,7 @@ export function useSoundEffects() {
     });
 
     return () => {
-      Object.values(soundsRef.current).forEach((sound) => sound.unload());
+      Object.values(sounds).forEach((sound) => sound.unload());
     };
   }, []);
 

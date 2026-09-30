@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
+
+const subscribe = () => () => {};
+const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 export default function InteractionHint() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
-  }, []);
+  // Server snapshot is false so hydration matches; the client re-renders with the real value.
+  const isMobile = useSyncExternalStore(subscribe, isTouchDevice, () => false);
 
   return (
     <div className="flex flex-wrap justify-center gap-3 mt-6 animate-fade-in-up">

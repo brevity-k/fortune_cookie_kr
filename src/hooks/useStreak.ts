@@ -18,7 +18,12 @@ function loadStreak(): StreakData {
   }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (typeof parsed?.lastVisitDate === 'string' && Number.isFinite(parsed.currentStreak)) {
+        return { maxStreak: 0, ...parsed };
+      }
+    }
   } catch {}
   return { lastVisitDate: '', currentStreak: 0, maxStreak: 0 };
 }
@@ -33,6 +38,8 @@ export function useStreak() {
   const [streak, setStreak] = useState<StreakData>({ lastVisitDate: '', currentStreak: 0, maxStreak: 0 });
 
   useEffect(() => {
+    // Read after mount (not in the useState initializer) to keep SSR/hydration output identical.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStreak(loadStreak());
   }, []);
 

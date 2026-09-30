@@ -9,7 +9,10 @@ function loadCollection(): string[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.filter((id): id is string => typeof id === 'string');
+    }
   } catch {}
   return [];
 }
@@ -24,6 +27,8 @@ export function useFortuneCollection() {
   const [collectedIds, setCollectedIds] = useState<string[]>([]);
 
   useEffect(() => {
+    // Read after mount (not in the useState initializer) to keep SSR/hydration output identical.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCollectedIds(loadCollection());
   }, []);
 

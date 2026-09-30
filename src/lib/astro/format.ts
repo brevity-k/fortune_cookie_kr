@@ -1,6 +1,5 @@
 import type { PlanetPosition, Aspect, NatalChart } from './types';
 import { ZODIAC_SYMBOLS, PLANET_SYMBOLS, ZODIAC_KOREAN, PLANET_KOREAN, ASPECT_KOREAN } from './constants';
-import type { AspectType } from './types';
 
 export interface FormattedPlanet {
   planet: string;
