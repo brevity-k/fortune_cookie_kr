@@ -25,6 +25,7 @@ import {
   atomicWriteFile,
 } from './utils/json';
 import { readExistingFortunes, getCategoryFilePath } from './utils/fortune-file';
+import { getKstDateParts } from './utils/date';
 
 const SEASONAL_CONFIG = {
   'new-year': {
@@ -91,9 +92,7 @@ function saveState(state: SeasonalState): void {
 }
 
 function getUpcomingSeason(): Season | null {
-  const now = new Date();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
+  const { month, day } = getKstDateParts();
 
   for (const [season, config] of Object.entries(SEASONAL_CONFIG)) {
     // Check if we're within the season window (startDay of startMonth to end of last month)
@@ -151,7 +150,7 @@ JSON 배열만 출력. 마크다운 코드 블록 없이.`;
   const response = await withRetry(() =>
     client.messages.create({
       model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 4000,
+      max_tokens: 8192,
       messages: [{ role: 'user', content: prompt }],
     })
   );
@@ -264,7 +263,7 @@ async function main() {
   }
 
   const season = getUpcomingSeason();
-  const year = String(new Date().getFullYear());
+  const year = String(getKstDateParts().year);
 
   console.log('');
   console.log('========================================');

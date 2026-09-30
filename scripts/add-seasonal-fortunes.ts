@@ -15,6 +15,8 @@
  * 누락된 시즌 콘텐츠에 대한 가이드를 제공합니다.
  */
 
+import { getKstDateParts } from './utils/date';
+
 const SEASONAL_CONFIG = {
   'new-year': {
     months: [1, 2],
@@ -49,7 +51,7 @@ const SEASONAL_CONFIG = {
 type Season = keyof typeof SEASONAL_CONFIG;
 
 function getCurrentSeason(): Season | null {
-  const month = new Date().getMonth() + 1;
+  const { month } = getKstDateParts();
   for (const [season, config] of Object.entries(SEASONAL_CONFIG)) {
     if ((config.months as readonly number[]).includes(month)) {
       return season as Season;
@@ -63,7 +65,7 @@ function main() {
 
   if (arg === 'check') {
     const currentSeason = getCurrentSeason();
-    const month = new Date().getMonth() + 1;
+    const { month } = getKstDateParts();
     console.log(`\n📅 현재 월: ${month}월`);
 
     if (currentSeason) {
