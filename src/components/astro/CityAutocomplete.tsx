@@ -90,13 +90,16 @@ interface Props {
 
 export default function CityAutocomplete({ value, onSelect }: Props) {
   const [query, setQuery] = useState(value);
+  const [syncedValue, setSyncedValue] = useState(value);
   const [open, setOpen] = useState(false);
   const [matches, setMatches] = useState<City[]>([]);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  // Reset the input when the parent's value changes (adjusting state during render avoids an extra effect pass)
+  if (value !== syncedValue) {
+    setSyncedValue(value);
     setQuery(value);
-  }, [value]);
+  }
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
