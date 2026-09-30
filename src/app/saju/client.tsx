@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useState, useCallback, useMemo, useSyncExternalStore } from 'react';
 import type { BirthInfo, SajuAIInterpretation } from '@/lib/saju/types';
 import { formatFourPillars } from '@/lib/saju/format';
 import { saveSajuProfile, getSajuProfile, clearSajuProfile } from '@/lib/saju/profile';
@@ -50,32 +50,30 @@ function cacheAI(info: BirthInfo, data: SajuAIInterpretation): void {
 export default function SajuDashboard() {
   const profile = useSyncExternalStore(subscribeToProfile, getProfileSnapshot, getServerSnapshot);
   const [localProfile, setLocalProfile] = useState<SajuProfile | null>(null);
-  const [aiInterpretation, setAiInterpretation] = useState<SajuAIInterpretation | null>(null);
+  // Result fetched this session, tagged with the profile it belongs to
+  const [fetchedAI, setFetchedAI] = useState<{ key: string; data: SajuAIInterpretation } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
   const currentProfile = localProfile ?? profile;
 
-  // Load cached AI result when profile changes
-  useEffect(() => {
-    if (currentProfile) {
-      const cached = getCachedAI(currentProfile.chart.birthInfo);
-      if (cached) setAiInterpretation(cached);
-    }
-  }, [currentProfile]);
+  // Derived per profile, so switching profiles never shows the previous person's reading
+  const profileKey = currentProfile ? getAICacheKey(currentProfile.chart.birthInfo) : null;
+  const cachedAI = useMemo(
+    () => (currentProfile ? getCachedAI(currentProfile.chart.birthInfo) : null),
+    [currentProfile],
+  );
+  const aiInterpretation = fetchedAI && fetchedAI.key === profileKey ? fetchedAI.data : cachedAI;
 
   const handleSubmit = useCallback((birthInfo: BirthInfo) => {
     const saved = saveSajuProfile(birthInfo);
     setLocalProfile(saved);
-    // Check cache for the new profile
-    const cached = getCachedAI(birthInfo);
-    if (cached) setAiInterpretation(cached);
   }, []);
 
   const handleReset = useCallback(() => {
     clearSajuProfile();
     setLocalProfile(null);
-    setAiInterpretation(null);
+    setFetchedAI(null);
     setAiLoading(false);
     setAiError(null);
   }, []);
@@ -101,7 +99,7 @@ export default function SajuDashboard() {
       }
 
       const { interpretation } = await res.json() as { interpretation: SajuAIInterpretation };
-      setAiInterpretation(interpretation);
+      setFetchedAI({ key: getAICacheKey(currentProfile.chart.birthInfo), data: interpretation });
       cacheAI(currentProfile.chart.birthInfo, interpretation);
       trackSajuAI('success');
     } catch (err) {
