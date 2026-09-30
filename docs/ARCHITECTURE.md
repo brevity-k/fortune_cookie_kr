@@ -19,7 +19,7 @@ Moved from `CLAUDE.md` on 2026-04-09 to reduce Claude Code session-start token c
 **client.tsx (클라이언트 위젯)에 포함할 것:**
 - `FortuneCookie` 인터랙션 (쿠키 깨기)
 - `FortuneShare` 공유 버튼
-- `useStreak`, `useFortuneCollection` 훅
+- `useFortuneBreak` 훅 (쿠키 깨기 → 운세 조회 + 스트릭 + 도감 등록 공통 흐름)
 - `useState`, `useCallback` 등 React 훅
 
 **금지 사항:**
@@ -35,10 +35,15 @@ Moved from `CLAUDE.md` on 2026-04-09 to reduce Claude Code session-start token c
 | 별자리 | `HoroscopeFortuneWidget` | `src/app/fortune/horoscope/[sign]/client.tsx` |
 | 띠별 | `ZodiacFortuneWidget` | `src/app/fortune/zodiac/[animal]/client.tsx` |
 | MBTI | `MBTIFortuneWidget` | `src/app/fortune/mbti/[type]/client.tsx` |
+| 선물 | `GiftFortuneWidget` | `src/app/gift/[id]/client.tsx` |
+| 궁합 | `CompatibilityWidget` | `src/app/compatibility/client.tsx` |
+| 도감 | `CollectionWidget` | `src/app/collection/client.tsx` |
 
 **셀렉터 컴포넌트**: `CategorySelector`, `HoroscopeSelector`, `ZodiacSelector`, `MBTISelector`는 모두 **서버 컴포넌트** (Link + 정적 데이터만 사용, `'use client'` 없음)
 
-**FAQ 컴포넌트**: 새 페이지에서는 `SEOContentServer`를 사용할 것 (`<details>/<summary>`, JS 불필요). `SEOContentSection`(useState 기반)은 레거시.
+**FAQ 컴포넌트**: 새 페이지에서는 `SEOContentServer`를 사용할 것 (`<details>/<summary>`, JS 불필요). 
+
+**JSON-LD**: 반드시 `src/components/seo/JsonLd.tsx`를 사용할 것 (`<`를 이스케이프하여 `</script>` 삽입 방지). `dangerouslySetInnerHTML`로 직접 넣지 말 것.
 
 **시즌 페이지**: `CategoryFortuneWidget`을 직접 import하여 사용 (시즌별 히어로 + 카테고리 위젯 조합)
 
@@ -71,7 +76,9 @@ Moved from `CLAUDE.md` on 2026-04-09 to reduce Claude Code session-start token c
 - `getTodayString()`: 오늘 날짜 → `"2026-2-12"` 형식
 - `getYesterdayString()`: 어제 날짜
 
-사용처: `useDailyFortune.ts`, `useStreak.ts`, `fortune-selector.ts` (5개 함수)
+**시간대**: 항상 KST(UTC+9) 기준으로 계산. 서버 액션은 Vercel에서 UTC로 실행되므로 로컬 시간을 쓰면 KST 00:00~09:00 사이에 서버의 "오늘"이 하루 늦어짐.
+
+사용처: `useStreak.ts`, `fortune-selector.ts` (일일 운세 시드)
 
 ---
 
@@ -79,7 +86,6 @@ Moved from `CLAUDE.md` on 2026-04-09 to reduce Claude Code session-start token c
 
 | 키 | 상수 | 사용 훅 |
 |----|------|---------|
-| `fortune_cookie_daily` | `STORAGE_KEYS.DAILY_FORTUNE` | `useDailyFortune` |
 | `fortune_cookie_streak` | `STORAGE_KEYS.STREAK` | `useStreak` |
 | `fortune_cookie_collection` | `STORAGE_KEYS.COLLECTION` | `useFortuneCollection` |
 | `fortune_cookie_muted` | `STORAGE_KEYS.MUTED` | `useSoundEffects` |
@@ -164,3 +170,16 @@ Moved from `CLAUDE.md` on 2026-04-09 to reduce Claude Code session-start token c
 | 시즌 운세 중복 생성 | 상태 파일에서 연도별 체크, 자동 스킵 | 상태 파일 수정 후 재실행 |
 | X API 크레딧 소진 | 402 에러 + 이슈 생성 | developer.x.com에서 크레딧 충전 |
 | X API 키 미설정 | 4개 키 사전 검증 → 조기 종료 | GitHub Secrets에 X_* 키 4개 설정 |
+
+---
+
+## API 보안 규칙
+
+- **Rate limit**: 유료/발송 API(`/api/saju/interpret`, `/api/astro/interpret`, `/api/contact`)는 반드시 `enforceRateLimit()`(`src/lib/api-helpers.ts`)를 거칠 것. Upstash 미설정 시 `src/lib/rate-limit.ts`가 인스턴스별 메모리 limiter로 대체 (약하지만 무제한 호출은 불가).
+- **프롬프트 입력**: 클라이언트가 보낸 차트 데이터 중 프롬프트에 들어가는 값은 모두 범위가 제한된 숫자로 검증 (자유 텍스트 금지).
+- **문의 자동응답**: 미검증 이메일 주소로 발송되므로 사용자가 입력한 텍스트(이름, 내용)를 절대 포함하지 말 것.
+- **서버 액션**(`src/app/fortune-actions.ts`)은 공개 POST 엔드포인트 — 모든 인자를 검증할 것.
+
+## 선물 포춘쿠키 (`/gift/[id]`)
+
+`FortuneShare`의 "친구에게 선물하기" 버튼이 `/gift/{fortune.id}` 링크를 공유합니다. `getFortuneFromId`는 정확히 일치하는 id의 운세를 반환하고, 알 수 없는 id는 해시로 안정적인 운세에 매핑합니다 (구 링크 호환).
