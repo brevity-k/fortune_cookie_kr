@@ -27,6 +27,7 @@ import { allFortunes } from '../src/data/fortunes';
 import { CATEGORIES, type Fortune, type FortuneCategory } from './utils/constants';
 import { readStateFile, writeStateFile } from './utils/json';
 import { withRetry } from './utils/retry';
+import { getTodayDateKST } from './utils/date';
 
 const STATE_FILE = path.join(__dirname, 'twitter-post-state.json');
 const SITE_URL = 'https://fortunecookie.ai.kr';
@@ -63,14 +64,6 @@ function saveState(state: TwitterPostState): void {
   writeStateFile(STATE_FILE, state);
 }
 
-function getTodayDate(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
 const CATEGORY_HASHTAGS: Record<FortuneCategory, string> = {
   love: '사랑운',
   career: '재물운',
@@ -86,7 +79,7 @@ function getCategoryLabel(category: FortuneCategory): string {
 }
 
 function findTodayBlogPost(state: TwitterPostState): BlogPost | null {
-  const today = getTodayDate();
+  const today = getTodayDateKST();
   const candidates = blogPosts.filter(
     (post) => post.date === today && !state.postedSlugs.includes(post.slug)
   );
@@ -182,7 +175,7 @@ async function main() {
   if (!state.postedFortuneIds) {
     state.postedFortuneIds = [];
   }
-  const today = getTodayDate();
+  const today = getTodayDateKST();
 
   console.log('');
   console.log('========================================');

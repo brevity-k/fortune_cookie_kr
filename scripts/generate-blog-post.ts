@@ -27,6 +27,7 @@ import {
   writeStateFile,
   atomicWriteFile,
 } from './utils/json';
+import { getTodayDateKST } from './utils/date';
 
 const USED_TOPICS_FILE = path.join(__dirname, 'used-topics.json');
 const BLOG_POSTS_FILE = path.join(__dirname, '..', 'src', 'data', 'blog-posts.ts');
@@ -186,14 +187,6 @@ HTML 태그만 출력하세요. 다른 설명이나 마크다운은 사용하지
   return extractTextFromResponse(response);
 }
 
-function getTodayDate(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
 function escapeForTemplate(str: string): string {
   return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
 }
@@ -272,7 +265,7 @@ async function main() {
   // Generate content
   console.log('  Claude API로 콘텐츠 생성 중...');
   const content = await generateBlogPost(topic);
-  const date = getTodayDate();
+  const date = getTodayDateKST();
 
   // Validate content
   const textOnly = content.replace(/<[^>]*>/g, '');
