@@ -2,7 +2,27 @@ import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 import { RATING_LABELS } from '@/lib/fortune-selector';
 
-export const runtime = 'edge';
+// Rendered as SVG: the ★/☆ glyphs aren't in the bundled font and the dynamic
+// font fetch for them fails, which produced tofu boxes on every card.
+const STAR_PATH = 'M12 2l2.94 6.26 6.86.78-5.1 4.66 1.4 6.8L12 17.1 5.9 20.5l1.4-6.8-5.1-4.66 6.86-.78z';
+
+function RatingStars({ rating, size }: { rating: number; size: number }) {
+  return (
+    <div style={{ display: 'flex', gap: Math.round(size / 8) }}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <svg key={i} width={size} height={size} viewBox="0 0 24 24">
+          <path
+            d={STAR_PATH}
+            fill={i <= rating ? '#FFD700' : 'none'}
+            stroke="#FFD700"
+            strokeWidth={1.5}
+            strokeLinejoin="round"
+          />
+        </svg>
+      ))}
+    </div>
+  );
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,7 +34,8 @@ export async function GET(req: NextRequest) {
   const luckyNumber = (searchParams.get('luckyNumber') || '7').slice(0, 3);
   const luckyColor = (searchParams.get('luckyColor') || '금색').slice(0, 10);
   const category = (searchParams.get('category') || '총운').slice(0, 20);
-  const streak = parseInt(searchParams.get('streak') || '0', 10);
+  const rawStreak = parseInt(searchParams.get('streak') || '0', 10);
+  const streak = isNaN(rawStreak) ? 0 : Math.max(0, Math.min(rawStreak, 9999));
   const parseSize = (val: string | null, fallback: number, max: number) => {
     const n = parseInt(val || String(fallback), 10);
     return (isNaN(n) || n <= 0) ? fallback : Math.min(n, max);
@@ -23,7 +44,6 @@ export async function GET(req: NextRequest) {
   const height = parseSize(searchParams.get('h'), 1920, 1920);
   const isCompact = width <= 800;
 
-  const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
   const ratingLabel = RATING_LABELS[rating] || '평';
 
   if (isCompact) {
@@ -56,7 +76,7 @@ export async function GET(req: NextRequest) {
           {/* Left: emoji + rating */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: 36 }}>
             <div style={{ fontSize: 64, marginBottom: 12, display: 'flex' }}>{emoji}</div>
-            <div style={{ fontSize: 20, color: '#FFD700', display: 'flex' }}>{stars}</div>
+            <RatingStars rating={rating} size={20} />
             <div style={{ fontSize: 18, color: '#FFD700', fontWeight: 700, marginTop: 4, display: 'flex' }}>{ratingLabel}</div>
           </div>
 
@@ -153,7 +173,7 @@ export async function GET(req: NextRequest) {
         {/* Decorative stars */}
         <div style={{ position: 'absolute', top: 50, left: 60, fontSize: 28, opacity: 0.5, display: 'flex' }}>✨</div>
         <div style={{ position: 'absolute', top: 120, right: 80, fontSize: 22, opacity: 0.4, display: 'flex' }}>⭐</div>
-        <div style={{ position: 'absolute', bottom: 180, left: 50, fontSize: 20, opacity: 0.3, display: 'flex' }}>✦</div>
+        <div style={{ position: 'absolute', bottom: 180, left: 50, fontSize: 20, opacity: 0.3, display: 'flex' }}>✨</div>
         <div style={{ position: 'absolute', bottom: 100, right: 60, fontSize: 24, opacity: 0.4, display: 'flex' }}>✨</div>
 
         {/* Streak badge */}
@@ -222,7 +242,7 @@ export async function GET(req: NextRequest) {
             marginBottom: 30,
           }}
         >
-          <div style={{ fontSize: 32, color: '#FFD700', display: 'flex' }}>{stars}</div>
+          <RatingStars rating={rating} size={32} />
           <div style={{ fontSize: 24, color: '#FFD700', fontWeight: 700, display: 'flex' }}>{ratingLabel}</div>
         </div>
 
