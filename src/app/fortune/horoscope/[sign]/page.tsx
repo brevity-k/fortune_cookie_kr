@@ -7,6 +7,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HoroscopeSelector from "@/components/fortune/HoroscopeSelector";
 import SEOContentServer from "@/components/seo/SEOContentServer";
+import JsonLd from "@/components/seo/JsonLd";
 
 type PageProps = {
   params: Promise<{ sign: string }>;
@@ -54,10 +55,7 @@ function FaqJsonLd({ sign }: { sign: string }) {
     })),
   };
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
+    <JsonLd data={jsonLd} />
   );
 }
 

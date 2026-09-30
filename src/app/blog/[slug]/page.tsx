@@ -4,12 +4,15 @@ import { notFound } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { blogPosts } from '@/data/blog-posts';
+import { SITE_URL } from '@/lib/env';
+import JsonLd from '@/components/seo/JsonLd';
 
 function sanitizeHtml(html: string): string {
   return html
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/\s+on\w+\s*=\s*"[^"]*"/gi, '')
-    .replace(/\s+on\w+\s*=\s*'[^']*'/gi, '');
+    .replace(/<\/?(?:iframe|object|embed|style|link|meta|base|form)\b[^>]*>/gi, '')
+    .replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/(href|src)\s*=\s*(["']?)\s*(?:javascript|vbscript|data):[^"'\s>]*\2/gi, '$1="#"');
 }
 
 interface BlogPostPageProps {
@@ -60,7 +63,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fortunecookie.ai.kr';
+  const siteUrl = SITE_URL;
 
   const authorName = post.author || '포춘쿠키 에디터';
 
@@ -89,10 +92,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <div className="star-field min-h-dvh flex flex-col">
       <Header />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
       <main className="flex-1 pt-14 px-4 py-12">
         <article className="max-w-2xl mx-auto">
           <Link

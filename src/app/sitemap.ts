@@ -4,8 +4,9 @@ import { blogPosts } from "@/data/blog-posts";
 import { ZODIAC_ANIMALS } from "@/types/zodiac";
 import { MBTI_TYPES } from "@/types/mbti";
 import { HOROSCOPE_SIGNS } from "@/types/horoscope";
+import { SITE_URL } from "@/lib/env";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fortunecookie.ai.kr";
+const siteUrl = SITE_URL;
 const LAST_CONTENT_UPDATE = new Date("2026-05-23");
 
 export default function sitemap(): MetadataRoute.Sitemap {
