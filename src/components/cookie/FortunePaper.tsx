@@ -17,22 +17,25 @@ export default function FortunePaper({ fortune, breakMethod, streak = 0, isNewCo
   const [showDetails, setShowDetails] = useState(false);
   const category = CATEGORIES.find((c) => c.key === fortune.category);
 
-  // Typewriter effect
+  // Typewriter effect (parent keys this component by fortune id, so state starts fresh per fortune)
   useEffect(() => {
     let index = 0;
     const text = fortune.message;
-    setDisplayedText('');
+    let detailsTimer: ReturnType<typeof setTimeout> | undefined;
 
     const timer = setInterval(() => {
       index += 1;
       setDisplayedText(text.slice(0, index));
       if (index >= text.length) {
         clearInterval(timer);
-        setTimeout(() => setShowDetails(true), 300);
+        detailsTimer = setTimeout(() => setShowDetails(true), 300);
       }
     }, 50);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      clearTimeout(detailsTimer);
+    };
   }, [fortune.message]);
 
   return (

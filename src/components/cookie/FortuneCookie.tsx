@@ -15,15 +15,14 @@ import MuteToggle from '@/components/ui/MuteToggle';
 
 interface FortuneCookieProps {
   onBreak: (method: CookieBreakMethod) => Fortune | Promise<Fortune>;
-  fortune: Fortune | null;
   streak?: number;
   isNewCollection?: boolean;
 }
 
-export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewCollection = false }: FortuneCookieProps) {
+export default function FortuneCookie({ onBreak, streak = 0, isNewCollection = false }: FortuneCookieProps) {
   const [cookieState, setCookieState] = useState<CookieState>('idle');
   const [breakMethod, setBreakMethod] = useState<CookieBreakMethod | null>(null);
-  const [currentFortune, setCurrentFortune] = useState<Fortune | null>(fortune);
+  const [currentFortune, setCurrentFortune] = useState<Fortune | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const isBreakingRef = useRef(false);
@@ -55,15 +54,23 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
 
         play('sparkle');
 
-        Promise.resolve(onBreak(method)).then((result) => {
-          setCurrentFortune(result);
-          trackFortuneReveal(result.category);
+        Promise.resolve(onBreak(method))
+          .then((result) => {
+            setCurrentFortune(result);
+            trackFortuneReveal(result.category);
 
-          setTimeout(() => {
-            setCookieState('revealed');
-            play('paper');
-          }, 600);
-        });
+            setTimeout(() => {
+              setCookieState('revealed');
+              play('paper');
+            }, 600);
+          })
+          .catch((error) => {
+            // Without this the cookie stays 'broken' forever; let the user retry.
+            console.error('[FortuneCookie] Failed to load fortune:', error);
+            isBreakingRef.current = false;
+            setBreakMethod(null);
+            setCookieState('idle');
+          });
       }, 400);
     },
     [onBreak, play]
@@ -103,13 +110,6 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
       return () => clearTimeout(timer);
     }
   }, [cookieState]);
-
-  // Sync external fortune
-  useEffect(() => {
-    if (fortune !== null && fortune !== currentFortune) {
-      setCurrentFortune(fortune);
-    }
-  }, [fortune, currentFortune]);
 
   const isInteractive = cookieState !== 'broken' && cookieState !== 'revealed' && cookieState !== 'breaking';
 
@@ -153,7 +153,7 @@ export default function FortuneCookie({ onBreak, fortune, streak = 0, isNewColle
 
       {/* Fortune Paper */}
       {cookieState === 'revealed' && currentFortune && (
-        <FortunePaper fortune={currentFortune} breakMethod={breakMethod} streak={streak} isNewCollection={isNewCollection} />
+        <FortunePaper key={currentFortune.id} fortune={currentFortune} breakMethod={breakMethod} streak={streak} isNewCollection={isNewCollection} />
       )}
 
       {/* Interaction hints */}

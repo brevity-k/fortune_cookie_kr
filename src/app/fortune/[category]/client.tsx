@@ -1,47 +1,30 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import FortuneCookie from '@/components/cookie/FortuneCookie';
 import FortuneShare from '@/components/fortune/FortuneShare';
-import { Fortune, FortuneCategory, CookieBreakMethod } from '@/types/fortune';
+import { FortuneCategory } from '@/types/fortune';
 import { randomFortuneAction } from '@/app/fortune-actions';
-import { useStreak } from '@/hooks/useStreak';
-import { useFortuneCollection } from '@/hooks/useFortuneCollection';
-import { trackStreak } from '@/lib/analytics';
+import { useFortuneBreak } from '@/hooks/useFortuneBreak';
 
 interface CategoryFortuneWidgetProps {
   category: FortuneCategory;
 }
 
 export default function CategoryFortuneWidget({ category }: CategoryFortuneWidgetProps) {
-  const [fortune, setFortune] = useState<Fortune | null>(null);
-  const [isNew, setIsNew] = useState(false);
-  const { streak, recordVisit } = useStreak();
-  const { addToCollection } = useFortuneCollection();
-
-  const handleBreak = useCallback(
-    async (_method: CookieBreakMethod): Promise<Fortune> => {
-      const result = await randomFortuneAction(category);
-      setFortune(result);
-      const updated = recordVisit();
-      if (updated.currentStreak > 1) {
-        trackStreak(updated.currentStreak);
-      }
-      setIsNew(addToCollection(result.id));
-      return result;
-    },
-    [category, recordVisit, addToCollection]
+  const { fortune, isNew, streak, handleBreak } = useFortuneBreak(
+    useCallback(() => randomFortuneAction(category), [category])
   );
 
   return (
     <>
       <section className="px-4 relative z-10">
-        <FortuneCookie onBreak={handleBreak} fortune={fortune} streak={streak.currentStreak} isNewCollection={isNew} />
+        <FortuneCookie onBreak={handleBreak} streak={streak} isNewCollection={isNew} />
       </section>
 
       {fortune && (
         <section className="px-4 py-4 max-w-sm mx-auto animate-fade-in-up">
-          <FortuneShare fortune={fortune} streak={streak.currentStreak} />
+          <FortuneShare fortune={fortune} streak={streak} />
         </section>
       )}
     </>
