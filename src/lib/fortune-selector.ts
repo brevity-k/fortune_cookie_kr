@@ -27,30 +27,8 @@ function seededRandom(seed: number): () => number {
   let state = seed;
   return () => {
     state = (state * 1664525 + 1013904223) & 0xffffffff;
-    return (state >>> 0) / 0xffffffff;
+    return (state >>> 0) / 0x100000000; // [0, 1) — dividing by 0xffffffff could yield 1 → out-of-bounds index
   };
-}
-
-export function getDailyFortune(
-  fortunes: Fortune[],
-  category?: FortuneCategory
-): Fortune {
-  if (fortunes.length === 0) {
-    return fallbackFortune;
-  }
-
-  const dateStr = getTodayString();
-  const seed = hashString(dateStr + (category || 'all'));
-  const random = seededRandom(seed);
-
-  const filtered = category
-    ? fortunes.filter((f) => f.category === category)
-    : fortunes;
-
-  if (filtered.length === 0) return fortunes[0];
-
-  const index = Math.floor(random() * filtered.length);
-  return filtered[index];
 }
 
 export function getRandomFortune(
@@ -76,57 +54,42 @@ export function getRandomFortune(
   return available[index];
 }
 
-export function getFortunesByCategory(
-  fortunes: Fortune[],
-  category: FortuneCategory
-): Fortune[] {
-  return fortunes.filter((f) => f.category === category);
-}
-
 export function getFortuneFromId(
   fortunes: Fortune[],
   id: string
 ): Fortune {
   if (fortunes.length === 0) return fallbackFortune;
-  const seed = hashString(id);
-  const index = seed % fortunes.length;
-  return fortunes[index];
+  // Gift links carry the sender's fortune id; unknown ids still map to a stable fortune.
+  const exact = fortunes.find((f) => f.id === id);
+  if (exact) return exact;
+  return fortunes[hashString(id) % fortunes.length];
 }
 
-export function getZodiacDailyFortune(
-  fortunes: Fortune[],
-  animal: string
-): Fortune {
+/** Same fortune for everyone with the same seed key on the same (KST) day. */
+function getSeededDailyFortune(fortunes: Fortune[], seedKey: string): Fortune {
   if (fortunes.length === 0) return fallbackFortune;
-  const dateStr = getTodayString();
-  const seed = hashString(dateStr + 'zodiac_' + animal);
-  const random = seededRandom(seed);
-  const index = Math.floor(random() * fortunes.length);
-  return fortunes[index];
+  const random = seededRandom(hashString(getTodayString() + seedKey));
+  return fortunes[Math.floor(random() * fortunes.length)];
 }
 
-export function getHoroscopeDailyFortune(
-  fortunes: Fortune[],
-  sign: string
-): Fortune {
-  if (fortunes.length === 0) return fallbackFortune;
-  const dateStr = getTodayString();
-  const seed = hashString(dateStr + 'horoscope_' + sign);
-  const random = seededRandom(seed);
-  const index = Math.floor(random() * fortunes.length);
-  return fortunes[index];
+export function getZodiacDailyFortune(fortunes: Fortune[], animal: string): Fortune {
+  return getSeededDailyFortune(fortunes, 'zodiac_' + animal);
 }
 
-export function getMBTIDailyFortune(
-  fortunes: Fortune[],
-  mbtiType: string
-): Fortune {
-  if (fortunes.length === 0) return fallbackFortune;
-  const dateStr = getTodayString();
-  const seed = hashString(dateStr + 'mbti_' + mbtiType.toLowerCase());
-  const random = seededRandom(seed);
-  const index = Math.floor(random() * fortunes.length);
-  return fortunes[index];
+export function getHoroscopeDailyFortune(fortunes: Fortune[], sign: string): Fortune {
+  return getSeededDailyFortune(fortunes, 'horoscope_' + sign);
+}
+
+export function getMBTIDailyFortune(fortunes: Fortune[], mbtiType: string): Fortune {
+  return getSeededDailyFortune(fortunes, 'mbti_' + mbtiType.toLowerCase());
+}
+
+/** Order-independent key so (A, B) and (B, A) get the same result. */
+function pairKey(nameA: string, yearA: number, nameB: string, yearB: number): string {
+  const pairs = [[nameA, String(yearA)], [nameB, String(yearB)]].sort(
+    (a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1])
+  );
+  return pairs[0][0] + pairs[0][1] + pairs[1][0] + pairs[1][1];
 }
 
 export function getCompatibilityScore(
@@ -135,10 +98,7 @@ export function getCompatibilityScore(
   nameB: string,
   yearB: number
 ): number {
-  const pairs = [[nameA, String(yearA)], [nameB, String(yearB)]].sort(
-    (a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1])
-  );
-  const seed = hashString(pairs[0][0] + pairs[0][1] + pairs[1][0] + pairs[1][1]);
+  const seed = hashString(pairKey(nameA, yearA, nameB, yearB));
   const random = seededRandom(seed);
   return Math.floor(random() * 56) + 40; // 40-95%
 }
@@ -152,10 +112,7 @@ export function getCompatibilityFortunes(
 ): [Fortune, Fortune] {
   if (fortunes.length === 0) return [fallbackFortune, fallbackFortune];
   if (fortunes.length === 1) return [fortunes[0], fortunes[0]];
-  const pairs = [[nameA, String(yearA)], [nameB, String(yearB)]].sort(
-    (a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1])
-  );
-  const seed = hashString(pairs[0][0] + pairs[0][1] + pairs[1][0] + pairs[1][1] + 'fortunes');
+  const seed = hashString(pairKey(nameA, yearA, nameB, yearB) + 'fortunes');
   const random = seededRandom(seed);
   const idxA = Math.floor(random() * fortunes.length);
   let idxB = Math.floor(random() * fortunes.length);
