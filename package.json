@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.129.0",
-    "@atproto/api": "^0.20.44",
+    "@atproto/api": "^0.22.0",
     "@upstash/ratelimit": "^2.2.0",
     "@upstash/redis": "^1.39.0",
     "astronomy-engine": "^2.1.19",
@@ -32,8 +32,8 @@
     "korean-lunar-calendar": "^0.4.0",
     "motion": "^12.43.0",
     "next": "^16.3.7",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "resend": "^6.31.0",
     "twitter-api-v2": "^1.29.1"
   },
