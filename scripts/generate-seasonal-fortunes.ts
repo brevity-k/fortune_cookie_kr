@@ -12,7 +12,6 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import * as fs from 'fs';
 import * as path from 'path';
 import { withRetry } from './utils/retry';
 import { VALID_COLORS, CATEGORY_LABELS, type Fortune, type FortuneCategory } from './utils/constants';
@@ -21,9 +20,8 @@ import {
   parseClaudeJSONArray,
   readStateFile,
   writeStateFile,
-  atomicWriteFile,
 } from './utils/json';
-import { readExistingFortunes, getCategoryFilePath } from './utils/fortune-file';
+import { readExistingFortunes, sanitizeFortunes, appendFortunesToFile } from './utils/fortune-file';
 import { getKstDateParts } from './utils/date';
 
 const SEASONAL_CONFIG = {
@@ -164,41 +162,6 @@ JSON 배열만 출력. 마크다운 코드 블록 없이.`;
   return parseClaudeJSONArray<Fortune>(text);
 }
 
-function formatFortuneAsCode(f: Fortune): string {
-  return `  {
-    id: '${f.id}',
-    category: '${f.category}',
-    message: '${f.message.replace(/'/g, "\\'")}',
-    interpretation: '${f.interpretation.replace(/'/g, "\\'")}',
-    luckyNumber: ${f.luckyNumber},
-    luckyColor: '${f.luckyColor}',
-    rating: ${f.rating},
-    emoji: '${f.emoji}',
-    shareText: '${f.shareText.replace(/'/g, "\\'")}',
-  },`;
-}
-
-function sanitizeFortunes(fortunes: Fortune[]): void {
-  const validColors: readonly string[] = VALID_COLORS;
-
-  for (const f of fortunes) {
-    if (!validColors.includes(f.luckyColor)) {
-      const original = f.luckyColor;
-      f.luckyColor = VALID_COLORS[Math.floor(Math.random() * VALID_COLORS.length)];
-      console.log(
-        `  ⚠️ luckyColor 자동 수정: "${original}" → "${f.luckyColor}"`
-      );
-    }
-
-    for (const field of ['message', 'interpretation', 'shareText'] as const) {
-      if (f[field] && f[field].includes("'")) {
-        f[field] = f[field].replace(/'/g, '\u2019');
-        console.log(`  ⚠️ ${field}의 작은따옴표 자동 수정 (${f.id})`);
-      }
-    }
-  }
-}
-
 function validateFortunes(
   fortunes: Fortune[],
   category: FortuneCategory,
@@ -244,18 +207,6 @@ function validateFortunes(
   });
 
   return errors;
-}
-
-function appendFortunesToFile(category: FortuneCategory, fortunes: Fortune[]): void {
-  const filePath = getCategoryFilePath(category);
-  const content = fs.readFileSync(filePath, 'utf-8');
-  const code = fortunes.map(formatFortuneAsCode).join('\n');
-
-  const insertPoint = content.lastIndexOf('];');
-  if (insertPoint === -1) throw new Error(`Could not find ]; in ${category}.ts`);
-
-  const updated = content.slice(0, insertPoint) + code + '\n' + content.slice(insertPoint);
-  atomicWriteFile(filePath, updated);
 }
 
 async function main() {
