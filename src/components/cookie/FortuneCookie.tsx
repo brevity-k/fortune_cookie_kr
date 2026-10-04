@@ -26,6 +26,8 @@ export default function FortuneCookie({ onBreak, streak = 0, isNewCollection = f
 
   const containerRef = useRef<HTMLDivElement>(null);
   const isBreakingRef = useRef(false);
+  // Break animation timers; cleared on unmount so onBreak's side effects don't run after navigation.
+  const breakTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const x = useMotionValue(0);
   const controls = useAnimation();
@@ -41,7 +43,7 @@ export default function FortuneCookie({ onBreak, streak = 0, isNewCollection = f
       play('break');
       trackCookieBreak(method);
 
-      setTimeout(() => {
+      breakTimersRef.current.push(setTimeout(() => {
         setCookieState('broken');
 
         // Fire confetti
@@ -59,10 +61,10 @@ export default function FortuneCookie({ onBreak, streak = 0, isNewCollection = f
             setCurrentFortune(result);
             trackFortuneReveal(result.category);
 
-            setTimeout(() => {
+            breakTimersRef.current.push(setTimeout(() => {
               setCookieState('revealed');
               play('paper');
-            }, 600);
+            }, 600));
           })
           .catch((error) => {
             // Without this the cookie stays 'broken' forever; let the user retry.
@@ -71,10 +73,15 @@ export default function FortuneCookie({ onBreak, streak = 0, isNewCollection = f
             setBreakMethod(null);
             setCookieState('idle');
           });
-      }, 400);
+      }, 400));
     },
     [onBreak, play]
   );
+
+  useEffect(() => {
+    const timers = breakTimersRef.current;
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   // Shake detection (mobile) — enableShake must be called from a user gesture for iOS
   const { enableShake } = useShakeDetection({
