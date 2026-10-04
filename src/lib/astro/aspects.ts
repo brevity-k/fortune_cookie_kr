@@ -1,7 +1,7 @@
 import type { Aspect, PlanetPosition } from './types';
 import { ASPECT_CONFIGS } from './constants';
 
-export function angularDistance(lon1: number, lon2: number): number {
+function angularDistance(lon1: number, lon2: number): number {
   let diff = Math.abs(lon1 - lon2);
   if (diff > 180) diff = 360 - diff;
   return diff;
