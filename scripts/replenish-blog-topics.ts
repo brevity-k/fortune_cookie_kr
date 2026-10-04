@@ -28,6 +28,14 @@ import {
 const USED_TOPICS_FILE = path.join(__dirname, 'used-topics.json');
 const TOPICS_FILE = path.join(__dirname, 'blog-topics.ts');
 const MIN_REMAINING = 15;
+const MAX_COUNT = 50;
+// Slugs become URL paths and are written into single-quoted TS literals.
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** Escape a string for a single-quoted TS string literal. */
+function escapeSingleQuoted(str: string): string {
+  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n/g, ' ');
+}
 
 function isStringArray(data: unknown): data is string[] {
   return Array.isArray(data) && data.every((item) => typeof item === 'string');
@@ -95,7 +103,17 @@ async function generateNewTopics(count: number): Promise<BlogTopic[]> {
   const validTopics: BlogTopic[] = [];
 
   for (const t of parsed) {
-    if (!t.slug || !t.title || !t.description || !t.keywords || !t.category) {
+    if (
+      typeof t.slug !== 'string' ||
+      !SLUG_PATTERN.test(t.slug) ||
+      typeof t.title !== 'string' ||
+      !t.title ||
+      typeof t.description !== 'string' ||
+      !t.description ||
+      !Array.isArray(t.keywords) ||
+      !t.keywords.every((k) => typeof k === 'string') ||
+      typeof t.category !== 'string'
+    ) {
       console.warn(`  Skipping invalid topic: ${JSON.stringify(t)}`);
       continue;
     }
@@ -121,9 +139,9 @@ function appendTopicsToFile(topics: BlogTopic[]): void {
     .map(
       (t) => `  {
     slug: '${t.slug}',
-    title: '${t.title.replace(/'/g, "\\'")}',
-    description: '${t.description.replace(/'/g, "\\'")}',
-    keywords: [${t.keywords.map((k) => `'${k.replace(/'/g, "\\'")}'`).join(', ')}],
+    title: '${escapeSingleQuoted(t.title)}',
+    description: '${escapeSingleQuoted(t.description)}',
+    keywords: [${t.keywords.map((k) => `'${escapeSingleQuoted(k)}'`).join(', ')}],
     category: '${t.category}',
   },`
     )
@@ -149,7 +167,12 @@ async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
   const countIdx = args.indexOf('--count');
-  const count = countIdx !== -1 ? parseInt(args[countIdx + 1], 10) : 20;
+  const count = countIdx !== -1 ? Number(args[countIdx + 1]) : 20;
+
+  if (!Number.isInteger(count) || count < 1 || count > MAX_COUNT) {
+    console.error(`Invalid --count value. Use an integer between 1 and ${MAX_COUNT}.`);
+    process.exit(1);
+  }
 
   if (!dryRun && !process.env.ANTHROPIC_API_KEY) {
     console.error('ANTHROPIC_API_KEY environment variable is required.');
