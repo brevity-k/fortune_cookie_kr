@@ -39,12 +39,6 @@ export const ASPECT_CONFIGS: { type: AspectType; angle: number; orb: number }[] 
   { type: 'opposition', angle: 180, orb: 8 },
 ];
 
-export const PLANETS: Planet[] = [
-  'Sun', 'Moon', 'Mercury', 'Venus', 'Mars',
-  'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
-  'NorthNode',
-];
-
 // Korean name mappings
 export const ZODIAC_KOREAN: Record<ZodiacSign, string> = {
   Aries: '양자리', Taurus: '황소자리', Gemini: '쌍둥이자리', Cancer: '게자리',
@@ -56,14 +50,6 @@ export const PLANET_KOREAN: Record<Planet, string> = {
   Sun: '태양', Moon: '달', Mercury: '수성', Venus: '금성', Mars: '화성',
   Jupiter: '목성', Saturn: '토성', Uranus: '천왕성', Neptune: '해왕성', Pluto: '명왕성',
   NorthNode: '북교점',
-};
-
-export const ELEMENT_KOREAN: Record<AstroElement, string> = {
-  fire: '불', earth: '흙', air: '바람', water: '물',
-};
-
-export const MODALITY_KOREAN: Record<Modality, string> = {
-  cardinal: '활동궁', fixed: '고정궁', mutable: '변통궁',
 };
 
 export const ASPECT_KOREAN: Record<AspectType, string> = {

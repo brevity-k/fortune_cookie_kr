@@ -7,7 +7,7 @@ import { daysToNearestSolarTerm } from './solar-terms';
  * 양남음녀 (yang male / yin female) = forward
  * 음남양녀 (yin male / yang female) = backward
  */
-export function getMajorLuckDirection(yearStem: number, gender: BirthInfo['gender']): 'forward' | 'backward' {
+function getMajorLuckDirection(yearStem: number, gender: BirthInfo['gender']): 'forward' | 'backward' {
   const yinYang = STEM_YINYANG[yearStem];
   if ((yinYang === 'yang' && gender === 'male') || (yinYang === 'yin' && gender === 'female')) {
     return 'forward';
@@ -19,7 +19,7 @@ export function getMajorLuckDirection(yearStem: number, gender: BirthInfo['gende
  * Calculate the starting age of the first major luck cycle.
  * Days from birth to nearest 절기 (in the direction) ÷ 3 = starting age.
  */
-export function getMajorLuckStartAge(birth: BirthInfo, direction: 'forward' | 'backward'): number {
+function getMajorLuckStartAge(birth: BirthInfo, direction: 'forward' | 'backward'): number {
   const days = daysToNearestSolarTerm(birth.year, birth.month, birth.day, direction);
   return Math.round(days / 3);
 }

@@ -27,7 +27,7 @@ export function extractTextFromResponse(response: {
  * - Markdown code fences (```json ... ```)
  * - Trailing commas before closing brackets
  */
-export function parseClaudeJSON<T>(text: string): T {
+function parseClaudeJSON<T>(text: string): T {
   let cleaned = text.trim();
 
   // Strip markdown code fences if present

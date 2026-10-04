@@ -14,12 +14,3 @@ export const allFortunes: Fortune[] = [
   ...generalFortunes,
   ...relationshipFortunes,
 ];
-
-export {
-  loveFortunes,
-  careerFortunes,
-  healthFortunes,
-  studyFortunes,
-  generalFortunes,
-  relationshipFortunes,
-};

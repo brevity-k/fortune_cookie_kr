@@ -5,7 +5,7 @@ import { HOUR_STEM_START } from './constants';
  * Get the earthly branch index for a given hour (0-23).
  * Each branch covers a 2-hour period. Hour 23 and 0 are both 子시 (branch 0).
  */
-export function getHourBranch(hour: number): number {
+function getHourBranch(hour: number): number {
   if (hour === 23 || hour === 0) return 0;
   return Math.floor((hour + 1) / 2);
 }

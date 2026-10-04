@@ -34,7 +34,7 @@ const ASPECT_SYMBOLS: Record<string, string> = {
   opposition: '\u260D',
 };
 
-export function formatDegree(degree: number): string {
+function formatDegree(degree: number): string {
   const deg = Math.floor(degree);
   const min = Math.round((degree - deg) * 60);
   return `${deg}\u00B0${min.toString().padStart(2, '0')}'`;
