@@ -31,11 +31,16 @@ function getAICacheKey(info: BirthInfo): string {
   return `${STORAGE_KEYS.SAJU_AI_PREFIX}${info.year}_${info.month}_${info.day}_${info.hour ?? 'x'}_${info.gender}`;
 }
 
+function isStringRecord(v: unknown): v is Record<string, string> {
+  return !!v && typeof v === 'object' && !Array.isArray(v) && Object.values(v).every((x) => typeof x === 'string');
+}
+
 function getCachedAI(info: BirthInfo): SajuAIInterpretation | null {
   try {
     const raw = localStorage.getItem(getAICacheKey(info));
     if (!raw) return null;
-    return JSON.parse(raw) as SajuAIInterpretation;
+    const parsed: unknown = JSON.parse(raw);
+    return isStringRecord(parsed) ? (parsed as unknown as SajuAIInterpretation) : null;
   } catch {
     return null;
   }
