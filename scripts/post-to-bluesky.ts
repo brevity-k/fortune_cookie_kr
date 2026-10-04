@@ -13,7 +13,7 @@
  *   BLUESKY_APP_PASSWORD  - Bluesky 앱 비밀번호 (필수)
  */
 
-import { AtpAgent, RichText } from '@atproto/api';
+import type { AtpAgent } from '@atproto/api';
 import * as path from 'path';
 import { blogPosts, BlogPost } from '../src/data/blog-posts';
 import { allFortunes } from '../src/data/fortunes';
@@ -21,6 +21,10 @@ import { CATEGORIES, type Fortune, type FortuneCategory } from './utils/constant
 import { readStateFile, writeStateFile } from './utils/json';
 import { withRetry } from './utils/retry';
 import { getTodayDateKST } from './utils/date';
+
+// @atproto/api depends on ESM-only packages (multiformats) that tsx's CommonJS
+// mode can't require; a dynamic import loads it through the ESM loader instead.
+const loadAtproto = () => import('@atproto/api');
 
 const STATE_FILE = path.join(__dirname, 'bsky-post-state.json');
 const SITE_URL = 'https://fortunecookie.ai.kr';
@@ -125,6 +129,7 @@ function buildFortunePost(fortune: Fortune): string {
 }
 
 async function postToBluesky(text: string, agent: AtpAgent): Promise<string> {
+  const { RichText } = await loadAtproto();
   const rt = new RichText({ text });
   await rt.detectFacets(agent);
   const result = await withRetry(() =>
@@ -219,6 +224,7 @@ async function main() {
   }
 
   console.log('  Bluesky 게시 중...');
+  const { AtpAgent } = await loadAtproto();
   const agent = new AtpAgent({ service: 'https://bsky.social' });
   await withRetry(() =>
     agent.login({
