@@ -104,7 +104,7 @@ jobs:
           for attempt in 1 2 3; do
             echo "Attempt $attempt/3: waiting 30s..."
             sleep 30
-            STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://fortunecookie.ai.kr" || echo "000")
+            STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "https://fortunecookie.ai.kr" || true)
             echo "Site status: $STATUS"
             if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
               echo "Deploy check passed"
