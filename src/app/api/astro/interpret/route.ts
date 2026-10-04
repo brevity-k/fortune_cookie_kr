@@ -3,6 +3,7 @@ import { sajuAIRatelimit } from '@/lib/rate-limit';
 import { getAnthropicKey } from '@/lib/env';
 import { enforceRateLimit, generateJsonInterpretation } from '@/lib/api-helpers';
 import { buildInterpretationPrompt } from '@/lib/astro/prompts';
+import { ZODIAC_SIGNS, PLANET_KOREAN } from '@/lib/astro/constants';
 import type { NatalChart, AstroAIInterpretation } from '@/lib/astro/types';
 
 export const runtime = 'nodejs';
@@ -15,8 +16,18 @@ function isObject(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object';
 }
 
+// Signs and planet names are used as lookup keys for prompt text, so only known values pass.
+function isValidSign(v: unknown): boolean {
+  return typeof v === 'string' && (ZODIAC_SIGNS as readonly string[]).includes(v);
+}
+
+function isValidPlanetName(v: unknown): boolean {
+  return typeof v === 'string' && Object.hasOwn(PLANET_KOREAN, v);
+}
+
 function isValidPoint(v: unknown): boolean {
   return isObject(v)
+    && isValidSign(v.sign)
     && isFiniteNumber(v.longitude) && v.longitude >= 0 && v.longitude <= 360
     && isFiniteNumber(v.degree) && v.degree >= 0 && v.degree <= 30;
 }
@@ -39,6 +50,7 @@ function isValidChart(data: unknown): data is NatalChart {
   // Validate planet positions
   for (const p of chart.planets) {
     if (!isObject(p)) return false;
+    if (!isValidPlanetName(p.planet) || !isValidSign(p.sign)) return false;
     if (!isFiniteNumber(p.longitude) || p.longitude < 0 || p.longitude > 360) return false;
     if (!isFiniteNumber(p.degree) || p.degree < 0 || p.degree > 30) return false;
     if (!isFiniteNumber(p.house) || p.house < 1 || p.house > 12) return false;
