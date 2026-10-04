@@ -44,7 +44,7 @@ function saveUsedTopics(topics: string[]): void {
   writeStateFile(USED_TOPICS_FILE, topics);
 }
 
-function getNextTopic(specificSlug?: string): BlogTopic | null {
+function getNextTopic(specificSlug: string | undefined, dryRun: boolean): BlogTopic | null {
   const used = getUsedTopics();
 
   if (specificSlug) {
@@ -62,7 +62,7 @@ function getNextTopic(specificSlug?: string): BlogTopic | null {
   const available = BLOG_TOPICS.filter((t) => !used.includes(t.slug));
   if (available.length === 0) {
     console.log('All topics have been used! Resetting queue...');
-    saveUsedTopics([]);
+    if (!dryRun) saveUsedTopics([]);
     return BLOG_TOPICS[0];
   }
 
@@ -241,7 +241,7 @@ async function main() {
   }
 
   // Get next topic
-  const topic = getNextTopic(specificSlug);
+  const topic = getNextTopic(specificSlug, dryRun);
   if (!topic) {
     process.exit(1);
   }
