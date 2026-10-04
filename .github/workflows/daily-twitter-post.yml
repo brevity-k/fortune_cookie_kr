@@ -90,6 +90,8 @@ jobs:
           npx tsx scripts/post-to-twitter.ts $ARGS
 
       - name: Post to Bluesky
+        id: bluesky
+        # Non-blocking so the Twitter state still gets committed; surfaced below.
         continue-on-error: true
         env:
           BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
@@ -97,6 +99,10 @@ jobs:
           INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
           INPUT_TYPE: ${{ github.event.inputs.type }}
         run: |
+          if [ -z "$BLUESKY_HANDLE" ] || [ -z "$BLUESKY_APP_PASSWORD" ]; then
+            echo "Bluesky secrets not configured — skipping"
+            exit 0
+          fi
           ARGS=""
           if [ "$INPUT_DRY_RUN" = "true" ]; then
             ARGS="--dry-run"
@@ -117,6 +123,12 @@ jobs:
             git commit -m "chore: update social post state"
             git push
           fi
+
+      - name: Fail if Bluesky post failed
+        if: steps.bluesky.outcome == 'failure'
+        run: |
+          echo "::error::Bluesky posting failed — see the 'Post to Bluesky' step"
+          exit 1
 
       - name: Notify failure
         if: failure()
