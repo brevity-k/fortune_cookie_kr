@@ -187,6 +187,10 @@ HTML 태그만 출력하세요. 다른 설명이나 마크다운은 사용하지
   return extractTextFromResponse(response);
 }
 
+function escapeSingleQuoted(str: string): string {
+  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 function escapeForTemplate(str: string): string {
   return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
 }
@@ -200,9 +204,9 @@ function appendBlogPost(
 
   const newPost = `  {
     slug: '${topic.slug}',
-    title: '${topic.title.replace(/'/g, "\\'")}',
+    title: '${escapeSingleQuoted(topic.title)}',
     description:
-      '${topic.description.replace(/'/g, "\\'")}',
+      '${escapeSingleQuoted(topic.description)}',
     date: '${date}',
     content: \`
       ${escapeForTemplate(content)}
