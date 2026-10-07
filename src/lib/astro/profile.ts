@@ -23,6 +23,17 @@ export function saveAstroProfile(birthInfo: AstroBirthInfo): AstroProfile {
   return profile;
 }
 
+function isAstroProfile(v: unknown): v is AstroProfile {
+  const p = v as Partial<AstroProfile> | null;
+  const chart = p?.chart;
+  return !!p && typeof p.birthInfo === 'object' && p.birthInfo !== null
+    && !!chart && Array.isArray(chart.planets) && Array.isArray(chart.houses) && Array.isArray(chart.aspects)
+    && typeof chart.ascendant === 'object' && chart.ascendant !== null
+    && typeof chart.midheaven === 'object' && chart.midheaven !== null
+    && typeof chart.elements === 'object' && chart.elements !== null
+    && typeof chart.modalities === 'object' && chart.modalities !== null;
+}
+
 export function getAstroProfile(): AstroProfile | null {
   if (typeof window === 'undefined') return null;
   try {
@@ -33,8 +44,10 @@ export function getAstroProfile(): AstroProfile | null {
       return null;
     }
     if (raw === cachedRaw) return cachedProfile;
+    const parsed: unknown = JSON.parse(raw);
     cachedRaw = raw;
-    cachedProfile = JSON.parse(raw) as AstroProfile;
+    // A malformed entry would otherwise crash every render of the birth-chart page.
+    cachedProfile = isAstroProfile(parsed) ? parsed : null;
     return cachedProfile;
   } catch {
     cachedRaw = null;

@@ -40,7 +40,6 @@ export function useCookieInteraction({
   const lastTapRef = useRef(0);
   const isDraggingRef = useRef(false);
   const dragStartPosRef = useRef({ x: 0, y: 0 });
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Click interaction: 3 clicks to break
@@ -84,6 +83,9 @@ export function useCookieInteraction({
     dragStartPosRef.current = { x: e.clientX, y: e.clientY };
     isDraggingRef.current = false;
 
+    // A second pointer (multi-touch) must not orphan the running interval.
+    if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
+
     setLongPressProgress(0);
     const startTime = Date.now();
 
@@ -100,19 +102,13 @@ export function useCookieInteraction({
 
       if (progress >= 1) {
         if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
-        if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
         triggerBreak('longpress');
       }
     }, 50);
-
-    longPressTimerRef.current = setTimeout(() => {
-      // Handled in interval above
-    }, 1500);
   }, [cookieState, triggerBreak]);
 
   const handlePointerUp = useCallback(() => {
     if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
-    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
     setLongPressProgress(0);
   }, []);
 
@@ -121,7 +117,6 @@ export function useCookieInteraction({
     isDraggingRef.current = true;
     // Cancel long press when dragging starts
     if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
-    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
     setLongPressProgress(0);
   }, []);
 
@@ -150,7 +145,6 @@ export function useCookieInteraction({
   useEffect(() => {
     return () => {
       if (longPressIntervalRef.current) clearInterval(longPressIntervalRef.current);
-      if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
     };
   }, []);
 

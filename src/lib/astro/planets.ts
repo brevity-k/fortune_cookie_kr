@@ -37,7 +37,7 @@ function planetToBody(planet: Planet): BodyType | null {
   return map[planet] ?? null;
 }
 
-export function getPlanetLongitude(planet: Planet, date: Date): number {
+function getPlanetLongitude(planet: Planet, date: Date): number {
   const astroTime = MakeTime(date);
 
   if (planet === 'Sun') {
@@ -64,7 +64,7 @@ export function getPlanetLongitude(planet: Planet, date: Date): number {
   return ((ecliptic.elon % 360) + 360) % 360;
 }
 
-export function isRetrograde(planet: Planet, date: Date): boolean {
+function isRetrograde(planet: Planet, date: Date): boolean {
   if (planet === 'Sun' || planet === 'Moon') {
     return false;
   }

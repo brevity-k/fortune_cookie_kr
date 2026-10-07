@@ -6,14 +6,12 @@
  *   npx tsx scripts/generate-seasonal-fortunes.ts --dry-run  # 미리보기 (파일 수정 없음)
  *
  * 동작:
- *   1. 현재 날짜 기준으로 10일 이내에 시작하는 시즌 감지
- *   2. 이미 생성된 시즌인지 상태 파일에서 확인
- *   3. Claude API로 시즌 맞춤 운세 생성
- *   4. 카테고리 파일에 추가
+ *   1. 현재 날짜(KST)가 시즌 기간에 속하고 올해 아직 생성되지 않은 시즌 감지
+ *   2. Claude API로 시즌 맞춤 운세 생성
+ *   3. 카테고리 파일에 추가
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import * as fs from 'fs';
 import * as path from 'path';
 import { withRetry } from './utils/retry';
 import { VALID_COLORS, CATEGORY_LABELS, type Fortune, type FortuneCategory } from './utils/constants';
@@ -22,9 +20,8 @@ import {
   parseClaudeJSONArray,
   readStateFile,
   writeStateFile,
-  atomicWriteFile,
 } from './utils/json';
-import { readExistingFortunes, getCategoryFilePath } from './utils/fortune-file';
+import { readExistingFortunes, sanitizeFortunes, appendFortunesToFile } from './utils/fortune-file';
 import { getKstDateParts } from './utils/date';
 
 const SEASONAL_CONFIG = {
@@ -91,10 +88,16 @@ function saveState(state: SeasonalState): void {
   writeStateFile(STATE_FILE, state);
 }
 
-function getUpcomingSeason(): Season | null {
+/**
+ * Returns the first active season not yet generated this year. Windows overlap
+ * (new-year covers all of February, valentine starts Feb 4), so already-done
+ * seasons must be skipped rather than returning the first window match.
+ */
+function getUpcomingSeason(done: readonly string[]): Season | null {
   const { month, day } = getKstDateParts();
 
   for (const [season, config] of Object.entries(SEASONAL_CONFIG)) {
+    if (done.includes(season)) continue;
     // Check if we're within the season window (startDay of startMonth to end of last month)
     if (month === config.startMonth && day >= config.startDay) {
       return season as Season;
@@ -159,41 +162,6 @@ JSON 배열만 출력. 마크다운 코드 블록 없이.`;
   return parseClaudeJSONArray<Fortune>(text);
 }
 
-function formatFortuneAsCode(f: Fortune): string {
-  return `  {
-    id: '${f.id}',
-    category: '${f.category}',
-    message: '${f.message.replace(/'/g, "\\'")}',
-    interpretation: '${f.interpretation.replace(/'/g, "\\'")}',
-    luckyNumber: ${f.luckyNumber},
-    luckyColor: '${f.luckyColor}',
-    rating: ${f.rating},
-    emoji: '${f.emoji}',
-    shareText: '${f.shareText.replace(/'/g, "\\'")}',
-  },`;
-}
-
-function sanitizeFortunes(fortunes: Fortune[]): void {
-  const validColors: readonly string[] = VALID_COLORS;
-
-  for (const f of fortunes) {
-    if (!validColors.includes(f.luckyColor)) {
-      const original = f.luckyColor;
-      f.luckyColor = VALID_COLORS[Math.floor(Math.random() * VALID_COLORS.length)];
-      console.log(
-        `  ⚠️ luckyColor 자동 수정: "${original}" → "${f.luckyColor}"`
-      );
-    }
-
-    for (const field of ['message', 'interpretation', 'shareText'] as const) {
-      if (f[field] && f[field].includes("'")) {
-        f[field] = f[field].replace(/'/g, '\u2019');
-        console.log(`  ⚠️ ${field}의 작은따옴표 자동 수정 (${f.id})`);
-      }
-    }
-  }
-}
-
 function validateFortunes(
   fortunes: Fortune[],
   category: FortuneCategory,
@@ -241,18 +209,6 @@ function validateFortunes(
   return errors;
 }
 
-function appendFortunesToFile(category: FortuneCategory, fortunes: Fortune[]): void {
-  const filePath = getCategoryFilePath(category);
-  const content = fs.readFileSync(filePath, 'utf-8');
-  const code = fortunes.map(formatFortuneAsCode).join('\n');
-
-  const insertPoint = content.lastIndexOf('];');
-  if (insertPoint === -1) throw new Error(`Could not find ]; in ${category}.ts`);
-
-  const updated = content.slice(0, insertPoint) + code + '\n' + content.slice(insertPoint);
-  atomicWriteFile(filePath, updated);
-}
-
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
@@ -262,8 +218,10 @@ async function main() {
     process.exit(1);
   }
 
-  const season = getUpcomingSeason();
   const year = String(getKstDateParts().year);
+  const state = getState();
+  const yearState = state[year] || [];
+  const season = getUpcomingSeason(yearState);
 
   console.log('');
   console.log('========================================');
@@ -271,20 +229,12 @@ async function main() {
   console.log('========================================');
 
   if (!season) {
-    console.log('  현재 다가오는 시즌이 없습니다. 종료합니다.');
+    console.log('  생성할 시즌이 없습니다 (시즌 기간이 아니거나 이미 생성됨). 종료합니다.');
     console.log('');
     return;
   }
 
   const config = SEASONAL_CONFIG[season];
-  const state = getState();
-  const yearState = state[year] || [];
-
-  if (yearState.includes(season)) {
-    console.log(`  ${year}년 "${config.label}" 시즌은 이미 생성되었습니다. 종료합니다.`);
-    console.log('');
-    return;
-  }
 
   console.log(`  시즌: ${config.label} (${season})`);
   console.log(`  카테고리: ${config.categories.join(', ')}`);

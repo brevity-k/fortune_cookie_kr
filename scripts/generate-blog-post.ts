@@ -44,7 +44,7 @@ function saveUsedTopics(topics: string[]): void {
   writeStateFile(USED_TOPICS_FILE, topics);
 }
 
-function getNextTopic(specificSlug?: string): BlogTopic | null {
+function getNextTopic(specificSlug: string | undefined, dryRun: boolean): BlogTopic | null {
   const used = getUsedTopics();
 
   if (specificSlug) {
@@ -62,7 +62,7 @@ function getNextTopic(specificSlug?: string): BlogTopic | null {
   const available = BLOG_TOPICS.filter((t) => !used.includes(t.slug));
   if (available.length === 0) {
     console.log('All topics have been used! Resetting queue...');
-    saveUsedTopics([]);
+    if (!dryRun) saveUsedTopics([]);
     return BLOG_TOPICS[0];
   }
 
@@ -187,6 +187,10 @@ HTML 태그만 출력하세요. 다른 설명이나 마크다운은 사용하지
   return extractTextFromResponse(response);
 }
 
+function escapeSingleQuoted(str: string): string {
+  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 function escapeForTemplate(str: string): string {
   return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
 }
@@ -200,9 +204,9 @@ function appendBlogPost(
 
   const newPost = `  {
     slug: '${topic.slug}',
-    title: '${topic.title.replace(/'/g, "\\'")}',
+    title: '${escapeSingleQuoted(topic.title)}',
     description:
-      '${topic.description.replace(/'/g, "\\'")}',
+      '${escapeSingleQuoted(topic.description)}',
     date: '${date}',
     content: \`
       ${escapeForTemplate(content)}
@@ -237,7 +241,7 @@ async function main() {
   }
 
   // Get next topic
-  const topic = getNextTopic(specificSlug);
+  const topic = getNextTopic(specificSlug, dryRun);
   if (!topic) {
     process.exit(1);
   }

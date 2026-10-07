@@ -2,16 +2,17 @@
  * Shared utilities for reading and modifying fortune data files.
  *
  * Used by generate-fortunes.ts and generate-seasonal-fortunes.ts
- * to avoid duplicating file parsing logic.
+ * to avoid duplicating file parsing and writing logic.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import type { FortuneCategory } from './constants';
+import { VALID_COLORS, type Fortune, type FortuneCategory } from './constants';
+import { atomicWriteFile } from './json';
 
 const FORTUNES_DIR = path.join(process.cwd(), 'src', 'data', 'fortunes');
 
-export function getCategoryFilePath(category: FortuneCategory): string {
+function getCategoryFilePath(category: FortuneCategory): string {
   return path.join(FORTUNES_DIR, `${category}.ts`);
 }
 
@@ -85,4 +86,58 @@ export function getSampleFortunes(fileContent: string): string {
     .map((i) => blocks[i])
     .filter(Boolean)
     .join(',\n  ');
+}
+
+/**
+ * Fix recoverable issues in AI output in place: invalid luckyColor values and
+ * single quotes (which would break the single-quoted TS literals).
+ */
+export function sanitizeFortunes(fortunes: Fortune[]): void {
+  const validColors: readonly string[] = VALID_COLORS;
+
+  for (const f of fortunes) {
+    if (!validColors.includes(f.luckyColor)) {
+      const original = f.luckyColor;
+      f.luckyColor = VALID_COLORS[Math.floor(Math.random() * VALID_COLORS.length)];
+      console.log(`  ⚠️ luckyColor 자동 수정: "${original}" → "${f.luckyColor}"`);
+    }
+
+    for (const field of ['message', 'interpretation', 'shareText'] as const) {
+      if (typeof f[field] === 'string' && f[field].includes("'")) {
+        f[field] = f[field].replace(/'/g, '\u2019');
+        console.log(`  ⚠️ ${field}의 작은따옴표 자동 수정 (${f.id})`);
+      }
+    }
+  }
+}
+
+function formatFortuneAsCode(f: Fortune): string {
+  return `  {
+    id: '${f.id}',
+    category: '${f.category}',
+    message: '${f.message.replace(/'/g, "\\'")}',
+    interpretation: '${f.interpretation.replace(/'/g, "\\'")}',
+    luckyNumber: ${f.luckyNumber},
+    luckyColor: '${f.luckyColor}',
+    rating: ${f.rating},
+    emoji: '${f.emoji}',
+    shareText: '${f.shareText.replace(/'/g, "\\'")}',
+  },`;
+}
+
+/** Append fortunes to the end of a category data file. */
+export function appendFortunesToFile(category: FortuneCategory, fortunes: Fortune[]): void {
+  const filePath = getCategoryFilePath(category);
+  const fileContent = fs.readFileSync(filePath, 'utf-8');
+  const fortuneCode = fortunes.map(formatFortuneAsCode).join('\n');
+
+  // Insert before the closing ];
+  const insertPoint = fileContent.lastIndexOf('];');
+  if (insertPoint === -1) {
+    throw new Error(`Could not find closing ]; in ${category}.ts`);
+  }
+
+  const updatedContent =
+    fileContent.slice(0, insertPoint) + fortuneCode + '\n' + fileContent.slice(insertPoint);
+  atomicWriteFile(filePath, updatedContent);
 }

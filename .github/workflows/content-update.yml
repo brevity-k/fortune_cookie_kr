@@ -50,7 +50,7 @@ jobs:
       - name: Check blog freshness
         run: |
           echo "Checking blog post freshness..."
-          RECENT=$(git log --since="14 days ago" --name-only --pretty=format: -- "src/data/blog-posts.ts" | grep -c "blog-posts.ts" || echo "0")
+          RECENT=$(git log --since="14 days ago" --name-only --pretty=format: -- "src/data/blog-posts.ts" | grep -c "blog-posts.ts" || true)
           echo "Blog updates in last 14 days: $RECENT"
           if [ "$RECENT" -lt 1 ]; then
             echo "::warning::블로그가 14일 이상 업데이트되지 않았습니다."
@@ -81,7 +81,7 @@ jobs:
       - name: Check fortune freshness
         run: |
           echo "Checking fortune freshness..."
-          RECENT=$(git log --since="14 days ago" --name-only --pretty=format: -- "src/data/fortunes/*.ts" | grep -c ".ts" || echo "0")
+          RECENT=$(git log --since="14 days ago" --name-only --pretty=format: -- "src/data/fortunes/*.ts" | grep -c ".ts" || true)
           echo "Fortune file changes in last 14 days: $RECENT"
           if [ "$RECENT" -lt 1 ]; then
             echo "::warning::운세 메시지가 14일 이상 업데이트되지 않았습니다."

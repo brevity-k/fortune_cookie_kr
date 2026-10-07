@@ -9,12 +9,17 @@ function getCacheKey(birthInfo: { year: number; month: number; day: number; hour
   return `${STORAGE_KEYS.ASTRO_AI_PREFIX}${birthInfo.year}_${birthInfo.month}_${birthInfo.day}_${birthInfo.hour}_${birthInfo.minute}`;
 }
 
+function isStringRecord(v: unknown): v is Record<string, string> {
+  return !!v && typeof v === 'object' && !Array.isArray(v) && Object.values(v).every((x) => typeof x === 'string');
+}
+
 function getCachedInterpretation(key: string): AstroAIInterpretation | null {
   if (typeof window === 'undefined') return null;
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const parsed: unknown = JSON.parse(raw);
+    return isStringRecord(parsed) ? (parsed as unknown as AstroAIInterpretation) : null;
   } catch {
     return null;
   }
