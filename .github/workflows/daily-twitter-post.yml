@@ -90,6 +90,8 @@ jobs:
           npx tsx scripts/post-to-twitter.ts $ARGS
 
       - name: Post to Bluesky
+        id: bluesky
+        # Non-blocking so the Twitter state still gets committed; surfaced below.
         continue-on-error: true
         env:
           BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
@@ -104,7 +106,7 @@ jobs:
           if [ -n "$INPUT_TYPE" ]; then
             ARGS="$ARGS --type $INPUT_TYPE"
           fi
-          npx tsx scripts/post-to-bluesky.ts $ARGS
+          npx tsx scripts/post-to-bluesky.mts $ARGS
 
       - name: Commit state changes
         run: |
@@ -117,6 +119,12 @@ jobs:
             git commit -m "chore: update social post state"
             git push
           fi
+
+      - name: Fail if Bluesky post failed
+        if: steps.bluesky.outcome == 'failure'
+        run: |
+          echo "::error::Bluesky posting failed — see the 'Post to Bluesky' step"
+          exit 1
 
       - name: Notify failure
         if: failure()
