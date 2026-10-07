@@ -2,11 +2,11 @@
  * Bluesky 자동 포스팅 스크립트
  *
  * 사용법:
- *   npx tsx scripts/post-to-bluesky.ts              # 게시
- *   npx tsx scripts/post-to-bluesky.ts --dry-run     # 미리보기 (게시 안 함)
- *   npx tsx scripts/post-to-bluesky.ts --type blog   # 블로그 포스트 강제
- *   npx tsx scripts/post-to-bluesky.ts --type fortune # 운세 강제
- *   npx tsx scripts/post-to-bluesky.ts --force        # 오늘 이미 게시했어도 강제 실행
+ *   npx tsx scripts/post-to-bluesky.mts              # 게시
+ *   npx tsx scripts/post-to-bluesky.mts --dry-run     # 미리보기 (게시 안 함)
+ *   npx tsx scripts/post-to-bluesky.mts --type blog   # 블로그 포스트 강제
+ *   npx tsx scripts/post-to-bluesky.mts --type fortune # 운세 강제
+ *   npx tsx scripts/post-to-bluesky.mts --force        # 오늘 이미 게시했어도 강제 실행
  *
  * 환경 변수:
  *   BLUESKY_HANDLE        - Bluesky 핸들 (필수)
@@ -15,6 +15,7 @@
 
 import { AtpAgent, RichText } from '@atproto/api';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { blogPosts, BlogPost } from '../src/data/blog-posts';
 import { allFortunes } from '../src/data/fortunes';
 import { CATEGORIES, type Fortune, type FortuneCategory } from './utils/constants';
@@ -22,7 +23,8 @@ import { readStateFile, writeStateFile } from './utils/json';
 import { withRetry } from './utils/retry';
 import { getTodayDateKST } from './utils/date';
 
-const STATE_FILE = path.join(__dirname, 'bsky-post-state.json');
+// ES module (.mts): @atproto/api's ESM-only deps can't be loaded through tsx's CommonJS path.
+const STATE_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), 'bsky-post-state.json');
 const SITE_URL = 'https://fortunecookie.ai.kr';
 const MAX_GRAPHEMES = 300;
 const segmenter = new Intl.Segmenter('ko', { granularity: 'grapheme' });
