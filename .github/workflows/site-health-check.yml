@@ -25,7 +25,7 @@ jobs:
             "https://fortunecookie.ai.kr/compatibility"
           )
           for url in "${URLS[@]}"; do
-            STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "$url" || echo "000")
+            STATUS=$(curl -o /dev/null -s -w "%{http_code}" --max-time 15 "$url" || true)
             echo "$url -> $STATUS"
             if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 400 ]; then
               FAILED="$FAILED\n- $url (HTTP $STATUS)"
@@ -43,6 +43,8 @@ jobs:
       - name: Create issue on failure
         if: steps.health.outputs.healthy == 'false'
         uses: actions/github-script@v9
+        env:
+          FAILED_URLS: ${{ steps.health.outputs.failed_urls }}
         with:
           script: |
             const { data: issues } = await github.rest.issues.listForRepo({
@@ -57,7 +59,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 title: `[Site Down] Health check failed - ${new Date().toISOString().split('T')[0]}`,
-                body: `Site health check detected issues:\n${{ steps.health.outputs.failed_urls }}\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                body: `Site health check detected issues:\n${process.env.FAILED_URLS}\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
                 labels: ['site-down'],
               });
             }

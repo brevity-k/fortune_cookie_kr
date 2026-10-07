@@ -22,12 +22,11 @@ export default function AdSense({
     if (isLoaded.current) return;
 
     try {
-      const adsbygoogle = (window as unknown as { adsbygoogle: unknown[] })
-        .adsbygoogle;
-      if (adsbygoogle) {
-        adsbygoogle.push({});
-        isLoaded.current = true;
-      }
+      // The AdSense script loads after mount; pushing onto the queue array lets
+      // it pick up this slot once loaded instead of silently skipping it.
+      const w = window as unknown as { adsbygoogle?: unknown[] };
+      (w.adsbygoogle = w.adsbygoogle || []).push({});
+      isLoaded.current = true;
     } catch {
       // AdSense not loaded
     }

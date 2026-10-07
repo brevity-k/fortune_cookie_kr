@@ -11,8 +11,6 @@ export {
   CATEGORIES,
   CATEGORY_LABELS,
   FORTUNE_ID_PATTERN,
-  type CategoryInfo,
   type Fortune,
-  type ValidColor,
   type FortuneCategory,
 } from '../../src/types/fortune';

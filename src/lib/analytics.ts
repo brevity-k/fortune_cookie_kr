@@ -1,4 +1,4 @@
-export function trackEvent(action: string, category: string, label?: string) {
+function trackEvent(action: string, category: string, label?: string) {
   if (typeof window === 'undefined') return;
 
   const gtag = (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag;

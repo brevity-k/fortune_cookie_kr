@@ -62,15 +62,6 @@ export const GENERATING_CYCLE: Record<Element, Element> = {
   water: 'wood',
 };
 
-// 상극 (overcoming cycle): wood→earth, earth→water, water→fire, fire→metal, metal→wood
-export const OVERCOMING_CYCLE: Record<Element, Element> = {
-  wood: 'earth',
-  earth: 'water',
-  water: 'fire',
-  fire: 'metal',
-  metal: 'wood',
-};
-
 // Reverse of generating: which element generates this one?
 export const GENERATED_BY: Record<Element, Element> = {
   wood: 'water',

@@ -5,7 +5,7 @@ import { STEM_ELEMENTS, BRANCH_ELEMENTS, STEM_YINYANG, GENERATING_CYCLE, GENERAT
  * Count element occurrences across all pillars (stems + branches).
  * With hour pillar: 8 chars total. Without: 6 chars total.
  */
-export function countElements(pillars: FourPillars): ElementCount {
+function countElements(pillars: FourPillars): ElementCount {
   const counts: ElementCount = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 };
 
   const pillarList = [pillars.year, pillars.month, pillars.day];

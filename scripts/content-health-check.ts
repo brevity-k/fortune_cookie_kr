@@ -128,9 +128,11 @@ function checkPages() {
     12 + // zodiac animals
     16 + // mbti types
     12 + // horoscope signs
+    3 +  // hubs (zodiac, mbti, horoscope)
+    2 +  // saju, birth-chart
     1 +  // compatibility
     1 +  // collection
-    3 +  // seasonal (new-year, valentines, exam-luck)
+    4 +  // seasonal (new-year, valentines, exam-luck, christmas)
     1 +  // gift (dynamic)
     blogPosts.length + // blog posts
     1 +  // blog list
@@ -143,9 +145,11 @@ function checkPages() {
   console.log(`   띠별: 12개`);
   console.log(`   MBTI: 16개`);
   console.log(`   별자리: 12개`);
+  console.log(`   허브 (띠별/MBTI/별자리): 3개`);
+  console.log(`   사주/출생 차트: 2개`);
   console.log(`   궁합: 1개`);
   console.log(`   도감: 1개`);
-  console.log(`   시즌: 3개`);
+  console.log(`   시즌: 4개`);
   console.log(`   선물: 1개 (동적)`);
   console.log(`   블로그: ${blogPosts.length + 1}개 (목록 + ${blogPosts.length} 포스트)`);
   console.log(`   법적/정보: 4개 (소개, 개인정보, 약관, 문의)`);

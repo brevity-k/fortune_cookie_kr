@@ -1,4 +1,4 @@
-import type { ZodiacSign, ZodiacPosition } from './types';
+import type { ZodiacPosition } from './types';
 import { ZODIAC_SIGNS } from './constants';
 
 export function longitudeToZodiac(longitude: number): ZodiacPosition {
@@ -10,8 +10,4 @@ export function longitudeToZodiac(longitude: number): ZodiacPosition {
     degree,
     longitude: normalized,
   };
-}
-
-export function getSignIndex(sign: ZodiacSign): number {
-  return ZODIAC_SIGNS.indexOf(sign);
 }

@@ -54,7 +54,7 @@ export function getSajuMonth(_year: number, month: number, day: number): SajuMon
 /**
  * Check if a date is before 입춘 (~Feb 4), meaning it belongs to the previous saju year.
  */
-export function isBeforeIpchun(month: number, day: number): boolean {
+function isBeforeIpchun(month: number, day: number): boolean {
   const ipchun = SOLAR_TERM_BOUNDARIES[0]; // 입춘 is first in raw array
   if (month < ipchun.month) return true;
   if (month === ipchun.month && day < ipchun.day) return true;

@@ -7,7 +7,7 @@
  * 시즌:
  *   new-year      설날 특별 운세 (1-2월)
  *   valentine     발렌타인 사랑운 (2월)
- *   csat          수능/학업운 (11월)
+ *   csat          수능/학업운 (10-11월)
  *   christmas     크리스마스 운세 (12월)
  *   check         현재 월에 맞는 시즌 콘텐츠 확인
  *
@@ -50,30 +50,30 @@ const SEASONAL_CONFIG = {
 
 type Season = keyof typeof SEASONAL_CONFIG;
 
-function getCurrentSeason(): Season | null {
+// Seasons overlap (February is both new-year and valentine), so return all of them.
+function getCurrentSeasons(): Season[] {
   const { month } = getKstDateParts();
-  for (const [season, config] of Object.entries(SEASONAL_CONFIG)) {
-    if ((config.months as readonly number[]).includes(month)) {
-      return season as Season;
-    }
-  }
-  return null;
+  return (Object.keys(SEASONAL_CONFIG) as Season[]).filter((season) =>
+    (SEASONAL_CONFIG[season].months as readonly number[]).includes(month)
+  );
 }
 
 function main() {
   const arg = process.argv[2] || 'check';
 
   if (arg === 'check') {
-    const currentSeason = getCurrentSeason();
+    const currentSeasons = getCurrentSeasons();
     const { month } = getKstDateParts();
     console.log(`\n📅 현재 월: ${month}월`);
 
-    if (currentSeason) {
-      const config = SEASONAL_CONFIG[currentSeason];
-      console.log(`\n🎉 현재 시즌: ${config.label}`);
-      console.log(`📝 설명: ${config.description}`);
-      console.log(`📂 관련 카테고리: ${config.categories.join(', ')}`);
-      console.log(`📊 권장 추가 메시지 수: ${config.suggestedCount}개`);
+    if (currentSeasons.length > 0) {
+      for (const season of currentSeasons) {
+        const config = SEASONAL_CONFIG[season];
+        console.log(`\n🎉 현재 시즌: ${config.label}`);
+        console.log(`📝 설명: ${config.description}`);
+        console.log(`📂 관련 카테고리: ${config.categories.join(', ')}`);
+        console.log(`📊 권장 추가 메시지 수: ${config.suggestedCount}개`);
+      }
       console.log(`\n💡 시즌 콘텐츠를 추가하려면:`);
       console.log(`   1. src/data/fortunes/ 아래 해당 카테고리 파일에 시즌 메시지 추가`);
       console.log(`   2. 시즌이 끝나면 메시지를 제거하거나 유지 (선택)`);

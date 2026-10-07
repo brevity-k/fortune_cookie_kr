@@ -52,7 +52,8 @@ export async function POST(request: Request) {
       );
     }
 
-    await Promise.all([
+    // Resend reports API failures in `error` rather than throwing.
+    const [notification, autoReply] = await Promise.all([
       // Send notification to site owner
       resend.emails.send({
         from: FROM_EMAIL,
@@ -110,6 +111,18 @@ export async function POST(request: Request) {
         `,
       }),
     ]);
+
+    if (notification.error) {
+      console.error('Contact form notification failed:', notification.error);
+      return NextResponse.json(
+        { error: '메일 전송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
+        { status: 500 }
+      );
+    }
+    if (autoReply.error) {
+      // The owner already has the message; a failed acknowledgement isn't worth failing the request.
+      console.error('Contact form auto-reply failed:', autoReply.error);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

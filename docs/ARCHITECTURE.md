@@ -118,7 +118,8 @@ Moved from `CLAUDE.md` on 2026-04-09 to reduce Claude Code session-start token c
 | `atomicWriteFile()` | `json.ts` | 임시 파일 → rename 패턴으로 원자적 쓰기 (실패 시 임시 파일 자동 정리) |
 | `readExistingFortunes()` | `fortune-file.ts` | 카테고리 파일에서 기존 메시지/최고 ID 추출 |
 | `getSampleFortunes()` | `fortune-file.ts` | 스타일 참고용 샘플 운세 추출 (빈 결과 시 경고) |
-| `getCategoryFilePath()` | `fortune-file.ts` | 카테고리 → 파일 경로 변환 |
+| `sanitizeFortunes()` | `fortune-file.ts` | AI 출력의 잘못된 luckyColor·작은따옴표 자동 수정 |
+| `appendFortunesToFile()` | `fortune-file.ts` | 운세 객체를 카테고리 파일 끝에 원자적으로 추가 |
 
 ---
 

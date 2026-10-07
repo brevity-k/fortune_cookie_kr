@@ -18,7 +18,6 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import * as fs from 'fs';
 import * as path from 'path';
 import { withRetry } from './utils/retry';
 import {
@@ -33,12 +32,12 @@ import {
   parseClaudeJSONArray,
   readStateFile,
   writeStateFile,
-  atomicWriteFile,
 } from './utils/json';
 import {
   readExistingFortunes,
   getSampleFortunes,
-  getCategoryFilePath,
+  sanitizeFortunes,
+  appendFortunesToFile,
 } from './utils/fortune-file';
 
 interface GenerationState {
@@ -153,29 +152,6 @@ ${existingMessages.map((m) => `- ${m}`).join('\n')}
   return parseClaudeJSONArray<Fortune>(text);
 }
 
-function sanitizeFortunes(fortunes: Fortune[]): void {
-  const validColors: readonly string[] = VALID_COLORS;
-
-  for (const f of fortunes) {
-    // Fix invalid luckyColor by replacing with a random valid color
-    if (!validColors.includes(f.luckyColor)) {
-      const original = f.luckyColor;
-      f.luckyColor = VALID_COLORS[Math.floor(Math.random() * VALID_COLORS.length)];
-      console.log(
-        `  ⚠️ luckyColor 자동 수정: "${original}" → "${f.luckyColor}"`
-      );
-    }
-
-    // Fix single quotes in text fields (replace with similar Unicode character)
-    for (const field of ['message', 'interpretation', 'shareText'] as const) {
-      if (f[field] && f[field].includes("'")) {
-        f[field] = f[field].replace(/'/g, '\u2019');
-        console.log(`  ⚠️ ${field}의 작은따옴표 자동 수정 (${f.id})`);
-      }
-    }
-  }
-}
-
 function validateFortunes(
   fortunes: Fortune[],
   category: FortuneCategory,
@@ -254,48 +230,6 @@ function validateFortunes(
   });
 
   return errors;
-}
-
-function formatFortuneAsCode(f: Fortune): string {
-  const escapedMessage = f.message.replace(/'/g, "\\'");
-  const escapedInterpretation = f.interpretation.replace(/'/g, "\\'");
-  const escapedShareText = f.shareText.replace(/'/g, "\\'");
-
-  return `  {
-    id: '${f.id}',
-    category: '${f.category}',
-    message: '${escapedMessage}',
-    interpretation: '${escapedInterpretation}',
-    luckyNumber: ${f.luckyNumber},
-    luckyColor: '${f.luckyColor}',
-    rating: ${f.rating},
-    emoji: '${f.emoji}',
-    shareText: '${escapedShareText}',
-  },`;
-}
-
-function appendFortunesToFile(
-  category: FortuneCategory,
-  fortunes: Fortune[]
-): void {
-  const filePath = getCategoryFilePath(category);
-  const fileContent = fs.readFileSync(filePath, 'utf-8');
-
-  const fortuneCode = fortunes.map(formatFortuneAsCode).join('\n');
-
-  // Insert before the closing ];
-  const insertPoint = fileContent.lastIndexOf('];');
-  if (insertPoint === -1) {
-    throw new Error(`Could not find closing ]; in ${category}.ts`);
-  }
-
-  const updatedContent =
-    fileContent.slice(0, insertPoint) +
-    fortuneCode +
-    '\n' +
-    fileContent.slice(insertPoint);
-
-  atomicWriteFile(filePath, updatedContent);
 }
 
 async function main() {
