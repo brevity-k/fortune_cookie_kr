@@ -53,7 +53,7 @@ const SEASONAL_CONFIG = {
     label: '수능/시험 특별 학업운',
     description: '수능 시즌을 위한 학업운과 시험운 특별 메시지',
     categories: ['study'] as const,
-    count: 5,
+    count: 15, // reminder issue asks for 15-20 exam-season messages
   },
   christmas: {
     months: [12],
