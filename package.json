@@ -22,8 +22,8 @@
     "twitter:preview": "tsx scripts/post-to-twitter.ts --dry-run"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.131.0",
-    "@atproto/api": "^0.23.2",
+    "@anthropic-ai/sdk": "^0.132.1",
+    "@atproto/api": "^0.24.3",
     "@upstash/ratelimit": "^2.2.0",
     "@upstash/redis": "^1.39.0",
     "astronomy-engine": "^2.1.19",
