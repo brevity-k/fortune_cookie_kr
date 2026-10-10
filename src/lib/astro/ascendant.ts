@@ -28,8 +28,8 @@ export function calculateAscendant(
   const ramcRad = ramc * (Math.PI / 180);
   const latRad = latitude * (Math.PI / 180);
 
-  const y = -Math.cos(ramcRad);
-  const x = Math.sin(eps) * Math.tan(latRad) + Math.cos(eps) * Math.sin(ramcRad);
+  const y = Math.cos(ramcRad);
+  const x = -(Math.sin(eps) * Math.tan(latRad) + Math.cos(eps) * Math.sin(ramcRad));
 
   let ascDeg = Math.atan2(y, x) * (180 / Math.PI);
   ascDeg = ((ascDeg % 360) + 360) % 360;
