@@ -81,6 +81,8 @@ export interface AstroProfile {
   birthInfo: AstroBirthInfo;
   chart: NatalChart;
   createdAt: string;
+  /** Time zone the chart was computed in. Missing on charts saved before KST handling (computed as UTC). */
+  birthTimeZone?: 'Asia/Seoul';
 }
 
 export interface City {
