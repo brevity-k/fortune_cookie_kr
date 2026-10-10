@@ -6,8 +6,8 @@ import { STORAGE_KEYS } from '@/lib/storage-keys';
 import { trackAstro } from '@/lib/analytics';
 
 function getCacheKey(birthInfo: { year: number; month: number; day: number; hour: number; minute: number }): string {
-  // `kst_`: interpretations cached before birth times were read as Asia/Seoul describe a different chart.
-  return `${STORAGE_KEYS.ASTRO_AI_PREFIX}kst_${birthInfo.year}_${birthInfo.month}_${birthInfo.day}_${birthInfo.hour}_${birthInfo.minute}`;
+  // Bump the version when chart math changes so cached interpretations of the old chart aren't reused.
+  return `${STORAGE_KEYS.ASTRO_AI_PREFIX}v3_${birthInfo.year}_${birthInfo.month}_${birthInfo.day}_${birthInfo.hour}_${birthInfo.minute}`;
 }
 
 function isStringRecord(v: unknown): v is Record<string, string> {
