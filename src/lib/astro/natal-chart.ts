@@ -5,10 +5,13 @@ import { calculateAscendant, calculateMidheaven } from './ascendant';
 import { calculateHouseCusps, getHouseForLongitude } from './houses';
 import { detectAspects } from './aspects';
 import { countElements, countModalities } from './balance';
+import { seoulWallTimeToUtc } from '@/lib/time/seoul';
 
 export function calculateNatalChart(birthInfo: AstroBirthInfo): NatalChart {
-  const birthDate = new Date(
-    Date.UTC(birthInfo.year, birthInfo.month - 1, birthInfo.day, birthInfo.hour, birthInfo.minute)
+  // Birth date/time is entered as Korean wall-clock time (Asia/Seoul), including
+  // historical offsets (UTC+8:30, 1948-1988 DST), not as UTC.
+  const birthDate = seoulWallTimeToUtc(
+    birthInfo.year, birthInfo.month, birthInfo.day, birthInfo.hour, birthInfo.minute
   );
 
   const rawPlanets = getAllPlanetLongitudes(birthDate);

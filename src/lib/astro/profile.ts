@@ -5,22 +5,50 @@ import { STORAGE_KEYS } from '@/lib/storage-keys';
 let cachedRaw: string | null = null;
 let cachedProfile: AstroProfile | null = null;
 
-export function saveAstroProfile(birthInfo: AstroBirthInfo): AstroProfile {
-  const chart = calculateNatalChart(birthInfo);
-  const profile: AstroProfile = {
+function buildProfile(birthInfo: AstroBirthInfo, createdAt: string): AstroProfile {
+  return {
     birthInfo,
-    chart,
-    createdAt: new Date().toISOString(),
+    chart: calculateNatalChart(birthInfo),
+    createdAt,
+    birthTimeZone: 'Asia/Seoul',
   };
-  if (typeof window !== 'undefined') {
-    try {
-      const json = JSON.stringify(profile);
-      localStorage.setItem(STORAGE_KEYS.ASTRO_PROFILE, json);
-      cachedRaw = json;
-      cachedProfile = profile;
-    } catch { /* Safari private mode */ }
-  }
+}
+
+function persistProfile(profile: AstroProfile): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const json = JSON.stringify(profile);
+    localStorage.setItem(STORAGE_KEYS.ASTRO_PROFILE, json);
+    cachedRaw = json;
+    cachedProfile = profile;
+  } catch { /* Safari private mode */ }
+}
+
+export function saveAstroProfile(birthInfo: AstroBirthInfo): AstroProfile {
+  const profile = buildProfile(birthInfo, new Date().toISOString());
+  persistProfile(profile);
   return profile;
+}
+
+function hasNumericBirthInfo(b: AstroBirthInfo): boolean {
+  return [b.year, b.month, b.day, b.hour, b.minute, b.latitude, b.longitude]
+    .every((n) => typeof n === 'number' && Number.isFinite(n));
+}
+
+/**
+ * Charts saved before birth times were read as Asia/Seoul were computed as if
+ * the input were UTC (~9h off). Recompute them from the stored birth info.
+ */
+function migrateProfile(profile: AstroProfile): AstroProfile | null {
+  if (profile.birthTimeZone === 'Asia/Seoul') return profile;
+  if (!hasNumericBirthInfo(profile.birthInfo)) return null;
+  try {
+    const migrated = buildProfile(profile.birthInfo, profile.createdAt);
+    persistProfile(migrated);
+    return migrated;
+  } catch {
+    return null;
+  }
 }
 
 function isAstroProfile(v: unknown): v is AstroProfile {
@@ -45,10 +73,15 @@ export function getAstroProfile(): AstroProfile | null {
     }
     if (raw === cachedRaw) return cachedProfile;
     const parsed: unknown = JSON.parse(raw);
-    cachedRaw = raw;
     // A malformed entry would otherwise crash every render of the birth-chart page.
-    cachedProfile = isAstroProfile(parsed) ? parsed : null;
-    return cachedProfile;
+    const profile = isAstroProfile(parsed) ? migrateProfile(parsed) : null;
+    // A successful migration already cached the re-saved JSON. Otherwise (unchanged,
+    // invalid, or the re-save failed) cache against this raw value so the snapshot stays stable.
+    if (cachedProfile !== profile) {
+      cachedRaw = raw;
+      cachedProfile = profile;
+    }
+    return profile;
   } catch {
     cachedRaw = null;
     cachedProfile = null;
