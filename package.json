@@ -23,15 +23,15 @@
     "twitter:preview": "tsx scripts/post-to-twitter.ts --dry-run"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.132.1",
-    "@atproto/api": "^0.24.3",
+    "@anthropic-ai/sdk": "^0.133.0",
+    "@atproto/api": "^0.26.0",
     "@upstash/ratelimit": "^2.2.0",
     "@upstash/redis": "^1.39.0",
     "astronomy-engine": "^2.1.19",
     "canvas-confetti": "^1.9.4",
     "howler": "^2.2.4",
     "korean-lunar-calendar": "^0.4.0",
-    "motion": "^14.1.0",
+    "motion": "^14.2.0",
     "next": "^16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
