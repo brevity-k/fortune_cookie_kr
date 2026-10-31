@@ -24,19 +24,19 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",
-    "@atproto/api": "^0.26.0",
+    "@atproto/api": "^0.29.5",
     "@upstash/ratelimit": "^2.2.0",
-    "@upstash/redis": "^1.39.0",
+    "@upstash/redis": "^1.40.0",
     "astronomy-engine": "^2.1.19",
     "canvas-confetti": "^1.9.4",
     "howler": "^2.2.4",
     "korean-lunar-calendar": "^0.4.0",
-    "motion": "^14.2.0",
-    "next": "^16.4.2",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "resend": "^6.32.1",
-    "twitter-api-v2": "^1.29.1"
+    "motion": "^14.7.1",
+    "next": "^16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "resend": "^6.35.0",
+    "twitter-api-v2": "^1.31.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
@@ -45,11 +45,11 @@
     "@types/node": "^25.9.9",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "eslint": "^10.12.0",
-    "eslint-config-next": "^16.4.2",
+    "eslint": "^10.13.0",
+    "eslint-config-next": "^16.4.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
-    "vitest": "^5.0.4"
+    "vitest": "^5.0.5"
   }
 }
