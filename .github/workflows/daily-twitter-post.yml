@@ -72,6 +72,9 @@ jobs:
       - run: npm ci
 
       - name: Post to Twitter
+        id: twitter
+        # Non-blocking so an X outage (e.g. 402 credits depleted) doesn't skip Bluesky; surfaced below.
+        continue-on-error: true
         env:
           X_CONSUMER_KEY: ${{ secrets.X_CONSUMER_KEY }}
           X_SECRET_KEY: ${{ secrets.X_SECRET_KEY }}
@@ -91,7 +94,7 @@ jobs:
 
       - name: Post to Bluesky
         id: bluesky
-        # Non-blocking so the Twitter state still gets committed; surfaced below.
+        # Non-blocking so the posted state still gets committed; surfaced below.
         continue-on-error: true
         env:
           BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
@@ -124,10 +127,14 @@ jobs:
             git push
           fi
 
-      - name: Fail if Bluesky post failed
-        if: steps.bluesky.outcome == 'failure'
+      - name: Fail if any platform failed
+        if: steps.twitter.outcome == 'failure' || steps.bluesky.outcome == 'failure'
+        env:
+          TWITTER_OUTCOME: ${{ steps.twitter.outcome }}
+          BLUESKY_OUTCOME: ${{ steps.bluesky.outcome }}
         run: |
-          echo "::error::Bluesky posting failed — see the 'Post to Bluesky' step"
+          [ "$TWITTER_OUTCOME" = "failure" ] && echo "::error::Twitter posting failed — see the 'Post to Twitter' step"
+          [ "$BLUESKY_OUTCOME" = "failure" ] && echo "::error::Bluesky posting failed — see the 'Post to Bluesky' step"
           exit 1
 
       - name: Notify failure
