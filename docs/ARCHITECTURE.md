@@ -151,7 +151,6 @@ Moved from `CLAUDE.md` on 2026-04-09 to reduce Claude Code session-start token c
 | `generate-seasonal-fortunes.ts` | `seasonal-generation-state.json` | `isSeasonalState` | 키가 4자리 연도, 값이 문자열 배열 |
 | `generate-blog-post.ts` | `used-topics.json` | `isStringArray` | 배열이고 모든 요소가 string |
 | `replenish-blog-topics.ts` | `used-topics.json` | `isStringArray` | 배열이고 모든 요소가 string |
-| `post-to-twitter.ts` | `twitter-post-state.json` | `isTwitterPostState` | `lastPostDate`가 string, `postedSlugs`가 string 배열, `postedFortuneIds`가 string 배열 (선택적) |
 | `post-to-bluesky.mts` | `bsky-post-state.json` | `isBlueskyPostState` | `lastPostDate`가 string, `postedSlugs`가 string 배열, `postedFortuneIds`가 string 배열 (선택적) |
 
 > **규칙**: 새 상태 파일 추가 시 반드시 타입 검증 함수를 함께 작성할 것. `Array.isArray`만으로는 부족 — 요소 타입도 검증해야 합니다.
@@ -169,8 +168,6 @@ Moved from `CLAUDE.md` on 2026-04-09 to reduce Claude Code session-start token c
 | API 키 미설정 | `npm ci` 전 조기 종료 | GitHub Secrets에 `ANTHROPIC_API_KEY` 설정 |
 | 주제 큐 소진 | `replenish-topics` 워크플로우 자동 트리거 | `npm run blog:generate -- --topic <slug>` 수동 지정 |
 | 시즌 운세 중복 생성 | 상태 파일에서 연도별 체크, 자동 스킵 | 상태 파일 수정 후 재실행 |
-| X API 크레딧 소진 | 402 에러 + 이슈 생성 | developer.x.com에서 크레딧 충전 |
-| X API 키 미설정 | 4개 키 사전 검증 → 조기 종료 | GitHub Secrets에 X_* 키 4개 설정 |
 
 ---
 
