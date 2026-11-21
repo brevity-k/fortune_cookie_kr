@@ -19,8 +19,8 @@
     "seasonal:generate": "tsx scripts/generate-seasonal-fortunes.ts",
     "seasonal:preview": "tsx scripts/generate-seasonal-fortunes.ts --dry-run",
     "content:validate": "tsx scripts/validate-content.ts",
-    "twitter:post": "tsx scripts/post-to-twitter.ts",
-    "twitter:preview": "tsx scripts/post-to-twitter.ts --dry-run"
+    "social:post": "tsx scripts/post-to-bluesky.mts",
+    "social:preview": "tsx scripts/post-to-bluesky.mts --dry-run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",
@@ -35,8 +35,7 @@
     "next": "^16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "resend": "^6.38.0",
-    "twitter-api-v2": "^1.31.0"
+    "resend": "^6.38.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.5",
