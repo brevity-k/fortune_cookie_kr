@@ -23,7 +23,7 @@
     "social:preview": "tsx scripts/post-to-bluesky.mts --dry-run"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.133.0",
+    "@anthropic-ai/sdk": "^1.12.0",
     "@atproto/api": "^0.31.0",
     "@upstash/ratelimit": "^2.2.0",
     "@upstash/redis": "^1.41.0",
