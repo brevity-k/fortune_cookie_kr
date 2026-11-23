@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       type:
-        description: 'Content type to tweet (leave empty for auto)'
+        description: 'Content type to post (leave empty for auto)'
         required: false
         type: choice
         options:
@@ -15,7 +15,7 @@ on:
           - blog
           - fortune
       dry_run:
-        description: 'Dry run mode (no tweet posted)'
+        description: 'Dry run mode (nothing posted)'
         required: false
         default: false
         type: boolean
@@ -42,28 +42,11 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Validate X API keys
-        run: |
-          MISSING=""
-          for KEY in X_CONSUMER_KEY X_SECRET_KEY X_ACCESS_TOKEN X_ACCESS_TOKEN_SECRET; do
-            if [ -z "${!KEY}" ]; then
-              MISSING="$MISSING $KEY"
-            fi
-          done
-          if [ -n "$MISSING" ]; then
-            echo "::error::Missing secrets:$MISSING"
-            exit 1
-          fi
-        env:
-          X_CONSUMER_KEY: ${{ secrets.X_CONSUMER_KEY }}
-          X_SECRET_KEY: ${{ secrets.X_SECRET_KEY }}
-          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
-
-      - name: Check Bluesky API keys
+      - name: Validate Bluesky secrets
         run: |
           if [ -z "$BLUESKY_HANDLE" ] || [ -z "$BLUESKY_APP_PASSWORD" ]; then
-            echo "::warning::Bluesky secrets not configured — Bluesky posting will be skipped"
+            echo "::error::Missing secrets: BLUESKY_HANDLE and/or BLUESKY_APP_PASSWORD"
+            exit 1
           fi
         env:
           BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
@@ -71,41 +54,13 @@ jobs:
 
       - run: npm ci
 
-      - name: Post to Twitter
-        id: twitter
-        # Non-blocking so an X outage (e.g. 402 credits depleted) doesn't skip Bluesky; surfaced below.
-        continue-on-error: true
-        env:
-          X_CONSUMER_KEY: ${{ secrets.X_CONSUMER_KEY }}
-          X_SECRET_KEY: ${{ secrets.X_SECRET_KEY }}
-          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
-          INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
-          INPUT_TYPE: ${{ github.event.inputs.type }}
-        run: |
-          ARGS=""
-          if [ "$INPUT_DRY_RUN" = "true" ]; then
-            ARGS="--dry-run"
-          fi
-          if [ -n "$INPUT_TYPE" ]; then
-            ARGS="$ARGS --type $INPUT_TYPE"
-          fi
-          npx tsx scripts/post-to-twitter.ts $ARGS
-
       - name: Post to Bluesky
-        id: bluesky
-        # Non-blocking so the posted state still gets committed; surfaced below.
-        continue-on-error: true
         env:
           BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
           BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
           INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
           INPUT_TYPE: ${{ github.event.inputs.type }}
         run: |
-          if [ -z "$BLUESKY_HANDLE" ] || [ -z "$BLUESKY_APP_PASSWORD" ]; then
-            echo "Bluesky secrets not configured — skipping"
-            exit 0
-          fi
           ARGS=""
           if [ "$INPUT_DRY_RUN" = "true" ]; then
             ARGS="--dry-run"
@@ -119,23 +74,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add scripts/twitter-post-state.json scripts/bsky-post-state.json
+          git add scripts/bsky-post-state.json
           if git diff --cached --quiet; then
             echo "No state changes to commit"
           else
             git commit -m "chore: update social post state"
             git push
           fi
-
-      - name: Fail if any platform failed
-        if: steps.twitter.outcome == 'failure' || steps.bluesky.outcome == 'failure'
-        env:
-          TWITTER_OUTCOME: ${{ steps.twitter.outcome }}
-          BLUESKY_OUTCOME: ${{ steps.bluesky.outcome }}
-        run: |
-          [ "$TWITTER_OUTCOME" = "failure" ] && echo "::error::Twitter posting failed — see the 'Post to Twitter' step"
-          [ "$BLUESKY_OUTCOME" = "failure" ] && echo "::error::Bluesky posting failed — see the 'Post to Bluesky' step"
-          exit 1
 
       - name: Notify failure
         if: failure()
